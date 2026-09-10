@@ -58,7 +58,7 @@ jobs:
           - php: '8.4'
             moodle-branch: 'main'
             db: mariadb
-            dbversion: 11.04
+            dbversion: 11.4
           - php: '8.4'
             moodle-branch: 'main'
             db: pgsql
