@@ -168,7 +168,7 @@ function Viewer({ parts, themecss, exiturl, labels, sync, reachedend, notes, sta
               lineNumber: 258,
               columnNumber: 21
             }, this),
-            /* @__PURE__ */ jsxDEV("span", { className: "sr-only visually-hidden", children: labels.previous }, void 0, false, {
+            /* @__PURE__ */ jsxDEV("span", { className: "visually-hidden", children: labels.previous }, void 0, false, {
               fileName: "public/mod/mudeck/js/esm/src/viewer.tsx",
               lineNumber: 259,
               columnNumber: 21
@@ -224,7 +224,7 @@ function Viewer({ parts, themecss, exiturl, labels, sync, reachedend, notes, sta
               lineNumber: 282,
               columnNumber: 21
             }, this),
-            /* @__PURE__ */ jsxDEV("span", { className: "sr-only visually-hidden", children: labels.next }, void 0, false, {
+            /* @__PURE__ */ jsxDEV("span", { className: "visually-hidden", children: labels.next }, void 0, false, {
               fileName: "public/mod/mudeck/js/esm/src/viewer.tsx",
               lineNumber: 283,
               columnNumber: 21
@@ -255,7 +255,7 @@ function Viewer({ parts, themecss, exiturl, labels, sync, reachedend, notes, sta
               lineNumber: 294,
               columnNumber: 21
             }, this),
-            /* @__PURE__ */ jsxDEV("span", { className: "sr-only visually-hidden", children: labels.fullscreen }, void 0, false, {
+            /* @__PURE__ */ jsxDEV("span", { className: "visually-hidden", children: labels.fullscreen }, void 0, false, {
               fileName: "public/mod/mudeck/js/esm/src/viewer.tsx",
               lineNumber: 295,
               columnNumber: 21
@@ -286,7 +286,7 @@ function Viewer({ parts, themecss, exiturl, labels, sync, reachedend, notes, sta
               lineNumber: 307,
               columnNumber: 25
             }, this),
-            /* @__PURE__ */ jsxDEV("span", { className: "sr-only visually-hidden", children: labels.notes }, void 0, false, {
+            /* @__PURE__ */ jsxDEV("span", { className: "visually-hidden", children: labels.notes }, void 0, false, {
               fileName: "public/mod/mudeck/js/esm/src/viewer.tsx",
               lineNumber: 308,
               columnNumber: 25
@@ -308,7 +308,7 @@ function Viewer({ parts, themecss, exiturl, labels, sync, reachedend, notes, sta
           lineNumber: 313,
           columnNumber: 21
         }, this),
-        /* @__PURE__ */ jsxDEV("span", { className: "sr-only visually-hidden", children: labels.exit }, void 0, false, {
+        /* @__PURE__ */ jsxDEV("span", { className: "visually-hidden", children: labels.exit }, void 0, false, {
           fileName: "public/mod/mudeck/js/esm/src/viewer.tsx",
           lineNumber: 314,
           columnNumber: 21

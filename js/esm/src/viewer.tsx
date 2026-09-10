@@ -256,7 +256,7 @@ export default function Viewer({parts, themecss, exiturl, labels, sync, reachede
                     disabled={state.current <= 1}
                 >
                     <i className="fa fa-chevron-left" aria-hidden="true" />
-                    <span className="sr-only visually-hidden">{labels.previous}</span>
+                    <span className="visually-hidden">{labels.previous}</span>
                 </button>
 
                 <button
@@ -280,7 +280,7 @@ export default function Viewer({parts, themecss, exiturl, labels, sync, reachede
                     disabled={state.total > 0 && state.current >= state.total}
                 >
                     <i className="fa fa-chevron-right" aria-hidden="true" />
-                    <span className="sr-only visually-hidden">{labels.next}</span>
+                    <span className="visually-hidden">{labels.next}</span>
                 </button>
 
                 <button
@@ -292,7 +292,7 @@ export default function Viewer({parts, themecss, exiturl, labels, sync, reachede
                     }}
                 >
                     <i className="fa fa-expand" aria-hidden="true" />
-                    <span className="sr-only visually-hidden">{labels.fullscreen}</span>
+                    <span className="visually-hidden">{labels.fullscreen}</span>
                 </button>
 
                 {notes && (
@@ -305,13 +305,13 @@ export default function Viewer({parts, themecss, exiturl, labels, sync, reachede
                         title={labels.notes}
                     >
                         <i className="fa fa-sticky-note" aria-hidden="true" />
-                        <span className="sr-only visually-hidden">{labels.notes}</span>
+                        <span className="visually-hidden">{labels.notes}</span>
                     </button>
                 )}
 
                 <a href={exiturl} className="btn btn-secondary mudeck-control" onClick={finish}>
                     <i className="fa fa-times" aria-hidden="true" />
-                    <span className="sr-only visually-hidden">{labels.exit}</span>
+                    <span className="visually-hidden">{labels.exit}</span>
                 </a>
             </div>
 

@@ -734,7 +734,7 @@ export default function Editor({themecss, theme, labels, help, imagesurl, mediab
             onClick={toggleFull}
         >
             <i className={`fa fa-${full ? 'compress' : 'expand'}`} aria-hidden="true" />
-            <span className="sr-only visually-hidden">{labels.fullscreen}</span>
+            <span className="visually-hidden">{labels.fullscreen}</span>
         </button>
     );
 
@@ -826,7 +826,7 @@ export default function Editor({themecss, theme, labels, help, imagesurl, mediab
                                 title={labels.slide.replace('{$a}', String(index + 1))}
                                 onClick={() => goToSlide(index)}
                             >
-                                <span className="sr-only visually-hidden">
+                                <span className="visually-hidden">
                                     {labels.slide.replace('{$a}', String(index + 1))}
                                 </span>
                             </button>

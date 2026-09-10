@@ -349,7 +349,7 @@ export default function Notes({parts, themecss, pollurl, exiturl, labels}: Notes
             <div className="mudeck-chrome mudeck-notes-chrome" data-region="mudeck-notes-chrome">
                 {sofar !== null && (
                     <span className="mudeck-notes-clock" title={labels.elapsed} data-region="mudeck-notes-clock">
-                        <span className="sr-only visually-hidden">{labels.elapsed}{': '}</span>
+                        <span className="visually-hidden">{labels.elapsed}{': '}</span>
                         {clock(sofar)}
                     </span>
                 )}
@@ -365,12 +365,12 @@ export default function Notes({parts, themecss, pollurl, exiturl, labels}: Notes
                     }}
                 >
                     <i className="fa fa-expand" aria-hidden="true" />
-                    <span className="sr-only visually-hidden">{labels.fullscreen}</span>
+                    <span className="visually-hidden">{labels.fullscreen}</span>
                 </button>
 
                 <a href={exiturl} className="btn btn-secondary mudeck-control">
                     <i className="fa fa-times" aria-hidden="true" />
-                    <span className="sr-only visually-hidden">{labels.exit}</span>
+                    <span className="visually-hidden">{labels.exit}</span>
                 </a>
             </div>
         </div>

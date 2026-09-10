@@ -303,7 +303,7 @@ function Notes({ parts, themecss, pollurl, exiturl, labels }) {
     }, this),
     /* @__PURE__ */ jsxDEV("div", { className: "mudeck-chrome mudeck-notes-chrome", "data-region": "mudeck-notes-chrome", children: [
       sofar !== null && /* @__PURE__ */ jsxDEV("span", { className: "mudeck-notes-clock", title: labels.elapsed, "data-region": "mudeck-notes-clock", children: [
-        /* @__PURE__ */ jsxDEV("span", { className: "sr-only visually-hidden", children: [
+        /* @__PURE__ */ jsxDEV("span", { className: "visually-hidden", children: [
           labels.elapsed,
           ": "
         ] }, void 0, true, {
@@ -335,7 +335,7 @@ function Notes({ parts, themecss, pollurl, exiturl, labels }) {
               lineNumber: 367,
               columnNumber: 21
             }, this),
-            /* @__PURE__ */ jsxDEV("span", { className: "sr-only visually-hidden", children: labels.fullscreen }, void 0, false, {
+            /* @__PURE__ */ jsxDEV("span", { className: "visually-hidden", children: labels.fullscreen }, void 0, false, {
               fileName: "public/mod/mudeck/js/esm/src/notes.tsx",
               lineNumber: 368,
               columnNumber: 21
@@ -357,7 +357,7 @@ function Notes({ parts, themecss, pollurl, exiturl, labels }) {
           lineNumber: 372,
           columnNumber: 21
         }, this),
-        /* @__PURE__ */ jsxDEV("span", { className: "sr-only visually-hidden", children: labels.exit }, void 0, false, {
+        /* @__PURE__ */ jsxDEV("span", { className: "visually-hidden", children: labels.exit }, void 0, false, {
           fileName: "public/mod/mudeck/js/esm/src/notes.tsx",
           lineNumber: 373,
           columnNumber: 21

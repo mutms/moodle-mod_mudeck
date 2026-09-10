@@ -21,7 +21,7 @@ function PositionChooser({ id, label, confirm, count, current, onPick, onCancel 
     ref.current?.focus();
   }, []);
   return /* @__PURE__ */ jsxDEV(Fragment, { children: [
-    /* @__PURE__ */ jsxDEV("label", { className: "sr-only visually-hidden", htmlFor: id, children: label }, void 0, false, {
+    /* @__PURE__ */ jsxDEV("label", { className: "visually-hidden", htmlFor: id, children: label }, void 0, false, {
       fileName: "public/mod/mudeck/js/esm/src/overview.tsx",
       lineNumber: 94,
       columnNumber: 13
@@ -194,7 +194,7 @@ function Overview({ parts, themecss, labels, moveurl, sesskey }) {
     }, this);
   }
   return /* @__PURE__ */ jsxDEV("div", { className: "mudeck-parts", children: [
-    /* @__PURE__ */ jsxDEV("div", { className: "sr-only visually-hidden", "aria-live": "polite", children: announcement }, void 0, false, {
+    /* @__PURE__ */ jsxDEV("div", { className: "visually-hidden", "aria-live": "polite", children: announcement }, void 0, false, {
       fileName: "public/mod/mudeck/js/esm/src/overview.tsx",
       lineNumber: 277,
       columnNumber: 13
@@ -275,7 +275,7 @@ function Overview({ parts, themecss, labels, moveurl, sesskey }) {
                       lineNumber: 318,
                       columnNumber: 37
                     }, this),
-                    /* @__PURE__ */ jsxDEV("span", { className: "sr-only visually-hidden", children: labels.move }, void 0, false, {
+                    /* @__PURE__ */ jsxDEV("span", { className: "visually-hidden", children: labels.move }, void 0, false, {
                       fileName: "public/mod/mudeck/js/esm/src/overview.tsx",
                       lineNumber: 319,
                       columnNumber: 37
@@ -320,7 +320,7 @@ function Overview({ parts, themecss, labels, moveurl, sesskey }) {
                   lineNumber: 337,
                   columnNumber: 33
                 }, this),
-                /* @__PURE__ */ jsxDEV("span", { className: "sr-only visually-hidden", children: labels.export }, void 0, false, {
+                /* @__PURE__ */ jsxDEV("span", { className: "visually-hidden", children: labels.export }, void 0, false, {
                   fileName: "public/mod/mudeck/js/esm/src/overview.tsx",
                   lineNumber: 338,
                   columnNumber: 33
@@ -343,7 +343,7 @@ function Overview({ parts, themecss, labels, moveurl, sesskey }) {
                       lineNumber: 346,
                       columnNumber: 33
                     }, this),
-                    /* @__PURE__ */ jsxDEV("span", { className: "sr-only visually-hidden", children: labels.delete }, void 0, false, {
+                    /* @__PURE__ */ jsxDEV("span", { className: "visually-hidden", children: labels.delete }, void 0, false, {
                       fileName: "public/mod/mudeck/js/esm/src/overview.tsx",
                       lineNumber: 347,
                       columnNumber: 33

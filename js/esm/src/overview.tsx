@@ -91,7 +91,7 @@ function PositionChooser({id, label, confirm, count, current, onPick, onCancel}:
 
     return (
         <>
-            <label className="sr-only visually-hidden" htmlFor={id}>{label}</label>
+            <label className="visually-hidden" htmlFor={id}>{label}</label>
             <select
                 ref={ref}
                 id={id}
@@ -274,7 +274,7 @@ export default function Overview({parts, themecss, labels, moveurl, sesskey}: Ov
 
     return (
         <div className="mudeck-parts">
-            <div className="sr-only visually-hidden" aria-live="polite">{announcement}</div>
+            <div className="visually-hidden" aria-live="polite">{announcement}</div>
             {order.map((part, index) => (
                 <section
                     className={`mudeck-part${dragging === part.id ? ' mudeck-part-dragging' : ''}`}
@@ -316,7 +316,7 @@ export default function Overview({parts, themecss, labels, moveurl, sesskey}: Ov
                                     title={labels.move}
                                 >
                                     <i className="fa fa-arrows-up-down-left-right" aria-hidden="true" />
-                                    <span className="sr-only visually-hidden">{labels.move}</span>
+                                    <span className="visually-hidden">{labels.move}</span>
                                 </button>
                             )}
                             {choosing === part.id && (
@@ -335,7 +335,7 @@ export default function Overview({parts, themecss, labels, moveurl, sesskey}: Ov
                             )}
                             <a href={part.exporturl} className="btn btn-sm btn-secondary" title={labels.export}>
                                 <i className="fa fa-download" aria-hidden="true" />
-                                <span className="sr-only visually-hidden">{labels.export}</span>
+                                <span className="visually-hidden">{labels.export}</span>
                             </a>
                             <button
                                 type="button"
@@ -344,7 +344,7 @@ export default function Overview({parts, themecss, labels, moveurl, sesskey}: Ov
                                 title={labels.delete}
                             >
                                 <i className="fa fa-trash" aria-hidden="true" />
-                                <span className="sr-only visually-hidden">{labels.delete}</span>
+                                <span className="visually-hidden">{labels.delete}</span>
                             </button>
                         </div>
                     </div>

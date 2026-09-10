@@ -472,7 +472,7 @@ function Editor({ themecss, theme, labels, help, imagesurl, mediabase }) {
           lineNumber: 736,
           columnNumber: 13
         }, this),
-        /* @__PURE__ */ jsxDEV("span", { className: "sr-only visually-hidden", children: labels.fullscreen }, void 0, false, {
+        /* @__PURE__ */ jsxDEV("span", { className: "visually-hidden", children: labels.fullscreen }, void 0, false, {
           fileName: "public/mod/mudeck/js/esm/src/editor.tsx",
           lineNumber: 737,
           columnNumber: 13
@@ -611,7 +611,7 @@ function Editor({ themecss, theme, labels, help, imagesurl, mediabase }) {
                 className: "mudeck-editor-slide-jump",
                 title: labels.slide.replace("{$a}", String(index + 1)),
                 onClick: () => goToSlide(index),
-                children: /* @__PURE__ */ jsxDEV("span", { className: "sr-only visually-hidden", children: labels.slide.replace("{$a}", String(index + 1)) }, void 0, false, {
+                children: /* @__PURE__ */ jsxDEV("span", { className: "visually-hidden", children: labels.slide.replace("{$a}", String(index + 1)) }, void 0, false, {
                   fileName: "public/mod/mudeck/js/esm/src/editor.tsx",
                   lineNumber: 829,
                   columnNumber: 33
