@@ -1,0 +1,237 @@
+/* @theme orange */
+
+/*
+ * Moodle orange theme. The right quarter of each slide is left free for a
+ * background photo: ![bg](photo.jpg)
+ *
+ * Slide classes, set with <!-- _class: name -->:
+ *   lead       title slide, an <img> on it becomes the logo bottom left
+ *   thanks     closing slide, same logo treatment
+ *   statement  one sentence, white on orange
+ *   wide       full width, no room kept for a photo
+ *   bigger     larger text for a slide with few points
+ */
+
+@import 'default';
+
+:root {
+    --mo-orange: #f98012;
+    --mo-orange-soft: #fdb87a;
+    --mo-ink: #322c2b;
+    --mo-muted: #6b6462;
+    --mo-paper: #fff;
+}
+
+section {
+    position: relative;
+    width: 1280px;
+    height: 720px;
+    /* Right side free for the background photo. */
+    padding: 72px 26% 72px 84px;
+    background: var(--mo-paper);
+    color: var(--mo-ink);
+    font-family: Calibri, Carlito, "Segoe UI", system-ui, sans-serif;
+    font-size: 34px;
+    line-height: 1.45;
+    justify-content: start;
+}
+
+section.wide {
+    padding-inline-end: 84px;
+}
+
+/* Headings keep their size; four or five points fit. */
+section.bigger,
+section.lead {
+    font-size: 42px;
+}
+
+section h1 {
+    color: var(--mo-ink);
+    font-size: 58px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    margin: 0 0 0.35em;
+}
+
+section h2 {
+    color: var(--mo-ink);
+    font-size: 42px;
+    font-weight: 600;
+    margin: 0 0 0.45em;
+}
+
+/* Orange rule under headings. */
+section h1::after,
+section h2::after {
+    content: '';
+    display: block;
+    width: 130px;
+    height: 6px;
+    margin-top: 0.28em;
+    background: var(--mo-orange);
+}
+
+section h3 {
+    color: var(--mo-orange);
+    font-size: 38px;
+    font-weight: 600;
+}
+
+section ul,
+section ol {
+    margin: 0.2em 0;
+    padding-inline-start: 1.1em;
+}
+
+section li {
+    margin: 0.32em 0;
+}
+
+section li::marker {
+    color: var(--mo-orange);
+}
+
+section strong {
+    color: var(--mo-orange);
+}
+
+section a {
+    color: var(--mo-orange);
+    text-decoration-thickness: 2px;
+    text-underline-offset: 3px;
+}
+
+section blockquote {
+    margin: 0.4em 0;
+    padding-inline-start: 0.8em;
+    border-inline-start: 6px solid var(--mo-orange-soft);
+    color: var(--mo-muted);
+}
+
+section code {
+    background: #f6f3f0;
+    color: var(--mo-ink);
+    border-radius: 4px;
+    padding: 0.05em 0.25em;
+}
+
+section pre {
+    background: #f6f3f0;
+    border-radius: 8px;
+    padding: 0.6em 0.8em;
+    font-size: 26px;
+}
+
+section table th {
+    background: var(--mo-orange);
+    color: #fff;
+}
+
+section header {
+    color: var(--mo-muted);
+    font-size: 20px;
+}
+
+section footer {
+    color: var(--mo-muted);
+    font-size: 18px;
+}
+
+/* Align header and footer with the text. */
+section header,
+section footer {
+    inset-inline-start: 84px;
+}
+
+/* Keep the last line clear of the footer. */
+section:has(footer) {
+    padding-block-end: 96px;
+}
+
+section::after {
+    /* Slide number. */
+    color: var(--mo-orange);
+    font-size: 20px;
+    font-weight: 600;
+}
+
+/* Title slide. */
+section.lead {
+    justify-content: center;
+}
+
+/* An <img> on the title or closing slide is the logo. */
+section.lead img,
+section.thanks img {
+    position: absolute;
+    left: 84px;
+    bottom: 52px;
+    height: 74px;
+    width: auto;
+}
+
+/* Closing slide. */
+section.thanks {
+    justify-content: center;
+}
+
+section.thanks h1 {
+    font-size: 62px;
+}
+
+section.thanks h2 {
+    color: var(--mo-muted);
+    font-size: 32px;
+    font-weight: 400;
+}
+
+section.thanks h2::after {
+    display: none;
+}
+
+section.lead h1 {
+    font-size: 68px;
+}
+
+section.lead h2 {
+    color: var(--mo-muted);
+    font-size: 42px;
+    font-weight: 400;
+}
+
+/* Subtitles on the cover and closing slide: muted, no rule. */
+section.lead h2::after,
+section.lead h3::after {
+    display: none;
+}
+
+section.lead h3,
+section.thanks h3 {
+    color: var(--mo-muted);
+    font-weight: 400;
+}
+
+/* One statement, white on orange. */
+section.statement {
+    justify-content: center;
+    padding-inline-end: 84px;
+    background: var(--mo-orange);
+    color: #fff;
+}
+
+section.statement h1,
+section.statement h2,
+section.statement h3,
+section.statement strong {
+    color: #fff;
+}
+
+section.statement h1::after,
+section.statement h2::after {
+    background: #fff;
+}
+
+section.statement::after {
+    color: #fff;
+}

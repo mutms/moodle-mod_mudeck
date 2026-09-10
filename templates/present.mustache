@@ -1,0 +1,61 @@
+{{!
+    This file is part of MuTMS suite of plugins for Moodle™ LMS.
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+}}
+{{!
+    @template mod_mudeck/present
+
+    Slide deck presentation page.
+
+    Context variables required for this template:
+    * partsjson - JSON encoded list of parts, each with its Markdown and theme
+    * themecssjson - JSON encoded map of theme name to CSS shipped with the plugin
+    * exiturljson - JSON encoded URL back to the welcome page
+    * labelsjson - JSON encoded labels for the presentation controls
+    * syncjson - JSON encoded {url, sesskey} for device sync, or null when it is off
+    * reachedendjson - JSON encoded {url, sesskey} to report the last slide for completion, or null
+    * notesjson - JSON encoded true when the speaker notes may be toggled on
+    * startslidejson - JSON encoded slide to open on, or null for the first
+
+    Example context (json):
+    {
+        "partsjson": "[]",
+        "themecssjson": "{}",
+        "exiturljson": "\"/mod/mudeck/view.php?id=1\"",
+        "labelsjson": "{}",
+        "syncjson": "null",
+        "reachedendjson": "null",
+        "notesjson": "false",
+        "startslidejson": "null"
+    }
+}}
+{{#react}}
+{
+    "component": "@moodle/lms/mod_mudeck/viewer",
+    "props": {
+        "parts": {{{partsjson}}},
+        "themecss": {{{themecssjson}}},
+        "exiturl": {{{exiturljson}}},
+        "labels": {{{labelsjson}}},
+        "sync": {{{syncjson}}},
+        "reachedend": {{{reachedendjson}}},
+        "notes": {{{notesjson}}},
+        "startslide": {{{startslidejson}}}
+    },
+    "id": "mudeck-viewer",
+    "class": "mudeck-present"
+}
+<p>{{#str}}loading, mod_mudeck{{/str}}</p>
+{{/react}}

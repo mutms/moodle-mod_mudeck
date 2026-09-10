@@ -1,0 +1,99 @@
+<?php
+// This file is part of MuTMS suite of plugins for Moodle™ LMS.
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+// phpcs:disable moodle.Files.BoilerplateComment.CommentEndedTooSoon
+
+/**
+ * The whole presentation on paper, notes and all.
+ *
+ * @package    mod_mudeck
+ * @copyright  2026 Petr Skoda
+ * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
+use mod_mudeck\local\media;
+use mod_mudeck\local\notes;
+use mod_mudeck\local\part;
+use mod_mudeck\local\theme;
+
+/** @var moodle_database $DB */
+/** @var moodle_page $PAGE */
+/** @var core_renderer $OUTPUT */
+
+require(__DIR__ . '/../../config.php');
+
+$id = required_param('id', PARAM_INT);
+
+$cm = get_coursemodule_from_id('mudeck', $id, 0, false, MUST_EXIST);
+$course = $DB->get_record('course', ['id' => $cm->course], '*', MUST_EXIST);
+$mudeck = $DB->get_record('mudeck', ['id' => $cm->instance], '*', MUST_EXIST);
+$context = context_module::instance($cm->id);
+
+require_course_login($course, true, $cm);
+require_capability('mod/mudeck:present', $context);
+
+$viewurl = new \core\url('/mod/mudeck/view.php', ['id' => $cm->id]);
+
+$PAGE->set_context($context);
+$PAGE->set_url(new \core\url('/mod/mudeck/print.php', ['id' => $cm->id]));
+$PAGE->set_title($mudeck->name);
+$PAGE->set_pagelayout('embedded');
+$PAGE->set_show_navigation_footer(false);
+$PAGE->activityheader->disable();
+
+$partsdata = [];
+foreach (part::get_playable($mudeck->id) as $onepart) {
+    $partsdata[] = [
+        'id' => (int)$onepart->id,
+        'hash' => $onepart->contenthash,
+        // A handout carries no notes, whoever prints it.
+        'markdown' => media::rewrite(notes::strip($onepart->content), $context, (int)$onepart->id),
+        // A theme that no longer exists falls back to the site's, never to nothing.
+        'theme' => theme::resolve($mudeck->theme),
+    ];
+}
+
+$modinfo = get_fast_modinfo($course);
+$cminfo = $modinfo->get_cm($cm->id);
+$section = $cminfo->get_section_info();
+$activityicon = \core_course\output\activity_icon::from_cm_info($cminfo);
+
+echo $OUTPUT->header();
+
+echo $OUTPUT->render_from_template('mod_mudeck/print', [
+    'deckname' => format_string($mudeck->name),
+    'activityicon' => $OUTPUT->render($activityicon),
+    'deckurl' => $viewurl->out(false),
+    'coursename' => format_string($course->fullname),
+    'courseurl' => (new \core\url('/course/view.php', ['id' => $course->id]))->out(false),
+    'sectionname' => $section ? format_string(get_section_name($course, $section)) : '',
+    'sectionurl' => $section ? course_get_url($course, $section->section)->out(false) : '',
+    'intro' => $mudeck->intro ? format_module_intro('mudeck', $mudeck, $cm->id) : '',
+    'printed' => userdate(time()),
+    'partsjson' => json_encode($partsdata),
+    'themecssjson' => json_encode(theme::get_custom_css(new \core\url('/mod/mudeck'))),
+    'exiturljson' => json_encode($viewurl->out(false)),
+    // The handout: slides only, never the notes.
+    'notesjson' => json_encode(false),
+    'labelsjson' => json_encode([
+        'print' => get_string('print_slides', 'mod_mudeck'),
+        'exit' => get_string('back', 'mod_mudeck'),
+        'notes' => get_string('notes_heading', 'mod_mudeck'),
+        'nonotes' => get_string('notes_none', 'mod_mudeck'),
+    ]),
+]);
+
+echo $OUTPUT->footer();

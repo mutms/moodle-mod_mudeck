@@ -1,0 +1,133 @@
+{{!
+    This file is part of MuTMS suite of plugins for Moodle™ LMS.
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+}}
+{{!
+    @template mod_mudeck/sessions
+
+    Own device sync sessions, running ones first.
+
+    Context variables required for this template:
+    * hassessions - true when there is any session at all
+    * hasrunning - true when a presentation is running right now
+    * running - sessions still worth following, each with started and startedat,
+      lastseen and lastseenat (the relative time and the date behind it), where,
+      deleteurl and notesurl
+    * hasfinished - true when there are sessions that are over
+    * finished - the same shape, for sessions nothing can follow any more
+    * deletefinishedurl - URL that deletes every finished session
+
+    Example context (json):
+    {
+        "hassessions": true,
+        "hasrunning": true,
+        "running": [
+            {
+                "started": "26 mins ago",
+                "startedat": "7 September 2026, 9:15 AM",
+                "lastseen": "1 min ago",
+                "lastseenat": "7 September 2026, 9:41 AM",
+                "where": "What we ship today",
+                "deleteurl": "#",
+                "notesurl": "#"
+            }
+        ],
+        "hasfinished": true,
+        "finished": [
+            {
+                "started": "1 day ago",
+                "startedat": "6 September 2026, 2:00 PM",
+                "lastseen": "23 hours ago",
+                "lastseenat": "6 September 2026, 2:45 PM",
+                "where": "Thank you",
+                "deleteurl": "#",
+                "notesurl": ""
+            }
+        ],
+        "deletefinishedurl": "#"
+    }
+}}
+<div class="mudeck-sessions-page">
+    <p class="text-muted">{{#str}}sessions_intro, mod_mudeck{{/str}}</p>
+
+    {{#hasrunning}}
+        <h3>{{#str}}sessions_running, mod_mudeck{{/str}}</h3>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th scope="col">{{#str}}session_started, mod_mudeck{{/str}}</th>
+                    <th scope="col">{{#str}}session_lastseen, mod_mudeck{{/str}}</th>
+                    <th scope="col">{{#str}}session_where, mod_mudeck{{/str}}</th>
+                    <th scope="col"><span class="sr-only visually-hidden">{{#str}}actions{{/str}}</span></th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#running}}
+                    <tr>
+                        <td title="{{startedat}}">{{started}}</td>
+                        <td title="{{lastseenat}}">{{lastseen}}</td>
+                        <td>{{where}}</td>
+                        <td class="text-end">
+                            {{#notesurl}}
+                                <a href="{{notesurl}}" class="btn btn-sm btn-secondary">
+                                    {{#str}}session_notes, mod_mudeck{{/str}}
+                                </a>
+                            {{/notesurl}}
+                            <a href="{{deleteurl}}" class="btn btn-sm btn-outline-danger">
+                                {{#str}}session_delete, mod_mudeck{{/str}}
+                            </a>
+                        </td>
+                    </tr>
+                {{/running}}
+            </tbody>
+        </table>
+    {{/hasrunning}}
+
+    {{^hasrunning}}
+        <div class="alert alert-info" role="status">{{#str}}sessions_none, mod_mudeck{{/str}}</div>
+    {{/hasrunning}}
+
+    {{#hasfinished}}
+        <h3 class="mt-4">{{#str}}sessions_finished, mod_mudeck{{/str}}</h3>
+        <p class="text-muted">{{#str}}sessions_finished_help, mod_mudeck{{/str}}</p>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th scope="col">{{#str}}session_started, mod_mudeck{{/str}}</th>
+                    <th scope="col">{{#str}}session_ended, mod_mudeck{{/str}}</th>
+                    <th scope="col">{{#str}}session_lastslide, mod_mudeck{{/str}}</th>
+                    <th scope="col"><span class="sr-only visually-hidden">{{#str}}actions{{/str}}</span></th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#finished}}
+                    <tr>
+                        <td title="{{startedat}}">{{started}}</td>
+                        <td title="{{lastseenat}}">{{lastseen}}</td>
+                        <td>{{where}}</td>
+                        <td class="text-end">
+                            <a href="{{deleteurl}}" class="btn btn-sm btn-outline-danger">
+                                {{#str}}session_delete, mod_mudeck{{/str}}
+                            </a>
+                        </td>
+                    </tr>
+                {{/finished}}
+            </tbody>
+        </table>
+        <a href="{{deletefinishedurl}}" class="btn btn-secondary">
+            {{#str}}sessions_delete_finished, mod_mudeck{{/str}}
+        </a>
+    {{/hasfinished}}
+</div>

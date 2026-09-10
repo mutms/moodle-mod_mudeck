@@ -1,0 +1,52 @@
+{{!
+    This file is part of MuTMS suite of plugins for Moodle™ LMS.
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+}}
+{{!
+    @template mod_mudeck/notes
+
+    Speaker notes of a presentation running on another device.
+
+    Context variables required for this template:
+    * partsjson - JSON encoded parts, each with markdown and theme
+    * themecssjson - JSON encoded CSS of the plugin themes, keyed by name
+    * pollurljson - JSON encoded REST URL reporting where the presentation is
+    * exiturljson - JSON encoded URL back to the sessions list
+    * labelsjson - JSON encoded labels for the notes view
+
+    Example context (json):
+    {
+        "partsjson": "[]",
+        "themecssjson": "{}",
+        "pollurljson": "\"/api/rest/v2/mod_mudeck/session/1\"",
+        "exiturljson": "\"/mod/mudeck/sessions.php?cmid=1\"",
+        "labelsjson": "{}"
+    }
+}}
+{{#react}}
+{
+    "component": "@moodle/lms/mod_mudeck/notes",
+    "props": {
+        "parts": {{{partsjson}}},
+        "themecss": {{{themecssjson}}},
+        "pollurl": {{{pollurljson}}},
+        "exiturl": {{{exiturljson}}},
+        "labels": {{{labelsjson}}}
+    },
+    "id": "mudeck-notes",
+    "class": "mudeck-notes-page"
+}
+{{#str}}loading, mod_mudeck{{/str}}
+{{/react}}

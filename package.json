@@ -1,0 +1,13 @@
+{
+    "name": "mod_mudeck",
+    "private": true,
+    "description": "Markdown slide deck activity module for Moodle",
+    "license": "GPL-3.0-or-later",
+    "scripts": {
+        "build:vendor": "node js/vendor/build/build.mjs"
+    },
+    "dependencies": {
+        "@marp-team/marp-core": "^4.1.0",
+        "dompurify": "^3.2.0"
+    }
+}

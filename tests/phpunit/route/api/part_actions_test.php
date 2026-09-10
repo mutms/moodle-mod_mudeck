@@ -1,0 +1,186 @@
+<?php
+// This file is part of MuTMS suite of plugins for Moodle™ LMS.
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+// phpcs:disable moodle.Files.BoilerplateComment.CommentEndedTooSoon
+
+// phpcs:disable moodle.Commenting.DocblockDescription.Missing
+
+namespace mod_mudeck\phpunit\route\api;
+
+use core\tests\router\route_testcase;
+use GuzzleHttp\Psr7\Utils;
+use mod_mudeck\local\part;
+use mod_mudeck\route\api\part_actions;
+
+/**
+ * Overview REST route test - reordering and deleting a part.
+ *
+ * @package    mod_mudeck
+ * @copyright  2026 Petr Skoda
+ * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ *
+ * @covers \mod_mudeck\route\api\part_actions
+ */
+final class part_actions_test extends route_testcase {
+    /** @var \stdClass the presentation under test */
+    private \stdClass $mudeck;
+    /** @var \stdClass the teacher who may edit */
+    private \stdClass $teacher;
+    /** @var int[] the three parts, in the order they were created */
+    private array $partids = [];
+
+    public function setUp(): void {
+        parent::setUp();
+        $this->resetAfterTest();
+
+        $course = $this->getDataGenerator()->create_course();
+        $this->mudeck = $this->getDataGenerator()->create_module('mudeck', ['course' => $course->id]);
+        $this->teacher = $this->getDataGenerator()->create_and_enrol($course, 'editingteacher');
+
+        $this->setUser($this->teacher);
+        foreach (['One', 'Two', 'Three'] as $name) {
+            $this->partids[] = part::create($this->mudeck, $name);
+        }
+    }
+
+    public function test_a_part_moves_to_the_place_it_is_given(): void {
+        $this->add_class_routes_to_route_loader(part_actions::class);
+
+        // The last part becomes the first.
+        $response = $this->process_api_request(
+            'POST',
+            "/part/{$this->partids[2]}/position",
+            body: Utils::streamFor(json_encode(['sesskey' => sesskey(), 'position' => 1])),
+        );
+
+        $this->assertEquals(200, $response->getStatusCode());
+        $this->assertSame(
+            [$this->partids[2], $this->partids[0], $this->partids[1]],
+            $this->current_order()
+        );
+        // What the browser is told matches what was stored.
+        $payload = json_decode((string)$response->getBody(), true);
+        $this->assertSame($this->current_order(), $payload['order']);
+    }
+
+    public function test_a_position_outside_the_list_changes_nothing(): void {
+        $this->add_class_routes_to_route_loader(part_actions::class);
+
+        $this->process_api_request(
+            'POST',
+            "/part/{$this->partids[0]}/position",
+            body: Utils::streamFor(json_encode(['sesskey' => sesskey(), 'position' => 9])),
+        );
+
+        $this->assertSame($this->partids, $this->current_order());
+    }
+
+    public function test_somebody_who_may_not_edit_cannot_reorder(): void {
+        $student = $this->getDataGenerator()->create_and_enrol(
+            get_course($this->mudeck->course),
+            'student'
+        );
+        $this->setUser($student);
+        $this->add_class_routes_to_route_loader(part_actions::class);
+
+        $response = $this->process_api_request(
+            'POST',
+            "/part/{$this->partids[2]}/position",
+            body: Utils::streamFor(json_encode(['sesskey' => sesskey(), 'position' => 1])),
+        );
+
+        $this->assertGreaterThanOrEqual(400, $response->getStatusCode());
+        $this->assertSame($this->partids, $this->current_order());
+    }
+
+    public function test_a_move_without_a_sesskey_is_refused(): void {
+        $this->add_class_routes_to_route_loader(part_actions::class);
+
+        $response = $this->process_api_request(
+            'POST',
+            "/part/{$this->partids[2]}/position",
+            body: Utils::streamFor(json_encode(['position' => 1])),
+        );
+
+        $this->assertGreaterThanOrEqual(400, $response->getStatusCode());
+        $this->assertSame($this->partids, $this->current_order());
+    }
+
+    public function test_a_part_can_be_deleted(): void {
+        global $DB;
+
+        $this->add_class_routes_to_route_loader(part_actions::class);
+
+        $response = $this->process_api_request(
+            'POST',
+            "/part/{$this->partids[1]}/delete",
+            body: Utils::streamFor(json_encode(['sesskey' => sesskey()])),
+        );
+
+        $this->assertEquals(200, $response->getStatusCode());
+        $this->assertFalse($DB->record_exists('mudeck_part', ['id' => $this->partids[1]]));
+        $this->assertSame([$this->partids[0], $this->partids[2]], $this->current_order());
+        $payload = json_decode((string)$response->getBody(), true);
+        $this->assertSame($this->current_order(), $payload['order']);
+    }
+
+    public function test_somebody_who_may_not_edit_cannot_delete(): void {
+        global $DB;
+
+        $student = $this->getDataGenerator()->create_and_enrol(
+            get_course($this->mudeck->course),
+            'student'
+        );
+        $this->setUser($student);
+        $this->add_class_routes_to_route_loader(part_actions::class);
+
+        $response = $this->process_api_request(
+            'POST',
+            "/part/{$this->partids[1]}/delete",
+            body: Utils::streamFor(json_encode(['sesskey' => sesskey()])),
+        );
+
+        $this->assertGreaterThanOrEqual(400, $response->getStatusCode());
+        $this->assertTrue($DB->record_exists('mudeck_part', ['id' => $this->partids[1]]));
+    }
+
+    public function test_a_delete_without_a_sesskey_is_refused(): void {
+        global $DB;
+
+        $this->add_class_routes_to_route_loader(part_actions::class);
+
+        $response = $this->process_api_request(
+            'POST',
+            "/part/{$this->partids[1]}/delete",
+            body: Utils::streamFor(json_encode([])),
+        );
+
+        $this->assertGreaterThanOrEqual(400, $response->getStatusCode());
+        $this->assertTrue($DB->record_exists('mudeck_part', ['id' => $this->partids[1]]));
+    }
+
+    /**
+     * The part ids as they are ordered now.
+     *
+     * @return int[]
+     */
+    private function current_order(): array {
+        return array_values(array_map(
+            fn($part) => (int)$part->id,
+            part::get_all($this->mudeck->id)
+        ));
+    }
+}

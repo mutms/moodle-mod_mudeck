@@ -1,0 +1,9 @@
+import{useEffect as l,useRef as v,useState as k}from"react";import{filterSlides as y}from"./filters";import{renderParts as N}from"./render";import{jsx as s,jsxs as r}from"react/jsx-runtime";/**
+ * The presentation as a document: every slide with its notes underneath.
+ *
+ * The presenter's copy, meant for the browser's own print. Slides are laid out one to a
+ * page so the notes stay with the slide they belong to.
+ *
+ * @module     mod_mudeck/print
+ * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */function b({parts:c,themecss:d,exiturl:p,labels:i,notes:u}){const a=v(null),[n,f]=k({slides:[],notes:[],css:""});return l(()=>{const{html:t,css:e,notes:o}=N(c??[],d??{}),m=document.createElement("div");m.innerHTML=t,f({slides:Array.from(m.querySelectorAll("section")).map(g=>g.outerHTML),notes:o,css:e})},[c,d]),l(()=>{const t=a.current;if(!t)return;const e=()=>{const o=t.querySelector(".mudeck-print-slide");o&&t.style.setProperty("--mudeck-print-width",String(o.clientWidth))};return e(),y(t),window.addEventListener("resize",e),()=>window.removeEventListener("resize",e)},[n]),r("div",{className:"mudeck-print",children:[s("style",{children:n.css}),r("div",{className:"mudeck-print-actions",children:[s("button",{type:"button",className:"btn btn-primary",onClick:()=>window.print(),children:i.print}),s("a",{href:p,className:"btn btn-secondary",children:i.exit})]}),s("div",{className:"mudeck-print-pages",ref:a,children:n.slides.map((t,e)=>r("div",{className:"mudeck-print-page",children:[s("div",{className:"mudeck-print-slide marpit",dangerouslySetInnerHTML:{__html:t}}),u&&r("div",{className:"mudeck-print-notes",children:[r("h2",{className:"mudeck-print-notes-heading",children:[i.notes," ",s("span",{className:"mudeck-print-number",children:e+1})]}),n.notes[e]?s("pre",{className:"mudeck-print-note",children:n.notes[e]}):s("p",{className:"text-muted",children:i.nonotes})]})]},e))})]})}export{b as default};

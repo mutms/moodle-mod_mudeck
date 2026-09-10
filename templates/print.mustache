@@ -1,0 +1,86 @@
+{{!
+    This file is part of MuTMS suite of plugins for Moodle™ LMS.
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+}}
+{{!
+    @template mod_mudeck/print
+
+    The presentation as a document: every slide on a page, with its notes underneath
+    for the presenter copy.
+
+    Context variables required for this template:
+    * deckname - name of the presentation
+    * activityicon - the activity icon, rendered as the activity page renders it
+    * deckurl - URL of its welcome page
+    * coursename - full course name
+    * courseurl - URL of the course
+    * sectionname - section the activity sits in, may be empty
+    * sectionurl - URL of that section
+    * intro - formatted description, may be empty and may hold pictures
+    * printed - when this copy was printed, formatted
+    * partsjson - JSON encoded parts, each with id, hash, markdown and theme
+    * themecssjson - JSON encoded CSS of the plugin themes, keyed by name
+    * exiturljson - JSON encoded URL back to where the copy was asked for
+    * notesjson - JSON encoded true when the speaker notes go under every slide
+    * labelsjson - JSON encoded labels for the print view
+
+    Example context (json):
+    {
+        "deckname": "Conference talk",
+        "activityicon": "<div class=\"activityiconcontainer\"></div>",
+        "deckurl": "#",
+        "coursename": "Photosynthesis 101",
+        "courseurl": "#",
+        "sectionname": "Week 3",
+        "sectionurl": "#",
+        "intro": "<p>What this is about.</p>",
+        "printed": "7 September 2026, 8:15 PM",
+        "partsjson": "[]",
+        "themecssjson": "{}",
+        "exiturljson": "\"/mod/mudeck/management/overview.php?cmid=1\"",
+        "notesjson": "true",
+        "labelsjson": "{}"
+    }
+}}
+<div class="mudeck-print-cover">
+    {{! The way back, in the order the navigation shows it, then what this is. }}
+    <p class="mudeck-print-where">
+        <a href="{{courseurl}}">{{coursename}}</a>
+        {{#sectionname}} / <a href="{{sectionurl}}">{{sectionname}}</a>{{/sectionname}}
+        / <a href="{{deckurl}}">{{deckname}}</a>
+    </p>
+    <div class="mudeck-print-heading">
+        {{{activityicon}}}
+        <h1 class="mudeck-print-title">{{deckname}}</h1>
+    </div>
+    {{#intro}}<div class="mudeck-print-intro">{{{intro}}}</div>{{/intro}}
+    <p class="text-muted mudeck-print-date">{{#str}}print_date, mod_mudeck, {{printed}}{{/str}}</p>
+</div>
+
+{{#react}}
+{
+    "component": "@moodle/lms/mod_mudeck/print",
+    "props": {
+        "parts": {{{partsjson}}},
+        "themecss": {{{themecssjson}}},
+        "exiturl": {{{exiturljson}}},
+        "notes": {{{notesjson}}},
+        "labels": {{{labelsjson}}}
+    },
+    "id": "mudeck-print",
+    "class": "mudeck-print-page-wrapper"
+}
+{{#str}}loading, mod_mudeck{{/str}}
+{{/react}}

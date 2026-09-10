@@ -1,0 +1,75 @@
+{{!
+    This file is part of MuTMS suite of plugins for Moodle™ LMS.
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+}}
+{{!
+    @template mod_mudeck/view
+
+    Welcome page of a presentation - what it is and how to start it.
+
+    Context variables required for this template:
+    * hasslides - true when there is something to present
+    * presenturl - URL that starts the presentation
+    * canpresent - true when the current user may present
+    * printurl - URL of the printable handout, slides without notes
+    * canedit - true when there are no slides and the current user may write them
+    * caneditone - true when the presentation has exactly one part and may be edited
+    * editurl - URL that opens that one part in the editor
+    * overviewurl - URL of the overview, where parts are added
+    * importurl - URL of the import page, for slides written elsewhere
+
+    Example context (json):
+    {
+        "hasslides": true,
+        "presenturl": "#",
+        "canpresent": true,
+        "printurl": "#",
+        "canedit": false,
+        "caneditone": true,
+        "editurl": "#",
+        "overviewurl": "#",
+        "importurl": "#"
+    }
+}}
+<div class="mudeck-welcome">
+    {{^hasslides}}
+        <div class="alert alert-info" role="status">{{#str}}nopartcontent, mod_mudeck{{/str}}</div>
+    {{/hasslides}}
+
+    <div class="mudeck-welcome-actions">
+        {{#canpresent}}
+            <a href="{{presenturl}}" class="btn btn-primary btn-lg mudeck-welcome-present">
+                {{#str}}present, mod_mudeck{{/str}}
+            </a>
+            <a href="{{printurl}}" class="btn btn-secondary btn-lg" title="{{#str}}print_slides_help, mod_mudeck{{/str}}">
+                {{#str}}print_slides, mod_mudeck{{/str}}
+            </a>
+        {{/canpresent}}
+        {{#caneditone}}
+            <a href="{{editurl}}" class="btn btn-secondary btn-lg">
+                {{#str}}part_edit, mod_mudeck{{/str}}
+            </a>
+        {{/caneditone}}
+        {{#canedit}}
+            <a href="{{overviewurl}}" class="btn btn-primary btn-lg">
+                {{#str}}part_add, mod_mudeck{{/str}}
+            </a>
+            {{! A deck written in another editor arrives whole, which is the quicker start. }}
+            <a href="{{importurl}}" class="btn btn-secondary btn-lg">
+                {{#str}}import, mod_mudeck{{/str}}
+            </a>
+        {{/canedit}}
+    </div>
+</div>

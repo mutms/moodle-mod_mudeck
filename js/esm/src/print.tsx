@@ -1,0 +1,117 @@
+// This file is part of MuTMS suite of plugins for Moodle™ LMS.
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+/**
+ * The presentation as a document: every slide with its notes underneath.
+ *
+ * The presenter's copy, meant for the browser's own print. Slides are laid out one to a
+ * page so the notes stay with the slide they belong to.
+ *
+ * @module     mod_mudeck/print
+ * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
+import {useEffect, useRef, useState} from 'react';
+import {filterSlides} from './filters';
+import {renderParts, type PartSource} from './render';
+
+type Labels = {
+    print: string;
+    exit: string;
+    notes: string;
+    nonotes: string;
+};
+
+type PrintProps = {
+    parts: PartSource[];
+    themecss?: Record<string, string>;
+    exiturl: string;
+    labels: Labels;
+    /** Put the speaker notes under every slide - the presenter copy rather than the handout. */
+    notes?: boolean;
+};
+
+export default function Print({parts, themecss, exiturl, labels, notes}: PrintProps) {
+    const pagesref = useRef<HTMLDivElement>(null);
+    const [deck, setDeck] = useState<{slides: string[]; notes: string[]; css: string}>({
+        slides: [],
+        notes: [],
+        css: '',
+    });
+
+    useEffect(() => {
+        const {html, css, notes} = renderParts(parts ?? [], themecss ?? {});
+        const holder = document.createElement('div');
+        holder.innerHTML = html;
+        setDeck({
+            slides: Array.from(holder.querySelectorAll('section')).map((one) => one.outerHTML),
+            notes,
+            css,
+        });
+    }, [parts, themecss]);
+
+    // Marp lays a slide out at a fixed pixel size, so each one is scaled to the page width.
+    useEffect(() => {
+        const node = pagesref.current;
+        if (!node) {
+            return undefined;
+        }
+        const fit = () => {
+            const slide = node.querySelector<HTMLElement>('.mudeck-print-slide');
+            if (slide) {
+                node.style.setProperty('--mudeck-print-width', String(slide.clientWidth));
+            }
+        };
+        fit();
+        filterSlides(node);
+        window.addEventListener('resize', fit);
+        return () => window.removeEventListener('resize', fit);
+    }, [deck]);
+
+    return (
+        <div className="mudeck-print">
+            <style>{deck.css}</style>
+
+            <div className="mudeck-print-actions">
+                <button type="button" className="btn btn-primary" onClick={() => window.print()}>
+                    {labels.print}
+                </button>
+                <a href={exiturl} className="btn btn-secondary">{labels.exit}</a>
+            </div>
+
+            <div className="mudeck-print-pages" ref={pagesref}>
+                {deck.slides.map((slide, index) => (
+                    <div className="mudeck-print-page" key={index}>
+                        {/* Marp scopes its CSS to "div.marpit > section", so a lone slide keeps that parent. */}
+                        <div
+                            className="mudeck-print-slide marpit"
+                            dangerouslySetInnerHTML={{__html: slide}}
+                        />
+                        {notes && (
+                            <div className="mudeck-print-notes">
+                                <h2 className="mudeck-print-notes-heading">
+                                    {labels.notes} <span className="mudeck-print-number">{index + 1}</span>
+                                </h2>
+                                {deck.notes[index]
+                                    ? <pre className="mudeck-print-note">{deck.notes[index]}</pre>
+                                    : <p className="text-muted">{labels.nonotes}</p>}
+                            </div>
+                        )}
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+}

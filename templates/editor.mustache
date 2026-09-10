@@ -1,0 +1,69 @@
+{{!
+    This file is part of MuTMS suite of plugins for Moodle™ LMS.
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+}}
+{{!
+    @template mod_mudeck/editor
+
+    The part editor: the Moodle form with the slides drawn beside it.
+
+    Context variables required for this template:
+    * form - the rendered Moodle form, which stays the only copy of the text
+    * themecssjson - JSON encoded CSS of the plugin themes, keyed by name
+    * themejson - JSON encoded theme name of the presentation
+    * imagesurljson - JSON encoded REST url listing the pictures in the form
+    * mediabasejson - JSON encoded url the form's draft files are served from
+    * labelsjson - JSON encoded labels for the preview
+    * helpjson - JSON encoded help texts, already rendered, keyed markdown and media
+
+    Example context (json):
+    {
+        "form": "<form></form>",
+        "themecssjson": "{}",
+        "themejson": "\"default\"",
+        "imagesurljson": "\"/api/rest/v2/mod_mudeck/draft/0/images\"",
+        "mediabasejson": "\"/draftfile.php/5/user/draft/0/\"",
+        "labelsjson": "{}",
+        "helpjson": "{}"
+    }
+}}
+<div class="mudeck-editor">
+    {{! The title, with a slot beside it the editor fills with the full screen button.
+        Server rendered, so the page still says what it is if the editor never mounts. }}
+    <h2 class="mudeck-editor-title">
+        {{#str}}part_edit, mod_mudeck{{/str}}
+        <span class="mudeck-editor-tools" data-region="mudeck-editor-tools"></span>
+    </h2>
+
+    <div class="mudeck-editor-form">
+        {{{form}}}
+    </div>
+
+    {{#react}}
+{
+    "component": "@moodle/lms/mod_mudeck/editor",
+    "props": {
+        "themecss": {{{themecssjson}}},
+        "theme": {{{themejson}}},
+        "imagesurl": {{{imagesurljson}}},
+        "mediabase": {{{mediabasejson}}},
+        "labels": {{{labelsjson}}},
+        "help": {{{helpjson}}}
+    },
+    "id": "mudeck-editor",
+    "class": "mudeck-editor-mount"
+}
+    {{/react}}
+</div>

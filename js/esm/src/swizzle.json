@@ -1,0 +1,22 @@
+{
+  "editor": {
+    "eject": "risky",
+    "wrap": "risky"
+  },
+  "notes": {
+    "eject": "risky",
+    "wrap": "risky"
+  },
+  "overview": {
+    "eject": "risky",
+    "wrap": "risky"
+  },
+  "print": {
+    "eject": "risky",
+    "wrap": "risky"
+  },
+  "viewer": {
+    "eject": "risky",
+    "wrap": "risky"
+  }
+}

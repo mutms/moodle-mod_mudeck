@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<libraries>
+  <!-- Both libraries below are pre-bundled into the single file js/vendor/marp-core.js,
+       together with their own dependencies (markdown-it, marpit, postcss, highlight.js
+       and the rest, all MIT or BSD). Versions are pinned in npm-shrinkwrap.json and the
+       bundle is rebuilt with "npm run build:vendor" - see js/vendor/build/build.mjs. -->
+  <library>
+    <location>js/vendor/marp-core.js</location>
+    <name>Marp Core</name>
+    <description>The core of Marp converter, turning Markdown into slide decks in the browser.</description>
+    <version>4.4.0</version>
+    <license>MIT</license>
+    <repository>https://github.com/marp-team/marp-core</repository>
+  </library>
+  <library>
+    <location>js/vendor/marp-core.js</location>
+    <name>DOMPurify</name>
+    <description>XSS sanitizer for HTML, used on everything Marp renders before it reaches the page.</description>
+    <version>3.4.15</version>
+    <license>MPL</license>
+    <licenseversion>2.0</licenseversion>
+    <repository>https://github.com/cure53/DOMPurify</repository>
+  </library>
+</libraries>

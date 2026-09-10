@@ -1,0 +1,76 @@
+{{!
+    This file is part of MuTMS suite of plugins for Moodle™ LMS.
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+}}
+{{!
+    @template mod_mudeck/themes
+
+    The themes this site added, beside the ones shipped with the plugin.
+
+    Context variables required for this template:
+    * hasthemes - true when the site has added any
+    * themes - each with name, shortname, used, editurl and deleteurl
+    * addurl - URL of the form that adds one
+
+    Example context (json):
+    {
+        "hasthemes": true,
+        "themes": [
+            {
+                "name": "Orange",
+                "shortname": "orange",
+                "used": 3,
+                "editurl": "#",
+                "deleteurl": "#"
+            }
+        ],
+        "addurl": "#"
+    }
+}}
+<div class="mudeck-themes">
+    <p class="text-muted">{{#str}}theme_manage_intro, mod_mudeck{{/str}}</p>
+
+    {{#hasthemes}}
+        <table class="table">
+            <thead>
+                <tr>
+                    <th scope="col">{{#str}}theme_name, mod_mudeck{{/str}}</th>
+                    <th scope="col">{{#str}}theme_shortname, mod_mudeck{{/str}}</th>
+                    <th scope="col">{{#str}}theme_used, mod_mudeck{{/str}}</th>
+                    <th scope="col"><span class="sr-only visually-hidden">{{#str}}actions{{/str}}</span></th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#themes}}
+                    <tr>
+                        <td>{{name}}</td>
+                        <td><code>{{shortname}}</code></td>
+                        <td>{{used}}</td>
+                        <td class="text-end">
+                            <a href="{{editurl}}" class="btn btn-sm btn-secondary">{{#str}}edit{{/str}}</a>
+                            <a href="{{deleteurl}}" class="btn btn-sm btn-outline-danger">{{#str}}delete{{/str}}</a>
+                        </td>
+                    </tr>
+                {{/themes}}
+            </tbody>
+        </table>
+    {{/hasthemes}}
+
+    {{^hasthemes}}
+        <div class="alert alert-info" role="status">{{#str}}theme_none, mod_mudeck{{/str}}</div>
+    {{/hasthemes}}
+
+    <a href="{{addurl}}" class="btn btn-primary">{{#str}}theme_add, mod_mudeck{{/str}}</a>
+</div>

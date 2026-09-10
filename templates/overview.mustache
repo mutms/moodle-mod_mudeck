@@ -1,0 +1,111 @@
+{{!
+    This file is part of MuTMS suite of plugins for Moodle™ LMS.
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+}}
+{{!
+    @template mod_mudeck/overview
+
+    The parts a presentation is made of, and what can be done with them.
+
+    Context variables required for this template:
+    * parts - list of parts, each with name, empty, editurl, previewurl, exporturl,
+      upurl, downurl, deleteurl
+    * hasparts - true when there is at least one part
+    * addurl - URL that adds an empty part
+    * importurl - URL of the import page
+    * printurl - URL of the printable copy with notes, empty without full access
+    * backurl - URL back to the welcome page
+    * partsjson - JSON encoded parts for the slide view, each with id, name, markdown and action URLs
+    * themecssjson - JSON encoded CSS of the plugin themes, keyed by name
+    * labelsjson - JSON encoded labels for the list of parts
+    * moveurljson - JSON encoded REST URL a part reports its new position to
+    * sesskeyjson - JSON encoded session key for that call
+
+    Example context (json):
+    {
+        "parts": [
+            {"name": "Introduction", "empty": false, "editurl": "#", "previewurl": "#",
+             "exporturl": "#", "upurl": "", "downurl": "#", "deleteurl": "#"}
+        ],
+        "hasparts": true,
+        "addurl": "#",
+        "importurl": "#",
+        "printurl": "#",
+        "backurl": "#",
+        "partsjson": "[]",
+        "themecssjson": "{}",
+        "labelsjson": "{}",
+        "moveurljson": "\"/api/rest/v2/mod_mudeck/part/\"",
+        "sesskeyjson": "\"abc123\""
+    }
+}}
+<div class="mudeck-overview-page">
+    {{#react}}
+{
+    "component": "@moodle/lms/mod_mudeck/overview",
+    "props": {
+        "parts": {{{partsjson}}},
+        "themecss": {{{themecssjson}}},
+        "labels": {{{labelsjson}}},
+        "moveurl": {{{moveurljson}}},
+        "sesskey": {{{sesskeyjson}}}
+    },
+    "id": "mudeck-overview",
+    "class": "mudeck-overview-parts"
+}
+    {{#hasparts}}
+        <table class="table">
+            <thead>
+                <tr>
+                    <th scope="col">{{#str}}part_name, mod_mudeck{{/str}}</th>
+                    <th scope="col"><span class="sr-only visually-hidden">{{#str}}actions{{/str}}</span></th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#parts}}
+                    <tr>
+                        <td>{{name}}</td>
+                        <td class="text-end">
+                            <a href="{{editurl}}" class="btn btn-sm btn-secondary">{{#str}}part_edit, mod_mudeck{{/str}}</a>
+                            {{#previewurl}}
+                                <a href="{{previewurl}}" class="btn btn-sm btn-secondary">{{#str}}part_preview, mod_mudeck{{/str}}</a>
+                            {{/previewurl}}
+                            <a href="{{exporturl}}" class="btn btn-sm btn-secondary">{{#str}}export, mod_mudeck{{/str}}</a>
+                            {{#upurl}}<a href="{{upurl}}" class="btn btn-sm btn-secondary" title="{{#str}}moveup{{/str}}">&uarr;</a>{{/upurl}}
+                            {{#downurl}}<a href="{{downurl}}" class="btn btn-sm btn-secondary" title="{{#str}}movedown{{/str}}">&darr;</a>{{/downurl}}
+                            <a href="{{deleteurl}}" class="btn btn-sm btn-outline-danger">{{#str}}delete{{/str}}</a>
+                        </td>
+                    </tr>
+                {{/parts}}
+            </tbody>
+        </table>
+    {{/hasparts}}
+    {{^hasparts}}
+        <div class="alert alert-info" role="status">{{#str}}nopartcontent, mod_mudeck{{/str}}</div>
+    {{/hasparts}}
+
+    {{/react}}
+
+    <div class="mudeck-welcome-actions">
+        <a href="{{addurl}}" class="btn btn-primary">{{#str}}part_add, mod_mudeck{{/str}}</a>
+        <a href="{{importurl}}" class="btn btn-secondary">{{#str}}import, mod_mudeck{{/str}}</a>
+        {{#printurl}}
+            <a href="{{printurl}}" class="btn btn-secondary" title="{{#str}}print_help, mod_mudeck{{/str}}">
+                {{#str}}print, mod_mudeck{{/str}}
+            </a>
+        {{/printurl}}
+        <a href="{{backurl}}" class="btn btn-link">{{#str}}back, mod_mudeck{{/str}}</a>
+    </div>
+</div>

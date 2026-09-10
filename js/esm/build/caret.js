@@ -1,0 +1,10 @@
+/**
+ * Where a text area is drawing its cursor.
+ *
+ * A text area keeps that to itself, so the only way to find out is to lay the same text
+ * out again in an element that can be measured, and look at where the next character
+ * would land.
+ *
+ * @module     mod_mudeck/caret
+ * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */const d=["font-family","font-size","font-weight","font-style","font-variant","letter-spacing","line-height","text-indent","text-transform","word-spacing","tab-size","padding-top","padding-right","padding-bottom","padding-left"];function a(e,i){const o=window.getComputedStyle(e),t=document.createElement("div");d.forEach(s=>t.style.setProperty(s,o.getPropertyValue(s))),t.style.position="absolute",t.style.top="0",t.style.left="-9999px",t.style.visibility="hidden",t.style.whiteSpace="pre-wrap",t.style.overflowWrap="break-word",t.style.boxSizing="content-box";const p=e.clientWidth-parseFloat(o.paddingLeft||"0")-parseFloat(o.paddingRight||"0");t.style.width=`${Math.max(0,p)}px`,t.textContent=e.value.slice(0,i);const n=document.createElement("span");n.textContent=e.value.slice(i)||".",t.appendChild(n),document.body.appendChild(t);const l=e.getBoundingClientRect(),r={left:l.left+parseFloat(o.borderLeftWidth||"0")+n.offsetLeft-e.scrollLeft,top:l.top+parseFloat(o.borderTopWidth||"0")+n.offsetTop-e.scrollTop,height:parseFloat(o.lineHeight||"0")||parseFloat(o.fontSize||"16")*1.2};return t.remove(),r}export{a as caretPoint};

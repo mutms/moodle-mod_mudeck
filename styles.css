@@ -1,0 +1,743 @@
+/* Slide deck presentation. */
+
+/* No page scrollbar behind the fixed deck. */
+.mudeck-present-page,
+.mudeck-present-page body {
+    overflow: hidden;
+}
+
+.mudeck-deck {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    background: #000;
+    overflow: hidden;
+}
+
+.mudeck-deck:fullscreen {
+    height: 100%;
+}
+
+.mudeck-slides {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* Only horizontal drags are ours. */
+    touch-action: pan-y;
+}
+
+/* Marp renders at a fixed size; presenter.js sets the scale. */
+.mudeck-slides section {
+    width: var(--mudeck-slide-width, 1280px);
+    height: var(--mudeck-slide-height, 720px);
+    transform: scale(var(--mudeck-scale, 1));
+    transform-origin: center center;
+    flex: 0 0 auto;
+}
+
+.mudeck-chrome {
+    position: absolute;
+    inset-inline: 0;
+    bottom: 0;
+    z-index: 5;
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    justify-content: center;
+    padding: 0.75rem;
+    background: rgba(0, 0, 0, 0.35);
+    transition: opacity 0.3s ease;
+}
+
+.mudeck-chrome-hidden .mudeck-chrome {
+    opacity: 0;
+    /* Hidden controls must not catch clicks meant for the slide. */
+    pointer-events: none;
+}
+
+/* Keep controls visible for keyboard users. */
+.mudeck-chrome-hidden .mudeck-chrome:focus-within {
+    opacity: 1;
+}
+
+.mudeck-counter {
+    min-width: 5rem;
+    text-align: center;
+    color: #fff;
+    font-variant-numeric: tabular-nums;
+}
+
+/* Slide overview, opened from the counter. */
+.mudeck-overview {
+    position: absolute;
+    inset-inline: 0;
+    bottom: 4rem;
+    z-index: 6;
+    max-height: 50vh;
+    overflow-y: auto;
+    padding: 0.5rem;
+    background: rgba(0, 0, 0, 0.85);
+}
+
+.mudeck-overview .mudeck-overview-list {
+    margin: 0 auto;
+    padding: 0;
+    max-width: 40rem;
+    list-style: none;
+}
+
+/* Override theme button styles. */
+.mudeck-overview .mudeck-overview-item {
+    display: flex;
+    gap: 0.75rem;
+    align-items: baseline;
+    width: 100%;
+    padding: 0.35rem 0.75rem;
+    text-align: start;
+    text-decoration: none;
+    color: #fff;
+    border-radius: 0.25rem;
+}
+
+.mudeck-overview .mudeck-overview-item.active,
+.mudeck-overview .mudeck-overview-item:hover,
+.mudeck-overview .mudeck-overview-item:focus {
+    background: rgba(255, 255, 255, 0.18);
+    color: #fff;
+    text-decoration: none;
+}
+
+.mudeck-overview .mudeck-overview-number {
+    flex: 0 0 2rem;
+    opacity: 0.7;
+    font-variant-numeric: tabular-nums;
+}
+
+.mudeck-overview .mudeck-overview-title {
+    flex: 1 1 auto;
+}
+
+/* Focus is set programmatically; no ring. */
+.mudeck-slides:focus {
+    outline: none;
+}
+
+/* Welcome page. */
+.mudeck-welcome-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+}
+
+.mudeck-welcome-count {
+    margin-bottom: 0;
+}
+
+/* Speaker notes on a second device. */
+.mudeck-notes {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Current slide with neighbours on top, notes full width below. */
+.mudeck-notes-body {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
+    padding: 0 1.5rem 4rem;
+}
+
+.mudeck-notes-stage {
+    display: flex;
+    flex: 1 1 70%;
+    gap: 1rem;
+    align-items: center;
+    justify-content: center;
+    min-height: 0;
+    padding: 0.75rem 0;
+}
+
+/* Previous and next slide, dimmed. */
+.mudeck-notes-neighbour {
+    flex: 0 0 auto;
+    opacity: 0.55;
+}
+
+.mudeck-notes-text {
+    flex: 1 1 30%;
+    min-height: 0;
+    overflow: auto;
+}
+
+.mudeck-notes-heading {
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    opacity: 0.7;
+}
+
+/* Plain text notes keep their line breaks. */
+.mudeck-notes-note {
+    font-size: 1.5rem;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    font-family: inherit;
+}
+
+.mudeck-notes-slide {
+    flex: 0 0 34%;
+}
+
+/* Marp renders at a fixed size; notes.js sets the scale. */
+.mudeck-notes-preview {
+    overflow: hidden;
+    width: var(--mudeck-width, 100%);
+    height: calc(var(--mudeck-width, 640px) * 720 / 1280);
+}
+
+.mudeck-notes-preview section {
+    transform: scale(var(--mudeck-scale, 1));
+    transform-origin: top left;
+}
+
+/* Nothing to fade over here. */
+.mudeck-notes-chrome {
+    opacity: 1;
+}
+
+/* Elapsed time, readable from a distance. */
+.mudeck-notes-clock {
+    color: #fff;
+    font-size: 1.75rem;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+    padding-inline-end: 0.75rem;
+}
+
+@media (max-width: 720px) {
+    .mudeck-notes-stage {
+        flex: 0 0 auto;
+    }
+}
+
+/* Notes panel in preview mode. */
+.mudeck-slide-notes {
+    position: absolute;
+    inset-inline: 0;
+    bottom: 3.5rem;
+    z-index: 6;
+    max-height: 40%;
+    overflow: auto;
+    padding: 1rem 1.5rem;
+    background: rgba(0, 0, 0, 0.75);
+    color: #fff;
+}
+
+.mudeck-slide-notes-text {
+    margin: 0;
+    white-space: pre-wrap;
+    font-family: inherit;
+    font-size: 1.1rem;
+}
+
+/* Parts list on the overview page. */
+.mudeck-part {
+    border: 1px solid var(--bs-border-color, #dee2e6);
+    border-radius: 0.375rem;
+    margin-bottom: 0.75rem;
+}
+
+.mudeck-part-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+}
+
+/* Not a .btn: those centre their content. */
+.mudeck-part-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex: 1 1 auto;
+    padding: 0.25rem 0;
+    border: 0;
+    background: none;
+    font: inherit;
+    text-align: start;
+    /* A disclosure, not a link. */
+    color: inherit;
+    cursor: pointer;
+}
+
+.mudeck-part-toggle:hover .mudeck-part-name {
+    text-decoration: underline;
+}
+
+.mudeck-part-actions {
+    display: flex;
+    gap: 0.25rem;
+    flex: 0 0 auto;
+}
+
+.mudeck-part-body {
+    padding: 0 0.75rem 0.75rem;
+}
+
+.mudeck-thumbs {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 0.75rem;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.mudeck-thumb-link {
+    display: block;
+    position: relative;
+    border: 2px solid var(--bs-border-color, #dee2e6);
+    border-radius: 0.25rem;
+    overflow: hidden;
+    height: calc(var(--mudeck-thumb-width, 220) * 720 / 1280 * 1px);
+}
+
+/* Outline on hover, never underline. */
+.mudeck-thumb-link,
+.mudeck-thumb-link:hover,
+.mudeck-thumb-link:focus {
+    text-decoration: none;
+    color: inherit;
+}
+
+.mudeck-thumb-link:hover,
+.mudeck-thumb-link:focus-visible {
+    border-color: var(--bs-primary, #0f6cbf);
+}
+
+/* Marp renders at 1280x720, scaled down to the column. */
+.mudeck-thumb-slide {
+    display: block;
+    width: 1280px;
+    height: 720px;
+    transform: scale(calc(var(--mudeck-thumb-width, 220) / 1280));
+    transform-origin: top left;
+}
+
+.mudeck-thumb-number {
+    position: absolute;
+    inset-block-end: 0;
+    inset-inline-end: 0;
+    padding: 0 0.4rem;
+    background: rgba(0, 0, 0, 0.6);
+    color: #fff;
+    font-size: 0.75rem;
+}
+
+/* Drag and drop reordering. */
+.mudeck-part-dragging {
+    opacity: 0.5;
+}
+
+.mudeck-part[draggable="true"] .mudeck-part-header {
+    cursor: grab;
+}
+
+.mudeck-part-position {
+    width: auto;
+}
+
+/* Print view: one slide with notes per page. */
+.mudeck-print {
+    max-width: 60rem;
+    margin: 0 auto;
+    padding: 1rem;
+}
+
+.mudeck-print-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.mudeck-print-page {
+    margin-bottom: 2rem;
+}
+
+/* Marp renders at 1280x720; print.js sets the width. */
+.mudeck-print-slide {
+    overflow: hidden;
+    border: 1px solid var(--bs-border-color, #dee2e6);
+    height: calc(var(--mudeck-print-width, 900) * 720 / 1280 * 1px);
+}
+
+.mudeck-print-slide section {
+    transform: scale(calc(var(--mudeck-print-width, 900) / 1280));
+    transform-origin: top left;
+}
+
+.mudeck-print-notes {
+    padding-top: 0.75rem;
+}
+
+.mudeck-print-notes-heading {
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    opacity: 0.7;
+}
+
+.mudeck-print-note {
+    white-space: pre-wrap;
+    font-family: inherit;
+    font-size: 1rem;
+    margin: 0;
+}
+
+@media print {
+    .mudeck-print-actions {
+        display: none;
+    }
+
+    /* Undo Marp's break before every slide; we break after slide and notes. */
+    .mudeck-print-slide section {
+        page-break-before: auto;
+        break-before: auto;
+    }
+
+    .mudeck-print-page {
+        break-inside: avoid;
+        break-after: page;
+        margin-bottom: 0;
+    }
+
+    .mudeck-print-page:last-child {
+        break-after: auto;
+    }
+}
+
+/* Print cover page. */
+.mudeck-print-cover {
+    max-width: 60rem;
+    margin: 0 auto;
+    padding: 1rem 1rem 0;
+}
+
+.mudeck-print-where a {
+    color: var(--bs-link-color, #0f6cbf);
+    text-decoration: underline;
+}
+
+.mudeck-print-where {
+    margin-bottom: 0.5rem;
+}
+
+.mudeck-print-heading {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.mudeck-print-heading .mudeck-print-title {
+    margin: 0;
+}
+
+.mudeck-print-intro {
+    margin-bottom: 0.5rem;
+}
+
+.mudeck-print-date {
+    font-size: 0.9rem;
+}
+
+@media print {
+    .mudeck-print-cover {
+        break-after: page;
+    }
+
+    /* Keep the icon background when printing. */
+    .mudeck-print-heading .activityiconcontainer {
+        print-color-adjust: exact;
+    }
+}
+
+/* Part editor: form left, preview right. */
+.mudeck-editor {
+    padding: 0 1rem 1rem;
+}
+
+.mudeck-editor-form {
+    max-width: 100%;
+}
+
+/* Make room only once the preview has mounted. */
+.mudeck-editor:has(.mudeck-editor-preview) .mudeck-editor-form {
+    width: calc(100% - var(--mudeck-split, 40%) - 2rem);
+}
+
+/* Notifications float over the form instead of pushing it down. */
+.mudeck-editor-page #user-notifications {
+    position: fixed;
+    inset-block-start: 0.5rem;
+    inset-inline-start: 1rem;
+    z-index: 5;
+    width: calc(100% - var(--mudeck-split, 40%) - 3rem);
+    transition: opacity 0.4s ease-out;
+}
+
+.mudeck-editor-page #user-notifications.mudeck-notification-going {
+    opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .mudeck-editor-page #user-notifications {
+        transition: none;
+    }
+}
+
+/* Resize handle between the columns. */
+.mudeck-editor-divider {
+    position: fixed;
+    inset-block: 0;
+    inset-inline-end: var(--mudeck-split, 40%);
+    z-index: 4;
+    width: 0.5rem;
+    cursor: col-resize;
+    touch-action: none;
+}
+
+.mudeck-editor-divider:hover,
+.mudeck-editor-divider:focus-visible {
+    background: var(--bs-primary, #0f6cbf);
+    opacity: 0.35;
+}
+
+/* Image name autocomplete. */
+.mudeck-editor-menu {
+    position: fixed;
+    z-index: 6;
+    min-width: 12rem;
+    max-width: 24rem;
+    max-height: 14rem;
+    overflow-y: auto;
+    margin: 0;
+    padding: 0.25rem 0;
+    list-style: none;
+    background: var(--bs-body-bg, #fff);
+    border: 1px solid var(--bs-border-color, #dee2e6);
+    border-radius: 0.25rem;
+    box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.15);
+}
+
+/* The linter does not know min(), so the phone width is a media query. */
+@media (max-width: 26rem) {
+    .mudeck-editor-menu {
+        max-width: 90vw;
+    }
+}
+
+.mudeck-editor-menu-item {
+    padding: 0.15rem 0.75rem;
+    font-family: var(--bs-font-monospace, monospace);
+    font-size: 0.9rem;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.mudeck-editor-menu-current {
+    background: var(--bs-primary, #0f6cbf);
+    color: #fff;
+}
+
+.mudeck-editor-preview {
+    position: fixed;
+    inset-block: 0;
+    inset-inline-end: 0;
+    width: var(--mudeck-split, 40%);
+    padding: 0 1rem 1rem;
+    border-inline-start: 1px solid var(--bs-border-color, #dee2e6);
+    background: var(--bs-body-bg, #fff);
+    /* Tabs fixed, panes scroll. */
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.mudeck-editor-heading {
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    opacity: 0.7;
+    padding-top: 0.75rem;
+}
+
+.mudeck-editor-strip {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.mudeck-editor-slide {
+    position: relative;
+    margin-bottom: 0.75rem;
+}
+
+/* Invisible button over the slide; a div cannot live inside a button. */
+.mudeck-editor-slide-jump {
+    position: absolute;
+    inset: 0;
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: pointer;
+}
+
+.mudeck-editor-slide-jump:focus-visible {
+    outline: none;
+}
+
+/* The slide box shows the button's hover and focus. */
+.mudeck-editor-slide-box:has(+ .mudeck-editor-slide-jump:hover),
+.mudeck-editor-slide-box:has(+ .mudeck-editor-slide-jump:focus-visible) {
+    border-color: var(--bs-primary, #0f6cbf);
+}
+
+/* Marp renders at 1280x720; editor.js sets the strip width. */
+.mudeck-editor-slide-box {
+    width: 100%;
+    height: calc(var(--mudeck-strip-width, 360) * 720 / 1280 * 1px);
+    overflow: hidden;
+    border: 2px solid var(--bs-border-color, #dee2e6);
+    border-radius: 0.25rem;
+}
+
+.mudeck-editor-slide-box section {
+    transform: scale(calc(var(--mudeck-strip-width, 360) / 1280));
+    transform-origin: top left;
+}
+
+/* Slide under the caret. */
+.mudeck-editor-slide-current .mudeck-editor-slide-box {
+    border-color: var(--bs-primary, #0f6cbf);
+}
+
+.mudeck-editor-number {
+    font-size: 0.8rem;
+    opacity: 0.7;
+}
+
+/* No legend for a single required field. */
+.mudeck-editor .fdescription.required {
+    display: none;
+}
+
+/* Sticky form buttons. */
+.mudeck-editor #fgroup_id_buttonar {
+    position: sticky;
+    bottom: 0;
+    z-index: 3;
+    margin: 0;
+    padding: 0.75rem 0;
+    background: var(--bs-body-bg, #fff);
+    border-top: 1px solid var(--bs-border-color, #dee2e6);
+}
+
+.mudeck-editor #id_name {
+    max-width: 28rem;
+}
+
+/* editor.js sets the height; white background like the file manager. */
+.mudeck-editor #id_content {
+    min-height: 12rem;
+    font-family: var(--bs-font-monospace, monospace);
+    background-color: light-dark(#fff, var(--bs-body-bg, #1d2125));
+}
+
+/* Narrow label column, wide text area. */
+@media (min-width: 768px) {
+    .mudeck-editor .fitem > .col-md-3 {
+        flex: 0 0 8rem;
+        width: 8rem;
+        max-width: 8rem;
+    }
+
+    .mudeck-editor .fitem > .col-md-9 {
+        flex: 1 1 auto;
+        width: auto;
+        max-width: none;
+    }
+}
+
+/* Page title with the full screen button beside it. */
+.mudeck-editor-title {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding-top: 0.75rem;
+}
+
+.mudeck-editor-tools:empty {
+    display: none;
+}
+
+/* Preview, media and help tabs. */
+.mudeck-editor-tabs {
+    flex: 0 0 auto;
+    padding-top: 0.75rem;
+    border-bottom: 1px solid var(--bs-border-color, #dee2e6);
+}
+
+.mudeck-editor-pane {
+    flex: 1 1 auto;
+    overflow: auto;
+    padding-top: 0.75rem;
+}
+
+/* Flex would otherwise override hidden. */
+.mudeck-editor-pane[hidden] {
+    display: none;
+}
+
+/* Row gutters would make the pane scroll sideways. */
+.mudeck-editor-pane .fitem.row {
+    margin-inline: 0;
+}
+
+/* The tab is the heading; hide the form label visually only. */
+.mudeck-editor-pane #fitem_id_attachments > .col-md-3 {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
+.mudeck-editor-pane .filemanager {
+    min-height: 22rem;
+}
+
+.mudeck-editor-intro {
+    padding-top: 0.75rem;
+    font-size: 0.9rem;
+}
+
+.mudeck-editor-pane #fitem_id_attachments > .col-md-9 {
+    flex: 1 1 auto;
+    width: auto;
+    max-width: none;
+}
+
+.mudeck-editor-pane pre {
+    padding: 0.5rem;
+    background: var(--bs-secondary-bg, #f1f3f5);
+    border-radius: 0.25rem;
+    overflow-x: auto;
+}

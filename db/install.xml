@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<XMLDB PATH="mod/mudeck/db" VERSION="20260906" COMMENT="XMLDB file for Markdown slide deck module"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
+>
+  <TABLES>
+    <TABLE NAME="mudeck" COMMENT="Markdown slide deck module instances - one instance is one presentation">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="course" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="intro" TYPE="text" NOTNULL="true" SEQUENCE="false" COMMENT="Presentation description shown on the welcome page"/>
+        <FIELD NAME="introformat" TYPE="int" LENGTH="4" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="Intro text format"/>
+        <FIELD NAME="theme" TYPE="char" LENGTH="100" NOTNULL="true" DEFAULT="default" SEQUENCE="false" COMMENT="Marp theme name used by every slide of the presentation"/>
+        <FIELD NAME="paginate" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="1 means show slide numbers unless a part directive says otherwise"/>
+        <FIELD NAME="allowdevicesync" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="1 means a user may follow their own presentation from another device, 0 means no session is ever created"/>
+        <FIELD NAME="completionreachedend" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="1 means automatic completion requires reaching the last slide"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="course" TYPE="foreign" FIELDS="course" REFTABLE="course" REFFIELDS="id"/>
+      </KEYS>
+    </TABLE>
+    <TABLE NAME="mudeck_part" COMMENT="Parts of a presentation - a part is one Markdown document, the unit of ordering and editing">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="mudeckid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" COMMENT="Part name, used in the table of contents and separator slides"/>
+        <FIELD NAME="sortorder" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="1-based order of the part within the presentation"/>
+        <FIELD NAME="content" TYPE="text" NOTNULL="true" SEQUENCE="false" COMMENT="Raw Marp Markdown, slides separated by ---, never rendered on the server"/>
+        <FIELD NAME="contenthash" TYPE="char" LENGTH="40" NOTNULL="true" SEQUENCE="false" COMMENT="sha1 of content, recomputed on every save - attached media is deliberately not included"/>
+        <FIELD NAME="usermodified" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="Who saved the part last"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="When the slides were last saved"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="mudeckid" TYPE="foreign" FIELDS="mudeckid" REFTABLE="mudeck" REFFIELDS="id"/>
+        <KEY NAME="usermodified" TYPE="foreign" FIELDS="usermodified" REFTABLE="user" REFFIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="sortorder" UNIQUE="false" FIELDS="sortorder"/>
+        <INDEX NAME="contenthash" UNIQUE="false" FIELDS="contenthash"/>
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="mudeck_session" COMMENT="Device sync sessions - a user showing slides on one device so their own other devices can follow along. Never a record of what somebody else watched: a user only ever sees their own rows.">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="mudeckid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Whose session this is"/>
+        <FIELD NAME="partid" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="Current position - part. This is what the other device follows"/>
+        <FIELD NAME="parthash" TYPE="char" LENGTH="40" NOTNULL="false" SEQUENCE="false" COMMENT="Content hash of the part as rendered, so we can tell it changed mid-presentation"/>
+        <FIELD NAME="slide" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="Current position - 1-based slide number within the part"/>
+        <FIELD NAME="slidetitle" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" COMMENT="Current position - slide heading, used to resume when the part changed"/>
+        <FIELD NAME="sessionjson" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="General information about the session as JSON - device hint so a user can tell their sessions apart, playback mode, whether slides are being shown, and whatever later modes need"/>
+        <FIELD NAME="commandjson" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Reserved for remote control - pending command for the showing device, encoded as JSON"/>
+        <FIELD NAME="timestarted" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="timelastseen" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="timeended" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="Null while the session is still in progress"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="mudeckid" TYPE="foreign" FIELDS="mudeckid" REFTABLE="mudeck" REFFIELDS="id"/>
+        <KEY NAME="userid" TYPE="foreign" FIELDS="userid" REFTABLE="user" REFFIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="mudeckid-userid" UNIQUE="false" FIELDS="mudeckid, userid"/>
+        <INDEX NAME="timelastseen" UNIQUE="false" FIELDS="timelastseen"/>
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="mudeck_completed" COMMENT="Who reached the end of a presentation. Written once when it happens and never recomputed.">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="mudeckid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="timecompleted" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="When the last slide was reached"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="mudeckid" TYPE="foreign" FIELDS="mudeckid" REFTABLE="mudeck" REFFIELDS="id"/>
+        <KEY NAME="userid" TYPE="foreign" FIELDS="userid" REFTABLE="user" REFFIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="mudeckid-userid" UNIQUE="true" FIELDS="mudeckid, userid"/>
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="mudeck_theme" COMMENT="Marp themes added by a site administrator, in addition to the ones shipped with the plugin">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="shortname" TYPE="char" LENGTH="100" NOTNULL="true" SEQUENCE="false" COMMENT="The Marp theme name, as used by the theme directive and stored in mudeck.theme"/>
+        <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" COMMENT="What the theme is called in the activity form"/>
+        <FIELD NAME="css" TYPE="text" NOTNULL="true" SEQUENCE="false" COMMENT="The theme CSS, trusted: only a role holding mod/mudeck:managethemes can write it"/>
+        <FIELD NAME="usermodified" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="Who saved the theme last"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="usermodified" TYPE="foreign" FIELDS="usermodified" REFTABLE="user" REFFIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="shortname" UNIQUE="true" FIELDS="shortname"/>
+      </INDEXES>
+    </TABLE>
+  </TABLES>
+</XMLDB>
