@@ -20,35 +20,34 @@
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-import {requireAsync} from '@moodle/lms/core/amd';
-
 type Target = {
     url: string;
     sesskey: string;
 };
 
-type Pending = {
-    resolve: () => void;
+/** The bit of core's global that tracks work a test has to wait for. */
+type PendingRegistry = {
+    js_pending?: (key: string) => void;
+    js_complete?: (key: string) => void;
 };
+
+const registry = (): PendingRegistry | undefined =>
+    (window as unknown as {M?: {util?: PendingRegistry}}).M?.util;
 
 /**
  * Report reaching the end, once.
  *
- * Registered as pending with core so that a test, or anything else that waits for the
- * page to settle, waits for this too. Sent with keepalive so that leaving the page the
- * moment the last slide shows does not lose it. Failures are ignored: completion is
- * checked again the next time the user gets there.
+ * Registered as pending with core synchronously, before anything is awaited, so that a
+ * test waiting for the page to settle waits for this too - loading the pending module
+ * first would leave a gap in which nothing looks pending and the page can be left.
+ * Sent with keepalive so that leaving the page the moment the last slide shows does not
+ * lose it. Failures are ignored: completion is checked again next time the user gets there.
  *
  * @param target where to post, and the session key that lets us
  */
 export async function reportReachedEnd(target: Target): Promise<void> {
-    let pending: Pending | null = null;
-    try {
-        const PendingPromise = await requireAsync<new (name: string) => Pending>('core/pending');
-        pending = new PendingPromise('mod_mudeck/reachedend');
-    } catch {
-        pending = null;
-    }
+    const key = 'mod_mudeck/reachedend';
+    registry()?.js_pending?.(key);
     try {
         await fetch(target.url, {
             method: 'POST',
@@ -59,6 +58,6 @@ export async function reportReachedEnd(target: Target): Promise<void> {
     } catch {
         // Nothing to do; see above.
     } finally {
-        pending?.resolve();
+        registry()?.js_complete?.(key);
     }
 }

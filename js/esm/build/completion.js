@@ -1,6 +1,6 @@
-import{requireAsync as r}from"@moodle/lms/core/amd";/**
+/**
  * Tell the server that the last slide was reached.
  *
  * @module     mod_mudeck/completion
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */async function s(n){let e=null;try{const i=await r("core/pending");e=new i("mod_mudeck/reachedend")}catch{e=null}try{await fetch(n.url,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({sesskey:n.sesskey}),keepalive:!0})}catch{}finally{e?.resolve()}}export{s as reportReachedEnd};
+ */const s=()=>window.M?.util;async function i(e){const n="mod_mudeck/reachedend";s()?.js_pending?.(n);try{await fetch(e.url,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({sesskey:e.sesskey}),keepalive:!0})}catch{}finally{s()?.js_complete?.(n)}}export{i as reportReachedEnd};

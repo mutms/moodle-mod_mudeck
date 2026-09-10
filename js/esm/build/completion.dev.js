@@ -6,15 +6,10 @@ var __name = (target, value) => __defProp(target, "name", { value, configurable:
  * @module     mod_mudeck/completion
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-import { requireAsync } from "@moodle/lms/core/amd";
+const registry = /* @__PURE__ */ __name(() => window.M?.util, "registry");
 async function reportReachedEnd(target) {
-  let pending = null;
-  try {
-    const PendingPromise = await requireAsync("core/pending");
-    pending = new PendingPromise("mod_mudeck/reachedend");
-  } catch {
-    pending = null;
-  }
+  const key = "mod_mudeck/reachedend";
+  registry()?.js_pending?.(key);
   try {
     await fetch(target.url, {
       method: "POST",
@@ -24,7 +19,7 @@ async function reportReachedEnd(target) {
     });
   } catch {
   } finally {
-    pending?.resolve();
+    registry()?.js_complete?.(key);
   }
 }
 __name(reportReachedEnd, "reportReachedEnd");
