@@ -78,7 +78,7 @@ echo $OUTPUT->render_from_template('mod_mudeck/notes', [
     'partsjson' => json_encode($partsdata),
     'themecssjson' => json_encode(theme::get_custom_css(new \core\url('/mod/mudeck'))),
     'pollurljson' => json_encode(
-        (new \core\url('/api/rest/v2/mod_mudeck/session/' . $sessionid))->out(false)
+        \core\url::routed_path('/api/rest/v2/mod_mudeck/session/' . $sessionid)->out(false)
     ),
     'exiturljson' => json_encode($sessionsurl->out(false)),
     'labelsjson' => json_encode([

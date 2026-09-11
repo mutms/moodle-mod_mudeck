@@ -100,13 +100,13 @@ echo $OUTPUT->render_from_template('mod_mudeck/present', [
     'notesjson' => json_encode(false),
     'startslidejson' => json_encode(null),
     'syncjson' => json_encode($sessionid ? [
-        'url' => (new \core\url('/api/rest/v2/mod_mudeck/session/' . $sessionid))->out(false),
+        'url' => \core\url::routed_path('/api/rest/v2/mod_mudeck/session/' . $sessionid)->out(false),
         'sesskey' => sesskey(),
     ] : null),
     // Reaching the last slide counts only when the activity asks for it; otherwise the
     // viewer has nowhere to report and nothing is recorded.
     'reachedendjson' => json_encode(completed::is_wanted($mudeck, $cminfo) ? [
-        'url' => (new \core\url("/api/rest/v2/mod_mudeck/presentation/{$cm->id}/reached-end"))->out(false),
+        'url' => \core\url::routed_path("/api/rest/v2/mod_mudeck/presentation/{$cm->id}/reached-end")->out(false),
         'sesskey' => sesskey(),
     ] : null),
     'themecssjson' => json_encode(theme::get_custom_css(new \core\url('/mod/mudeck'))),
