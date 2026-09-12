@@ -28,10 +28,13 @@
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use core\url;
 use mod_mudeck\local\media;
 use mod_mudeck\local\part;
 
+// phpcs:disable moodle.Commenting.InlineComment.TypeHintingMatch
 /** @var moodle_database $DB */
+// phpcs:enable moodle.Commenting.InlineComment.TypeHintingMatch
 
 require(__DIR__ . '/../../../config.php');
 
@@ -51,7 +54,7 @@ require_capability('mod/mudeck:edit', $context);
 $thepart = $DB->get_record('mudeck_part', ['id' => $partid, 'mudeckid' => $mudeck->id], '*', MUST_EXIST);
 if (!part::has_content($thepart)) {
     redirect(
-        new \core\url('/mod/mudeck/management/overview.php', ['cmid' => $cm->id]),
+        new url('/mod/mudeck/management/overview.php', ['cmid' => $cm->id]),
         get_string('nopartcontent', 'mod_mudeck'),
         null,
         \core\output\notification::NOTIFY_WARNING

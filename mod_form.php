@@ -20,7 +20,10 @@ use mod_mudeck\local\theme;
 
 defined('MOODLE_INTERNAL') || die;
 
+// phpcs:disable moodle.Commenting.InlineComment.TypeHintingMatch
 /** @var stdClass $CFG */
+// phpcs:enable moodle.Commenting.InlineComment.TypeHintingMatch
+
 require_once($CFG->dirroot . '/course/moodleform_mod.php');
 
 /**

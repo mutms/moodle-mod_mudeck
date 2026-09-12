@@ -27,12 +27,15 @@
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use core\url;
 use mod_mudeck\local\media;
 use mod_mudeck\local\theme;
 
+// phpcs:disable moodle.Commenting.InlineComment.TypeHintingMatch
 /** @var moodle_database $DB */
 /** @var moodle_page $PAGE */
-/** @var core_renderer $OUTPUT */
+/** @var \core\output\core_renderer $OUTPUT */
+// phpcs:enable moodle.Commenting.InlineComment.TypeHintingMatch
 
 require(__DIR__ . '/../../../config.php');
 
@@ -48,14 +51,14 @@ $context = context_module::instance($cm->id);
 require_login($course, false, $cm);
 require_capability('mod/mudeck:edit', $context);
 
-$overviewurl = new \core\url('/mod/mudeck/management/overview.php', ['cmid' => $cm->id]);
+$overviewurl = new url('/mod/mudeck/management/overview.php', ['cmid' => $cm->id]);
 $part = $DB->get_record('mudeck_part', ['id' => $partid, 'mudeckid' => $mudeck->id], '*', MUST_EXIST);
 if (!\mod_mudeck\local\part::has_content($part)) {
     redirect($overviewurl, get_string('nopartcontent', 'mod_mudeck'), null, \core\output\notification::NOTIFY_WARNING);
 }
 
 $PAGE->set_context($context);
-$PAGE->set_url(new \core\url(
+$PAGE->set_url(new url(
     '/mod/mudeck/management/part_preview.php',
     ['cmid' => $cm->id, 'partid' => $partid]
 ));
@@ -76,7 +79,7 @@ echo $OUTPUT->render_from_template('mod_mudeck/present', [
         // A theme that no longer exists falls back to the site's, never to nothing.
         'theme' => theme::resolve($mudeck->theme),
     ]]),
-    'themecssjson' => json_encode(theme::get_custom_css(new \core\url('/mod/mudeck'))),
+    'themecssjson' => json_encode(theme::get_custom_css(new url('/mod/mudeck'))),
     'exiturljson' => json_encode($overviewurl->out(false)),
     // A preview is nobody's presentation, so there is nothing for another device to follow.
     'syncjson' => json_encode(null),

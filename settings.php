@@ -15,7 +15,6 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 // phpcs:disable moodle.Files.BoilerplateComment.CommentEndedTooSoon
-// phpcs:disable moodle.Commenting.InlineComment.TypeHintingMatch
 
 /**
  * Markdown slide deck admin settings.
@@ -27,20 +26,27 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-use mod_mudeck\local\theme;
 use core\lang_string;
+use core\url;
+use core_admin\setting\setting\configselect;
+use core_admin\setting\settingpage\settingpage;
+use core_admin\setting\tree\category;
+use core_admin\setting\tree\externalpage;
+use mod_mudeck\local\theme;
 
+// phpcs:disable moodle.Commenting.InlineComment.TypeHintingMatch
 /** @var \core_admin\setting\tree\root $ADMIN */
 /** @var \core\plugininfo\mod $module */
 /** @var string $section */
+// phpcs:enable moodle.Commenting.InlineComment.TypeHintingMatch
 
-$ADMIN->add('modsettings', new \core_admin\setting\tree\category(
+$ADMIN->add('modsettings', new category(
     'modmudeckfolder',
     new lang_string('pluginname', 'mod_mudeck'),
     $module->is_enabled() === false
 ));
 
-$page = new \core_admin\setting\settingpage\settingpage(
+$page = new settingpage(
     $section,
     get_string('settings'),
     'moodle/site:config',
@@ -48,7 +54,7 @@ $page = new \core_admin\setting\settingpage\settingpage(
 );
 
 if ($ADMIN->fulltree) {
-    $page->add(new \core_admin\setting\setting\configselect(
+    $page->add(new configselect(
         'mod_mudeck/defaulttheme',
         get_string('theme_default_site', 'mod_mudeck'),
         get_string('theme_default_site_desc', 'mod_mudeck'),
@@ -59,10 +65,10 @@ if ($ADMIN->fulltree) {
 
 $ADMIN->add('modmudeckfolder', $page);
 
-$ADMIN->add('modmudeckfolder', new \core_admin\setting\tree\externalpage(
+$ADMIN->add('modmudeckfolder', new externalpage(
     'mudeckthemes',
     get_string('theme_manage', 'mod_mudeck'),
-    new core\url('/mod/mudeck/management/themes.php'),
+    new url('/mod/mudeck/management/themes.php'),
     'mod/mudeck:managethemes'
 ));
 

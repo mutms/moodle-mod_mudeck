@@ -24,6 +24,7 @@
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use core\url;
 use mod_mudeck\local\completed;
 use mod_mudeck\local\media;
 use mod_mudeck\local\notes;
@@ -31,10 +32,12 @@ use mod_mudeck\local\part;
 use mod_mudeck\local\session;
 use mod_mudeck\local\theme;
 
+// phpcs:disable moodle.Commenting.InlineComment.TypeHintingMatch
 /** @var moodle_database $DB */
 /** @var moodle_page $PAGE */
-/** @var core_renderer $OUTPUT */
+/** @var \core\output\core_renderer $OUTPUT */
 /** @var stdClass $USER */
+// phpcs:enable moodle.Commenting.InlineComment.TypeHintingMatch
 
 require(__DIR__ . '/../../config.php');
 
@@ -48,7 +51,7 @@ $context = context_module::instance($cm->id);
 require_course_login($course, true, $cm);
 require_capability('mod/mudeck:present', $context);
 
-$viewurl = new \core\url('/mod/mudeck/view.php', ['id' => $cm->id]);
+$viewurl = new url('/mod/mudeck/view.php', ['id' => $cm->id]);
 
 $parts = part::get_playable($mudeck->id);
 if (!$parts) {
@@ -56,7 +59,7 @@ if (!$parts) {
 }
 
 $PAGE->set_context($context);
-$PAGE->set_url(new \core\url('/mod/mudeck/present.php', ['id' => $cm->id]));
+$PAGE->set_url(new url('/mod/mudeck/present.php', ['id' => $cm->id]));
 $PAGE->set_title($mudeck->name);
 $PAGE->set_pagelayout('embedded');
 $PAGE->set_show_navigation_footer(false);
@@ -100,16 +103,16 @@ echo $OUTPUT->render_from_template('mod_mudeck/present', [
     'notesjson' => json_encode(false),
     'startslidejson' => json_encode(null),
     'syncjson' => json_encode($sessionid ? [
-        'url' => \core\url::routed_path('/api/rest/v2/mod_mudeck/session/' . $sessionid)->out(false),
+        'url' => url::routed_path('/api/rest/v2/mod_mudeck/session/' . $sessionid)->out(false),
         'sesskey' => sesskey(),
     ] : null),
     // Reaching the last slide counts only when the activity asks for it; otherwise the
     // viewer has nowhere to report and nothing is recorded.
     'reachedendjson' => json_encode(completed::is_wanted($mudeck, $cminfo) ? [
-        'url' => \core\url::routed_path("/api/rest/v2/mod_mudeck/presentation/{$cm->id}/reached-end")->out(false),
+        'url' => url::routed_path("/api/rest/v2/mod_mudeck/presentation/{$cm->id}/reached-end")->out(false),
         'sesskey' => sesskey(),
     ] : null),
-    'themecssjson' => json_encode(theme::get_custom_css(new \core\url('/mod/mudeck'))),
+    'themecssjson' => json_encode(theme::get_custom_css(new url('/mod/mudeck'))),
     'exiturljson' => json_encode($viewurl->out(false)),
     'labelsjson' => json_encode([
         'previous' => get_string('slide_previous', 'mod_mudeck'),

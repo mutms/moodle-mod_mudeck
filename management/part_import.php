@@ -24,16 +24,19 @@
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use core\url;
 use mod_mudeck\local\form\part_import;
 use mod_mudeck\local\import;
 use mod_mudeck\local\media;
 use mod_mudeck\local\part;
 
+// phpcs:disable moodle.Commenting.InlineComment.TypeHintingMatch
+/** @var stdClass $CFG */
 /** @var moodle_database $DB */
 /** @var moodle_page $PAGE */
-/** @var core_renderer $OUTPUT */
+/** @var \core\output\core_renderer $OUTPUT */
 /** @var stdClass $USER */
-/** @var stdClass $CFG */
+// phpcs:enable moodle.Commenting.InlineComment.TypeHintingMatch
 
 require(__DIR__ . '/../../../config.php');
 require_once($CFG->libdir . '/formslib.php');
@@ -48,8 +51,8 @@ $context = context_module::instance($cm->id);
 require_login($course, false, $cm);
 require_capability('mod/mudeck:edit', $context);
 
-$viewurl = new \core\url('/mod/mudeck/management/overview.php', ['cmid' => $cm->id]);
-$currenturl = new \core\url('/mod/mudeck/management/part_import.php', ['cmid' => $cm->id]);
+$viewurl = new url('/mod/mudeck/management/overview.php', ['cmid' => $cm->id]);
+$currenturl = new url('/mod/mudeck/management/part_import.php', ['cmid' => $cm->id]);
 
 $PAGE->set_context($context);
 $PAGE->set_url($currenturl);

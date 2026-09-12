@@ -24,9 +24,12 @@
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use core\url;
 use mod_mudeck\local\part;
 
+// phpcs:disable moodle.Commenting.InlineComment.TypeHintingMatch
 /** @var moodle_database $DB */
+// phpcs:enable moodle.Commenting.InlineComment.TypeHintingMatch
 
 require(__DIR__ . '/../../../config.php');
 
@@ -46,4 +49,4 @@ require_sesskey();
 $thepart = $DB->get_record('mudeck_part', ['id' => $partid, 'mudeckid' => $mudeck->id], '*', MUST_EXIST);
 part::move($thepart, $direction === 'up' ? -1 : 1);
 
-redirect(new \core\url('/mod/mudeck/management/overview.php', ['cmid' => $cm->id]));
+redirect(new url('/mod/mudeck/management/overview.php', ['cmid' => $cm->id]));

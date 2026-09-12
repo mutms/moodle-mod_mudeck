@@ -24,11 +24,14 @@
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use core\url;
 use mod_mudeck\local\part;
 
+// phpcs:disable moodle.Commenting.InlineComment.TypeHintingMatch
 /** @var moodle_database $DB */
 /** @var moodle_page $PAGE */
-/** @var core_renderer $OUTPUT */
+/** @var \core\output\core_renderer $OUTPUT */
+// phpcs:enable moodle.Commenting.InlineComment.TypeHintingMatch
 
 require(__DIR__ . '/../../../config.php');
 
@@ -46,8 +49,8 @@ require_capability('mod/mudeck:edit', $context);
 
 $thepart = $DB->get_record('mudeck_part', ['id' => $partid, 'mudeckid' => $mudeck->id], '*', MUST_EXIST);
 
-$overviewurl = new \core\url('/mod/mudeck/management/overview.php', ['cmid' => $cm->id]);
-$currenturl = new \core\url('/mod/mudeck/management/part_delete.php', ['cmid' => $cm->id, 'partid' => $partid]);
+$overviewurl = new url('/mod/mudeck/management/overview.php', ['cmid' => $cm->id]);
+$currenturl = new url('/mod/mudeck/management/part_delete.php', ['cmid' => $cm->id, 'partid' => $partid]);
 
 if ($confirm) {
     require_sesskey();
@@ -69,7 +72,7 @@ $PAGE->activityheader->set_description('');
 echo $OUTPUT->header();
 echo $OUTPUT->confirm(
     get_string('part_delete_confirm', 'mod_mudeck', format_string($thepart->name)),
-    new \core\url($currenturl, ['confirm' => 1, 'sesskey' => sesskey()]),
+    new url($currenturl, ['confirm' => 1, 'sesskey' => sesskey()]),
     $overviewurl
 );
 echo $OUTPUT->footer();

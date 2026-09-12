@@ -24,14 +24,17 @@
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use core\url;
 use mod_mudeck\local\media;
 use mod_mudeck\local\notes;
 use mod_mudeck\local\part;
 use mod_mudeck\local\theme;
 
+// phpcs:disable moodle.Commenting.InlineComment.TypeHintingMatch
 /** @var moodle_database $DB */
 /** @var moodle_page $PAGE */
-/** @var core_renderer $OUTPUT */
+/** @var \core\output\core_renderer $OUTPUT */
+// phpcs:enable moodle.Commenting.InlineComment.TypeHintingMatch
 
 require(__DIR__ . '/../../config.php');
 
@@ -45,10 +48,10 @@ $context = context_module::instance($cm->id);
 require_course_login($course, true, $cm);
 require_capability('mod/mudeck:present', $context);
 
-$viewurl = new \core\url('/mod/mudeck/view.php', ['id' => $cm->id]);
+$viewurl = new url('/mod/mudeck/view.php', ['id' => $cm->id]);
 
 $PAGE->set_context($context);
-$PAGE->set_url(new \core\url('/mod/mudeck/print.php', ['id' => $cm->id]));
+$PAGE->set_url(new url('/mod/mudeck/print.php', ['id' => $cm->id]));
 $PAGE->set_title($mudeck->name);
 $PAGE->set_pagelayout('embedded');
 $PAGE->set_show_navigation_footer(false);
@@ -78,13 +81,13 @@ echo $OUTPUT->render_from_template('mod_mudeck/print', [
     'activityicon' => $OUTPUT->render($activityicon),
     'deckurl' => $viewurl->out(false),
     'coursename' => format_string($course->fullname),
-    'courseurl' => (new \core\url('/course/view.php', ['id' => $course->id]))->out(false),
+    'courseurl' => (new url('/course/view.php', ['id' => $course->id]))->out(false),
     'sectionname' => $section ? format_string(get_section_name($course, $section)) : '',
     'sectionurl' => $section ? course_get_url($course, $section->section)->out(false) : '',
     'intro' => $mudeck->intro ? format_module_intro('mudeck', $mudeck, $cm->id) : '',
     'printed' => userdate(time()),
     'partsjson' => json_encode($partsdata),
-    'themecssjson' => json_encode(theme::get_custom_css(new \core\url('/mod/mudeck'))),
+    'themecssjson' => json_encode(theme::get_custom_css(new url('/mod/mudeck'))),
     'exiturljson' => json_encode($viewurl->out(false)),
     // The handout: slides only, never the notes.
     'notesjson' => json_encode(false),

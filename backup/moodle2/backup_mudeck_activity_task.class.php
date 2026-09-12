@@ -26,7 +26,10 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+// phpcs:disable moodle.Commenting.InlineComment.TypeHintingMatch
 /** @var stdClass $CFG */
+// phpcs:enable moodle.Commenting.InlineComment.TypeHintingMatch
+
 require_once($CFG->dirroot . '/mod/mudeck/backup/moodle2/backup_mudeck_stepslib.php');
 
 /**

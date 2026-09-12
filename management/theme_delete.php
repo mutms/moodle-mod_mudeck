@@ -26,14 +26,17 @@
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use core\url;
 use mod_mudeck\local\theme;
 
+// phpcs:disable moodle.Commenting.InlineComment.TypeHintingMatch
+/** @var stdClass $CFG */
 /** @var moodle_page $PAGE */
-/** @var core_renderer $OUTPUT */
+/** @var \core\output\core_renderer $OUTPUT */
+// phpcs:enable moodle.Commenting.InlineComment.TypeHintingMatch
 
 require(__DIR__ . '/../../../config.php');
 
-/** @var stdClass $CFG */
 require_once($CFG->libdir . '/adminlib.php');
 
 $id = required_param('id', PARAM_INT);
@@ -43,8 +46,8 @@ admin_externalpage_setup('mudeckthemes');
 // The page setup checks this too, but a write page says so itself.
 require_capability('mod/mudeck:managethemes', context_system::instance());
 
-$themesurl = new \core\url('/mod/mudeck/management/themes.php');
-$currenturl = new \core\url('/mod/mudeck/management/theme_delete.php', ['id' => $id]);
+$themesurl = new url('/mod/mudeck/management/themes.php');
+$currenturl = new url('/mod/mudeck/management/theme_delete.php', ['id' => $id]);
 
 $existing = theme::get_site_theme($id);
 if (!$existing) {
@@ -66,7 +69,7 @@ echo $OUTPUT->confirm(
         'name' => format_string($existing->name),
         'used' => theme::count_uses($existing->shortname),
     ]),
-    new \core\url($currenturl, ['confirm' => 1, 'sesskey' => sesskey()]),
+    new url($currenturl, ['confirm' => 1, 'sesskey' => sesskey()]),
     $themesurl
 );
 echo $OUTPUT->footer();

@@ -24,13 +24,16 @@
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use core\url;
 use mod_mudeck\local\media;
 use mod_mudeck\local\part;
 use mod_mudeck\local\theme;
 
+// phpcs:disable moodle.Commenting.InlineComment.TypeHintingMatch
 /** @var moodle_database $DB */
 /** @var moodle_page $PAGE */
-/** @var core_renderer $OUTPUT */
+/** @var \core\output\core_renderer $OUTPUT */
+// phpcs:enable moodle.Commenting.InlineComment.TypeHintingMatch
 
 require(__DIR__ . '/../../../config.php');
 
@@ -44,10 +47,10 @@ $context = context_module::instance($cm->id);
 require_login($course, false, $cm);
 require_capability('mod/mudeck:fullaccess', $context);
 
-$overviewurl = new \core\url('/mod/mudeck/management/overview.php', ['cmid' => $cm->id]);
+$overviewurl = new url('/mod/mudeck/management/overview.php', ['cmid' => $cm->id]);
 
 $PAGE->set_context($context);
-$PAGE->set_url(new \core\url('/mod/mudeck/management/print.php', ['cmid' => $cm->id]));
+$PAGE->set_url(new url('/mod/mudeck/management/print.php', ['cmid' => $cm->id]));
 $PAGE->set_title($mudeck->name);
 $PAGE->set_pagelayout('embedded');
 $PAGE->set_show_navigation_footer(false);
@@ -74,15 +77,15 @@ echo $OUTPUT->header();
 echo $OUTPUT->render_from_template('mod_mudeck/print', [
     'deckname' => format_string($mudeck->name),
     'activityicon' => $OUTPUT->render($activityicon),
-    'deckurl' => (new \core\url('/mod/mudeck/view.php', ['id' => $cm->id]))->out(false),
+    'deckurl' => (new url('/mod/mudeck/view.php', ['id' => $cm->id]))->out(false),
     'coursename' => format_string($course->fullname),
-    'courseurl' => (new \core\url('/course/view.php', ['id' => $course->id]))->out(false),
+    'courseurl' => (new url('/course/view.php', ['id' => $course->id]))->out(false),
     'sectionname' => $section ? format_string(get_section_name($course, $section)) : '',
     'sectionurl' => $section ? course_get_url($course, $section->section)->out(false) : '',
     'intro' => $mudeck->intro ? format_module_intro('mudeck', $mudeck, $cm->id) : '',
     'printed' => userdate(time()),
     'partsjson' => json_encode($partsdata),
-    'themecssjson' => json_encode(theme::get_custom_css(new \core\url('/mod/mudeck'))),
+    'themecssjson' => json_encode(theme::get_custom_css(new url('/mod/mudeck'))),
     'exiturljson' => json_encode($overviewurl->out(false)),
     // The presenter copy: the notes go under every slide.
     'notesjson' => json_encode(true),

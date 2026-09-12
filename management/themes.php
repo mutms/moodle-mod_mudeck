@@ -28,14 +28,17 @@
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use core\url;
 use mod_mudeck\local\theme;
 
+// phpcs:disable moodle.Commenting.InlineComment.TypeHintingMatch
+/** @var stdClass $CFG */
 /** @var moodle_page $PAGE */
-/** @var core_renderer $OUTPUT */
+/** @var \core\output\core_renderer $OUTPUT */
+// phpcs:enable moodle.Commenting.InlineComment.TypeHintingMatch
 
 require(__DIR__ . '/../../../config.php');
 
-/** @var stdClass $CFG */
 require_once($CFG->libdir . '/adminlib.php');
 
 admin_externalpage_setup('mudeckthemes');
@@ -49,15 +52,15 @@ foreach (theme::get_site_themes() as $sitetheme) {
         'name' => format_string($sitetheme->name),
         'shortname' => s($sitetheme->shortname),
         'used' => theme::count_uses($sitetheme->shortname),
-        'editurl' => (new \core\url('/mod/mudeck/management/theme_edit.php', ['id' => $sitetheme->id]))->out(false),
-        'deleteurl' => (new \core\url('/mod/mudeck/management/theme_delete.php', ['id' => $sitetheme->id]))->out(false),
+        'editurl' => (new url('/mod/mudeck/management/theme_edit.php', ['id' => $sitetheme->id]))->out(false),
+        'deleteurl' => (new url('/mod/mudeck/management/theme_delete.php', ['id' => $sitetheme->id]))->out(false),
     ];
 }
 
 echo $OUTPUT->render_from_template('mod_mudeck/themes', [
     'hasthemes' => (bool)$rows,
     'themes' => $rows,
-    'addurl' => (new \core\url('/mod/mudeck/management/theme_edit.php'))->out(false),
+    'addurl' => (new url('/mod/mudeck/management/theme_edit.php'))->out(false),
 ]);
 
 echo $OUTPUT->footer();

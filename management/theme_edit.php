@@ -24,15 +24,18 @@
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use core\url;
 use mod_mudeck\local\form\theme_edit;
 use mod_mudeck\local\theme;
 
+// phpcs:disable moodle.Commenting.InlineComment.TypeHintingMatch
+/** @var stdClass $CFG */
 /** @var moodle_page $PAGE */
-/** @var core_renderer $OUTPUT */
+/** @var \core\output\core_renderer $OUTPUT */
+// phpcs:enable moodle.Commenting.InlineComment.TypeHintingMatch
 
 require(__DIR__ . '/../../../config.php');
 
-/** @var stdClass $CFG */
 require_once($CFG->libdir . '/adminlib.php');
 
 $id = optional_param('id', 0, PARAM_INT);
@@ -41,8 +44,8 @@ admin_externalpage_setup('mudeckthemes');
 // The page setup checks this too, but a write page says so itself.
 require_capability('mod/mudeck:managethemes', context_system::instance());
 
-$returnurl = new \core\url('/mod/mudeck/management/themes.php');
-$currenturl = new \core\url('/mod/mudeck/management/theme_edit.php', $id ? ['id' => $id] : []);
+$returnurl = new url('/mod/mudeck/management/themes.php');
+$currenturl = new url('/mod/mudeck/management/theme_edit.php', $id ? ['id' => $id] : []);
 $PAGE->set_url($currenturl);
 
 $existing = $id ? theme::get_site_theme($id) : null;

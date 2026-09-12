@@ -24,18 +24,21 @@
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use core\url;
 use mod_mudeck\local\media;
 use mod_mudeck\local\part;
 use mod_mudeck\local\theme;
 use mod_mudeck\local\form\part_edit;
 
+// phpcs:disable moodle.Commenting.InlineComment.TypeHintingMatch
+/** @var stdClass $CFG */
 /** @var moodle_database $DB */
 /** @var moodle_page $PAGE */
-/** @var core_renderer $OUTPUT */
+/** @var \core\output\core_renderer $OUTPUT */
+// phpcs:enable moodle.Commenting.InlineComment.TypeHintingMatch
 
 require(__DIR__ . '/../../../config.php');
 
-/** @var stdClass $CFG */
 require_once($CFG->libdir . '/formslib.php');
 
 $cmid = required_param('cmid', PARAM_INT);
@@ -56,9 +59,9 @@ require_capability('mod/mudeck:edit', $context);
 // still the single part it was. Once there are several, the overview is the place that
 // can show what happened to them.
 $viewurl = $returnto === 'view' && count(part::get_all($mudeck->id)) === 1
-    ? new \core\url('/mod/mudeck/view.php', ['id' => $cm->id])
-    : new \core\url('/mod/mudeck/management/overview.php', ['cmid' => $cm->id]);
-$currenturl = new \core\url('/mod/mudeck/management/part_edit.php', ['cmid' => $cm->id, 'partid' => $partid]);
+    ? new url('/mod/mudeck/view.php', ['id' => $cm->id])
+    : new url('/mod/mudeck/management/overview.php', ['cmid' => $cm->id]);
+$currenturl = new url('/mod/mudeck/management/part_edit.php', ['cmid' => $cm->id, 'partid' => $partid]);
 if ($returnto !== '') {
     $currenturl->param('returnto', $returnto);
 }
@@ -146,16 +149,16 @@ $formhtml = ob_get_clean();
 
 echo $OUTPUT->render_from_template('mod_mudeck/editor', [
     'form' => $formhtml,
-    'themecssjson' => json_encode(theme::get_custom_css(new \core\url('/mod/mudeck'))),
+    'themecssjson' => json_encode(theme::get_custom_css(new url('/mod/mudeck'))),
     'themejson' => json_encode(theme::resolve($mudeck->theme)),
     // The pictures worth offering are the ones in the form, uploads included, which is
     // the draft area rather than the part.
     'imagesurljson' => json_encode(
-        \core\url::routed_path("/api/rest/v2/mod_mudeck/part/edit/{$draftitemid}/images")->out(false)
+        url::routed_path("/api/rest/v2/mod_mudeck/part/edit/{$draftitemid}/images")->out(false)
     ),
     // The preview reads the pictures from the same place, so an upload shows in the
     // slides before the part has been saved anywhere.
-    'mediabasejson' => json_encode(\core\url::make_draftfile_url($draftitemid, '/', '')->out(false)),
+    'mediabasejson' => json_encode(url::make_draftfile_url($draftitemid, '/', '')->out(false)),
     'labelsjson' => json_encode([
         'preview' => get_string('editor_preview', 'mod_mudeck'),
         'slide' => get_string('editor_slide', 'mod_mudeck', '{$a}'),

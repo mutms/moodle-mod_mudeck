@@ -24,15 +24,18 @@
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use core\url;
 use mod_mudeck\local\media;
 use mod_mudeck\local\part;
 use mod_mudeck\local\session;
 use mod_mudeck\local\theme;
 
+// phpcs:disable moodle.Commenting.InlineComment.TypeHintingMatch
 /** @var moodle_database $DB */
 /** @var moodle_page $PAGE */
-/** @var core_renderer $OUTPUT */
+/** @var \core\output\core_renderer $OUTPUT */
 /** @var stdClass $USER */
+// phpcs:enable moodle.Commenting.InlineComment.TypeHintingMatch
 
 require(__DIR__ . '/../../config.php');
 
@@ -48,7 +51,7 @@ require_login($course, false, $cm);
 require_capability('mod/mudeck:syncdevices', $context);
 require_capability('mod/mudeck:fullaccess', $context);
 
-$sessionsurl = new \core\url('/mod/mudeck/sessions.php', ['cmid' => $cm->id]);
+$sessionsurl = new url('/mod/mudeck/sessions.php', ['cmid' => $cm->id]);
 $thesession = session::get_own_one($sessionid, $USER->id);
 
 if (!$mudeck->allowdevicesync || !$thesession || !session::is_followable($thesession)) {
@@ -56,7 +59,7 @@ if (!$mudeck->allowdevicesync || !$thesession || !session::is_followable($theses
 }
 
 $PAGE->set_context($context);
-$PAGE->set_url(new \core\url('/mod/mudeck/notes.php', ['cmid' => $cm->id, 'sessionid' => $sessionid]));
+$PAGE->set_url(new url('/mod/mudeck/notes.php', ['cmid' => $cm->id, 'sessionid' => $sessionid]));
 $PAGE->set_title($mudeck->name);
 $PAGE->set_pagelayout('embedded');
 $PAGE->set_show_navigation_footer(false);
@@ -76,9 +79,9 @@ echo $OUTPUT->header();
 
 echo $OUTPUT->render_from_template('mod_mudeck/notes', [
     'partsjson' => json_encode($partsdata),
-    'themecssjson' => json_encode(theme::get_custom_css(new \core\url('/mod/mudeck'))),
+    'themecssjson' => json_encode(theme::get_custom_css(new url('/mod/mudeck'))),
     'pollurljson' => json_encode(
-        \core\url::routed_path('/api/rest/v2/mod_mudeck/session/' . $sessionid)->out(false)
+        url::routed_path('/api/rest/v2/mod_mudeck/session/' . $sessionid)->out(false)
     ),
     'exiturljson' => json_encode($sessionsurl->out(false)),
     'labelsjson' => json_encode([

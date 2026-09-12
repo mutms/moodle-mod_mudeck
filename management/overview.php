@@ -26,13 +26,16 @@
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use core\url;
 use mod_mudeck\local\media;
 use mod_mudeck\local\part;
 use mod_mudeck\local\theme;
 
+// phpcs:disable moodle.Commenting.InlineComment.TypeHintingMatch
 /** @var moodle_database $DB */
 /** @var moodle_page $PAGE */
-/** @var core_renderer $OUTPUT */
+/** @var \core\output\core_renderer $OUTPUT */
+// phpcs:enable moodle.Commenting.InlineComment.TypeHintingMatch
 
 require(__DIR__ . '/../../../config.php');
 
@@ -46,7 +49,7 @@ $context = context_module::instance($cm->id);
 require_login($course, false, $cm);
 require_capability('mod/mudeck:edit', $context);
 
-$currenturl = new \core\url('/mod/mudeck/management/overview.php', ['cmid' => $cm->id]);
+$currenturl = new url('/mod/mudeck/management/overview.php', ['cmid' => $cm->id]);
 
 $PAGE->set_context($context);
 $PAGE->set_url($currenturl);
@@ -72,27 +75,27 @@ foreach ($parts as $index => $onepart) {
         'name' => format_string($onepart->name),
         'slides' => part::count_slides($onepart),
         'empty' => !part::has_content($onepart),
-        'editurl' => (new \core\url(
+        'editurl' => (new url(
             '/mod/mudeck/management/part_edit.php',
             ['cmid' => $cm->id, 'partid' => $onepart->id]
         ))->out(false),
-        'previewurl' => !part::has_content($onepart) ? '' : (new \core\url(
+        'previewurl' => !part::has_content($onepart) ? '' : (new url(
             '/mod/mudeck/management/part_preview.php',
             ['cmid' => $cm->id, 'partid' => $onepart->id]
         ))->out(false),
-        'exporturl' => (new \core\url(
+        'exporturl' => (new url(
             '/mod/mudeck/management/part_export.php',
             ['cmid' => $cm->id, 'partid' => $onepart->id]
         ))->out(false),
-        'upurl' => $index > 0 ? (new \core\url(
+        'upurl' => $index > 0 ? (new url(
             '/mod/mudeck/management/part_move.php',
             ['cmid' => $cm->id, 'partid' => $onepart->id, 'direction' => 'up', 'sesskey' => sesskey()]
         ))->out(false) : '',
-        'downurl' => $index < count($parts) - 1 ? (new \core\url(
+        'downurl' => $index < count($parts) - 1 ? (new url(
             '/mod/mudeck/management/part_move.php',
             ['cmid' => $cm->id, 'partid' => $onepart->id, 'direction' => 'down', 'sesskey' => sesskey()]
         ))->out(false) : '',
-        'deleteurl' => (new \core\url(
+        'deleteurl' => (new url(
             '/mod/mudeck/management/part_delete.php',
             ['cmid' => $cm->id, 'partid' => $onepart->id]
         ))->out(false),
@@ -104,9 +107,9 @@ echo $OUTPUT->heading(get_string('overview', 'mod_mudeck'));
 echo $OUTPUT->render_from_template('mod_mudeck/overview', [
     'parts' => $rows,
     'partsjson' => json_encode($rows),
-    'themecssjson' => json_encode(theme::get_custom_css(new \core\url('/mod/mudeck'))),
+    'themecssjson' => json_encode(theme::get_custom_css(new url('/mod/mudeck'))),
     // Where a part reports its new place; the id is appended by the browser.
-    'parturljson' => json_encode(\core\url::routed_path('/api/rest/v2/mod_mudeck/part/')->out(false)),
+    'parturljson' => json_encode(url::routed_path('/api/rest/v2/mod_mudeck/part/')->out(false)),
     'sesskeyjson' => json_encode(sesskey()),
     'labelsjson' => json_encode([
         'edit' => get_string('part_edit', 'mod_mudeck'),
@@ -122,11 +125,11 @@ echo $OUTPUT->render_from_template('mod_mudeck/overview', [
         'noparts' => get_string('nopartcontent', 'mod_mudeck'),
     ]),
     'hasparts' => (bool)$rows,
-    'addurl' => (new \core\url('/mod/mudeck/management/part_edit.php', ['cmid' => $cm->id]))->out(false),
-    'importurl' => (new \core\url('/mod/mudeck/management/part_import.php', ['cmid' => $cm->id]))->out(false),
+    'addurl' => (new url('/mod/mudeck/management/part_edit.php', ['cmid' => $cm->id]))->out(false),
+    'importurl' => (new url('/mod/mudeck/management/part_import.php', ['cmid' => $cm->id]))->out(false),
     'printurl' => $rows && has_capability('mod/mudeck:fullaccess', $context)
-        ? (new \core\url('/mod/mudeck/management/print.php', ['cmid' => $cm->id]))->out(false)
+        ? (new url('/mod/mudeck/management/print.php', ['cmid' => $cm->id]))->out(false)
         : '',
-    'backurl' => (new \core\url('/mod/mudeck/view.php', ['id' => $cm->id]))->out(false),
+    'backurl' => (new url('/mod/mudeck/view.php', ['id' => $cm->id]))->out(false),
 ]);
 echo $OUTPUT->footer();

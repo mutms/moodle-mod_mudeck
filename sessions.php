@@ -24,12 +24,15 @@
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use core\url;
 use mod_mudeck\local\session;
 
+// phpcs:disable moodle.Commenting.InlineComment.TypeHintingMatch
 /** @var moodle_database $DB */
 /** @var moodle_page $PAGE */
-/** @var core_renderer $OUTPUT */
+/** @var \core\output\core_renderer $OUTPUT */
 /** @var stdClass $USER */
+// phpcs:enable moodle.Commenting.InlineComment.TypeHintingMatch
 
 require(__DIR__ . '/../../config.php');
 
@@ -45,10 +48,10 @@ $context = context_module::instance($cm->id);
 require_login($course, false, $cm);
 require_capability('mod/mudeck:syncdevices', $context);
 if (!$mudeck->allowdevicesync) {
-    redirect(new \core\url('/mod/mudeck/view.php', ['id' => $cm->id]));
+    redirect(new url('/mod/mudeck/view.php', ['id' => $cm->id]));
 }
 
-$currenturl = new \core\url('/mod/mudeck/sessions.php', ['cmid' => $cm->id]);
+$currenturl = new url('/mod/mudeck/sessions.php', ['cmid' => $cm->id]);
 
 if ($delete) {
     require_sesskey();
@@ -90,9 +93,9 @@ foreach (session::get_own($mudeck->id, $USER->id) as $one) {
         'lastseen' => get_string('session_ago', 'mod_mudeck', format_time($now - $one->timelastseen)),
         'lastseenat' => userdate($one->timelastseen),
         'where' => $one->slidetitle ?: get_string('session_unknownslide', 'mod_mudeck'),
-        'deleteurl' => (new \core\url($currenturl, ['delete' => $one->id, 'sesskey' => sesskey()]))->out(false),
+        'deleteurl' => (new url($currenturl, ['delete' => $one->id, 'sesskey' => sesskey()]))->out(false),
         'notesurl' => $seesnotes && session::is_followable($one)
-            ? (new \core\url('/mod/mudeck/notes.php', ['cmid' => $cm->id, 'sessionid' => $one->id]))->out(false)
+            ? (new url('/mod/mudeck/notes.php', ['cmid' => $cm->id, 'sessionid' => $one->id]))->out(false)
             : '',
     ];
     if ($live) {
@@ -110,7 +113,7 @@ echo $OUTPUT->render_from_template('mod_mudeck/sessions', [
     'hasrunning' => (bool)$running,
     'finished' => $finished,
     'hasfinished' => (bool)$finished,
-    'deletefinishedurl' => (new \core\url($currenturl, ['deletefinished' => 1, 'sesskey' => sesskey()]))->out(false),
+    'deletefinishedurl' => (new url($currenturl, ['deletefinished' => 1, 'sesskey' => sesskey()]))->out(false),
 ]);
 
 echo $OUTPUT->footer();

@@ -27,9 +27,13 @@
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+// phpcs:disable moodle.Commenting.InlineComment.TypeHintingMatch
 /** @var moodle_database $DB */
 /** @var moodle_page $PAGE */
-/** @var core_renderer $OUTPUT */
+/** @var \core\output\core_renderer $OUTPUT */
+// phpcs:enable moodle.Commenting.InlineComment.TypeHintingMatch
+
+use core\url;
 
 require(__DIR__ . '/../../config.php');
 
@@ -52,11 +56,10 @@ require_course_login($course, true, $cm);
 require_capability('mod/mudeck:view', $context);
 
 $PAGE->set_context($context);
-$PAGE->set_url(new \core\url('/mod/mudeck/view.php', ['id' => $cm->id]));
+$PAGE->set_url(new url('/mod/mudeck/view.php', ['id' => $cm->id]));
 $PAGE->set_title($mudeck->name);
 $PAGE->add_body_class('limitedwidth');
 mudeck_name_presentation_tab($PAGE);
-
 
 $parts = \mod_mudeck\local\part::get_playable($mudeck->id);
 $hasslides = (bool)$parts;
@@ -71,23 +74,23 @@ echo $OUTPUT->header();
 
 echo $OUTPUT->render_from_template('mod_mudeck/view', [
     'hasslides' => $hasslides,
-    'presenturl' => (new \core\url('/mod/mudeck/present.php', ['id' => $cm->id]))->out(false),
+    'presenturl' => (new url('/mod/mudeck/present.php', ['id' => $cm->id]))->out(false),
     'canpresent' => $hasslides && has_capability('mod/mudeck:present', $context),
-    'printurl' => (new \core\url('/mod/mudeck/print.php', ['id' => $cm->id]))->out(false),
+    'printurl' => (new url('/mod/mudeck/print.php', ['id' => $cm->id]))->out(false),
     // An empty presentation is a dead end for anybody who cannot write slides, and one
     // click from being a presentation for anybody who can.
     'canedit' => !$hasslides && $canedit,
     'caneditone' => $hasslides && $canedit && $onepart !== null,
     'editurl' => $onepart
-        ? (new \core\url('/mod/mudeck/management/part_edit.php', [
+        ? (new url('/mod/mudeck/management/part_edit.php', [
             'cmid' => $cm->id,
             'partid' => $onepart->id,
             // Came from here, so go back here when the writing is done.
             'returnto' => 'view',
         ]))->out(false)
         : '',
-    'overviewurl' => (new \core\url('/mod/mudeck/management/overview.php', ['cmid' => $cm->id]))->out(false),
-    'importurl' => (new \core\url('/mod/mudeck/management/part_import.php', ['cmid' => $cm->id]))->out(false),
+    'overviewurl' => (new url('/mod/mudeck/management/overview.php', ['cmid' => $cm->id]))->out(false),
+    'importurl' => (new url('/mod/mudeck/management/part_import.php', ['cmid' => $cm->id]))->out(false),
 ]);
 
 echo $OUTPUT->footer();

@@ -24,10 +24,14 @@
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use core\url;
+
+// phpcs:disable moodle.Commenting.InlineComment.TypeHintingMatch
+/** @var stdClass $CFG */
 /** @var moodle_database $DB */
 /** @var moodle_page $PAGE */
-/** @var core_renderer $OUTPUT */
-/** @var stdClass $CFG */
+/** @var \core\output\core_renderer $OUTPUT */
+// phpcs:enable moodle.Commenting.InlineComment.TypeHintingMatch
 
 require(__DIR__ . '/../../config.php');
 
@@ -51,8 +55,7 @@ echo $OUTPUT->header();
 
 $mudecks = get_all_instances_in_course('mudeck', $course);
 if (!$mudecks) {
-    notice(get_string('thereareno', 'moodle', $strname), new \core\url('/course/view.php', ['id' => $course->id]));
-    die;
+    notice(get_string('thereareno', 'moodle', $strname), new url('/course/view.php', ['id' => $course->id]));
 }
 
 $table = new html_table();
@@ -60,8 +63,8 @@ $table->head = [get_string('name'), get_string('moduleintro')];
 $table->align = ['left', 'left'];
 
 foreach ($mudecks as $mudeck) {
-    $link = \html_writer::link(
-        new \core\url('/mod/mudeck/view.php', ['id' => $mudeck->coursemodule]),
+    $link = \core\output\html_writer::link(
+        new url('/mod/mudeck/view.php', ['id' => $mudeck->coursemodule]),
         format_string($mudeck->name),
         ['class' => $mudeck->visible ? '' : 'dimmed']
     );
