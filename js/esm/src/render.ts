@@ -187,10 +187,20 @@ type RenderedWithNeeds = RenderedPart & {needs: Needs; theme: string};
  */
 async function renderOne(markdown: string, theme: string, themecss: Record<string, string>): Promise<RenderedWithNeeds> {
     const safe = filterMarkdown(markdown);
-    const needs = detectNeeds(safe);
-    const {marp, known} = createMarp(await loadPlugins(needs), themecss);
+    let needs = detectNeeds(safe);
+    let {marp, known} = createMarp(await loadPlugins(needs), themecss);
     const chosen = chooseTheme(safe, theme, known);
-    const {html, comments} = marp.render(withTheme(safe, chosen));
+    let rendered: {html: string; comments: string[][]};
+    try {
+        rendered = marp.render(withTheme(safe, chosen));
+    } catch (e) {
+        // A plugin failed on this deck: show the slides plain rather than nothing.
+        window.console.error('[mudeck] plugin rendering failed, showing plain slides', e);
+        needs = {math: false, code: false, mermaid: false};
+        ({marp, known} = createMarp([], themecss));
+        rendered = marp.render(withTheme(safe, chosen));
+    }
+    const {html, comments} = rendered;
 
     return {
         html: sanitizeHtml(html),

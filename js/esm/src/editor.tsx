@@ -305,10 +305,18 @@ export default function Editor({themecss, theme, labels, help, imagesurl, mediab
         const text = textarea.value;
         const marked = withMarker(text, textarea.selectionStart ?? 0);
         const turn = ++drawing.current;
-        const {html, css: slidecss, notes} = await renderPart(withMedia(marked ?? text, mediabase), theme, themecss ?? {});
+        let result;
+        try {
+            result = await renderPart(withMedia(marked ?? text, mediabase), theme, themecss ?? {});
+        } catch (e) {
+            // The last good preview stays; the next keystroke tries again.
+            window.console.error('[mudeck] preview failed', e);
+            return;
+        }
         if (turn !== drawing.current) {
             return;
         }
+        const {html, css: slidecss, notes} = result;
 
         const holder = document.createElement('div');
         holder.innerHTML = html;

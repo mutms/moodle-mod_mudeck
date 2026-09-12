@@ -61,7 +61,8 @@ Three slides. Copy it into a new activity, press **Start presentation**, and see
   `$$ ... $$` on lines of its own for a big one.
 * **Code** — a fenced block with the language name after the backticks is coloured:
   ` ```php `.
-* **Diagrams** — a fenced block named `mermaid` becomes a diagram.
+* **Diagrams** — a fenced block named `mermaid` becomes a diagram: flowcharts, sequence,
+  state and class diagrams, entity relationships and simple charts.
 * **Colours** — `<!-- _backgroundColor: #123456 -->` or `<!-- _color: white -->` on a
   slide changes just that slide.
 

@@ -172,10 +172,17 @@ function Editor({ themecss, theme, labels, help, imagesurl, mediabase }) {
     const text = textarea.value;
     const marked = withMarker(text, textarea.selectionStart ?? 0);
     const turn = ++drawing.current;
-    const { html, css: slidecss, notes } = await renderPart(withMedia(marked ?? text, mediabase), theme, themecss ?? {});
+    let result;
+    try {
+      result = await renderPart(withMedia(marked ?? text, mediabase), theme, themecss ?? {});
+    } catch (e) {
+      window.console.error("[mudeck] preview failed", e);
+      return;
+    }
     if (turn !== drawing.current) {
       return;
     }
+    const { html, css: slidecss, notes } = result;
     const holder = document.createElement("div");
     holder.innerHTML = html;
     const sections = Array.from(holder.querySelectorAll("section"));
@@ -470,12 +477,12 @@ function Editor({ themecss, theme, labels, help, imagesurl, mediabase }) {
       children: [
         /* @__PURE__ */ jsxDEV("i", { className: `fa fa-${full ? "compress" : "expand"}`, "aria-hidden": "true" }, void 0, false, {
           fileName: "public/mod/mudeck/js/esm/src/editor.tsx",
-          lineNumber: 669,
+          lineNumber: 677,
           columnNumber: 13
         }, this),
         /* @__PURE__ */ jsxDEV("span", { className: "visually-hidden", children: labels.fullscreen }, void 0, false, {
           fileName: "public/mod/mudeck/js/esm/src/editor.tsx",
-          lineNumber: 670,
+          lineNumber: 678,
           columnNumber: 13
         }, this)
       ]
@@ -484,7 +491,7 @@ function Editor({ themecss, theme, labels, help, imagesurl, mediabase }) {
     true,
     {
       fileName: "public/mod/mudeck/js/esm/src/editor.tsx",
-      lineNumber: 662,
+      lineNumber: 670,
       columnNumber: 9
     },
     this
@@ -513,7 +520,7 @@ function Editor({ themecss, theme, labels, help, imagesurl, mediabase }) {
       false,
       {
         fileName: "public/mod/mudeck/js/esm/src/editor.tsx",
-        lineNumber: 678,
+        lineNumber: 686,
         columnNumber: 13
       },
       this
@@ -541,7 +548,7 @@ function Editor({ themecss, theme, labels, help, imagesurl, mediabase }) {
           false,
           {
             fileName: "public/mod/mudeck/js/esm/src/editor.tsx",
-            lineNumber: 705,
+            lineNumber: 713,
             columnNumber: 25
           },
           this
@@ -551,7 +558,7 @@ function Editor({ themecss, theme, labels, help, imagesurl, mediabase }) {
       false,
       {
         fileName: "public/mod/mudeck/js/esm/src/editor.tsx",
-        lineNumber: 696,
+        lineNumber: 704,
         columnNumber: 17
       },
       this
@@ -559,7 +566,7 @@ function Editor({ themecss, theme, labels, help, imagesurl, mediabase }) {
     /* @__PURE__ */ jsxDEV("div", { className: "mudeck-editor-preview", "data-region": "mudeck-editor-preview", children: [
       /* @__PURE__ */ jsxDEV("style", { children: css }, void 0, false, {
         fileName: "public/mod/mudeck/js/esm/src/editor.tsx",
-        lineNumber: 721,
+        lineNumber: 729,
         columnNumber: 13
       }, this),
       /* @__PURE__ */ jsxDEV("ul", { className: "nav nav-underline mudeck-editor-tabs", role: "tablist", children: [
@@ -580,17 +587,17 @@ function Editor({ themecss, theme, labels, help, imagesurl, mediabase }) {
         false,
         {
           fileName: "public/mod/mudeck/js/esm/src/editor.tsx",
-          lineNumber: 730,
+          lineNumber: 738,
           columnNumber: 25
         },
         this
       ) }, name, false, {
         fileName: "public/mod/mudeck/js/esm/src/editor.tsx",
-        lineNumber: 729,
+        lineNumber: 737,
         columnNumber: 21
       }, this)) }, void 0, false, {
         fileName: "public/mod/mudeck/js/esm/src/editor.tsx",
-        lineNumber: 723,
+        lineNumber: 731,
         columnNumber: 13
       }, this),
       /* @__PURE__ */ jsxDEV("div", { className: "mudeck-editor-pane", hidden: tab !== "preview", children: /* @__PURE__ */ jsxDEV("ol", { className: "mudeck-editor-strip", ref: stripref, children: slides.map((slide, index) => /* @__PURE__ */ jsxDEV(
@@ -602,7 +609,7 @@ function Editor({ themecss, theme, labels, help, imagesurl, mediabase }) {
           children: [
             /* @__PURE__ */ jsxDEV("div", { className: "mudeck-editor-slide-box marpit", dangerouslySetInnerHTML: { __html: slide } }, void 0, false, {
               fileName: "public/mod/mudeck/js/esm/src/editor.tsx",
-              lineNumber: 753,
+              lineNumber: 761,
               columnNumber: 29
             }, this),
             /* @__PURE__ */ jsxDEV(
@@ -614,7 +621,7 @@ function Editor({ themecss, theme, labels, help, imagesurl, mediabase }) {
                 onClick: () => goToSlide(index),
                 children: /* @__PURE__ */ jsxDEV("span", { className: "visually-hidden", children: labels.slide.replace("{$a}", String(index + 1)) }, void 0, false, {
                   fileName: "public/mod/mudeck/js/esm/src/editor.tsx",
-                  lineNumber: 760,
+                  lineNumber: 768,
                   columnNumber: 33
                 }, this)
               },
@@ -622,14 +629,14 @@ function Editor({ themecss, theme, labels, help, imagesurl, mediabase }) {
               false,
               {
                 fileName: "public/mod/mudeck/js/esm/src/editor.tsx",
-                lineNumber: 754,
+                lineNumber: 762,
                 columnNumber: 29
               },
               this
             ),
             /* @__PURE__ */ jsxDEV("span", { className: "mudeck-editor-number", children: labels.slide.replace("{$a}", String(index + 1)) }, void 0, false, {
               fileName: "public/mod/mudeck/js/esm/src/editor.tsx",
-              lineNumber: 764,
+              lineNumber: 772,
               columnNumber: 29
             }, this)
           ]
@@ -638,69 +645,69 @@ function Editor({ themecss, theme, labels, help, imagesurl, mediabase }) {
         true,
         {
           fileName: "public/mod/mudeck/js/esm/src/editor.tsx",
-          lineNumber: 746,
+          lineNumber: 754,
           columnNumber: 25
         },
         this
       )) }, void 0, false, {
         fileName: "public/mod/mudeck/js/esm/src/editor.tsx",
-        lineNumber: 744,
+        lineNumber: 752,
         columnNumber: 17
       }, this) }, void 0, false, {
         fileName: "public/mod/mudeck/js/esm/src/editor.tsx",
-        lineNumber: 743,
+        lineNumber: 751,
         columnNumber: 13
       }, this),
       /* @__PURE__ */ jsxDEV("div", { className: "mudeck-editor-pane", hidden: tab !== "media", children: [
         /* @__PURE__ */ jsxDEV("div", { ref: mediaref }, void 0, false, {
           fileName: "public/mod/mudeck/js/esm/src/editor.tsx",
-          lineNumber: 773,
+          lineNumber: 781,
           columnNumber: 17
         }, this),
         /* @__PURE__ */ jsxDEV("p", { className: "text-muted mudeck-editor-intro", children: labels.mediaintro }, void 0, false, {
           fileName: "public/mod/mudeck/js/esm/src/editor.tsx",
-          lineNumber: 774,
+          lineNumber: 782,
           columnNumber: 17
         }, this)
       ] }, void 0, true, {
         fileName: "public/mod/mudeck/js/esm/src/editor.tsx",
-        lineNumber: 772,
+        lineNumber: 780,
         columnNumber: 13
       }, this),
       /* @__PURE__ */ jsxDEV("div", { className: "mudeck-editor-pane", hidden: tab !== "help", children: [
         /* @__PURE__ */ jsxDEV("h2", { className: "mudeck-editor-heading", children: labels.markdownhelp }, void 0, false, {
           fileName: "public/mod/mudeck/js/esm/src/editor.tsx",
-          lineNumber: 778,
+          lineNumber: 786,
           columnNumber: 17
         }, this),
         /* @__PURE__ */ jsxDEV("div", { dangerouslySetInnerHTML: { __html: help?.markdown ?? "" } }, void 0, false, {
           fileName: "public/mod/mudeck/js/esm/src/editor.tsx",
-          lineNumber: 779,
+          lineNumber: 787,
           columnNumber: 17
         }, this),
         /* @__PURE__ */ jsxDEV("h2", { className: "mudeck-editor-heading", children: labels.mediahelp }, void 0, false, {
           fileName: "public/mod/mudeck/js/esm/src/editor.tsx",
-          lineNumber: 780,
+          lineNumber: 788,
           columnNumber: 17
         }, this),
         /* @__PURE__ */ jsxDEV("div", { dangerouslySetInnerHTML: { __html: help?.media ?? "" } }, void 0, false, {
           fileName: "public/mod/mudeck/js/esm/src/editor.tsx",
-          lineNumber: 781,
+          lineNumber: 789,
           columnNumber: 17
         }, this)
       ] }, void 0, true, {
         fileName: "public/mod/mudeck/js/esm/src/editor.tsx",
-        lineNumber: 777,
+        lineNumber: 785,
         columnNumber: 13
       }, this)
     ] }, void 0, true, {
       fileName: "public/mod/mudeck/js/esm/src/editor.tsx",
-      lineNumber: 720,
+      lineNumber: 728,
       columnNumber: 9
     }, this)
   ] }, void 0, true, {
     fileName: "public/mod/mudeck/js/esm/src/editor.tsx",
-    lineNumber: 675,
+    lineNumber: 683,
     columnNumber: 9
   }, this);
 }

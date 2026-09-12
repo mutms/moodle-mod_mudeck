@@ -104,10 +104,19 @@ function createMarp(plugins, themecss) {
 __name(createMarp, "createMarp");
 async function renderOne(markdown, theme, themecss) {
   const safe = filterMarkdown(markdown);
-  const needs = detectNeeds(safe);
-  const { marp, known } = createMarp(await loadPlugins(needs), themecss);
+  let needs = detectNeeds(safe);
+  let { marp, known } = createMarp(await loadPlugins(needs), themecss);
   const chosen = chooseTheme(safe, theme, known);
-  const { html, comments } = marp.render(withTheme(safe, chosen));
+  let rendered;
+  try {
+    rendered = marp.render(withTheme(safe, chosen));
+  } catch (e) {
+    window.console.error("[mudeck] plugin rendering failed, showing plain slides", e);
+    needs = { math: false, code: false, mermaid: false };
+    ({ marp, known } = createMarp([], themecss));
+    rendered = marp.render(withTheme(safe, chosen));
+  }
+  const { html, comments } = rendered;
   return {
     html: sanitizeHtml(html),
     // Never the CSS of the author's render.

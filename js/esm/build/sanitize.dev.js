@@ -149,6 +149,22 @@ DOMPurify.addHook("uponSanitizeAttribute", (node, data) => {
     data.keepAttr = false;
   }
 });
+const DIAGRAMSCALE = 2.2;
+const DIAGRAMMAXWIDTH = 1100;
+const DIAGRAMMAXHEIGHT = 540;
+DOMPurify.addHook("afterSanitizeAttributes", (node) => {
+  if (node.tagName.toLowerCase() !== "svg" || !node.hasAttribute("data-marp-mermaid")) {
+    return;
+  }
+  const width = parseFloat(node.getAttribute("width") ?? "");
+  const height = parseFloat(node.getAttribute("height") ?? "");
+  if (!(width > 0) || !(height > 0)) {
+    return;
+  }
+  const factor = Math.min(DIAGRAMSCALE, DIAGRAMMAXWIDTH / width, DIAGRAMMAXHEIGHT / height);
+  node.setAttribute("width", (width * factor).toFixed(2));
+  node.setAttribute("height", (height * factor).toFixed(2));
+});
 DOMPurify.addHook("afterSanitizeAttributes", (node) => {
   if (node.tagName === "A" && node.hasAttribute("href")) {
     node.setAttribute("target", "_blank");

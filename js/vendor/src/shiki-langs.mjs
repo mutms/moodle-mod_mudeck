@@ -39,6 +39,7 @@ import javascript from 'shiki/langs/javascript.mjs';
 import json from 'shiki/langs/json.mjs';
 import kotlin from 'shiki/langs/kotlin.mjs';
 import markdown from 'shiki/langs/markdown.mjs';
+import mermaid from 'shiki/langs/mermaid.mjs';
 import php from 'shiki/langs/php.mjs';
 import python from 'shiki/langs/python.mjs';
 import ruby from 'shiki/langs/ruby.mjs';
@@ -63,6 +64,7 @@ const langLoaders = {
     json: () => json,
     kotlin: () => kotlin,
     markdown: () => markdown,
+    mermaid: () => mermaid,
     php: () => php,
     python: () => python,
     ruby: () => ruby,
@@ -76,15 +78,30 @@ const langLoaders = {
 
 let highlighter = null;
 
+/** The real highlighter, with codeToHtml declining instead of throwing for a language it does not have. */
+const create = () => {
+    const real = createHighlighterCoreSync({
+        themes: [createCssVariablesTheme({name: 'marp-shiki', variablePrefix: '--marp-shiki-'})],
+        langs: [],
+        engine: createJavaScriptRegexEngine({forgiving: true}),
+    });
+    return {
+        getLoadedLanguages: () => real.getLoadedLanguages(),
+        loadLanguageSync: (lang) => real.loadLanguageSync(lang),
+        codeToHtml: (code, options) => {
+            try {
+                return real.codeToHtml(code, options);
+            } catch {
+                // An empty string tells Marp to render the fence uncoloured.
+                return '';
+            }
+        },
+    };
+};
+
 export const shiki = {
     get highlighter() {
-        if (!highlighter) {
-            highlighter = createHighlighterCoreSync({
-                themes: [createCssVariablesTheme({name: 'marp-shiki', variablePrefix: '--marp-shiki-'})],
-                langs: [],
-                engine: createJavaScriptRegexEngine({forgiving: true}),
-            });
-        }
+        highlighter = highlighter ?? create();
         return highlighter;
     },
     resolveLang: (lang) => langLoaders[lang],

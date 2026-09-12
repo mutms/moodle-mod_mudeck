@@ -286,6 +286,17 @@ Feature: Markdown slide deck
     # A style element from the author never reaches the slide; the deck's own stylesheet sits outside the sections.
     And ".mudeck-slides section style" "css_element" should not exist
 
+  @javascript
+  Scenario: A diagram of a kind the renderer does not draw is shown as its source
+    Given the following "mod_mudeck > parts" exist:
+      | mudeck     | name    | content                                                              |
+      | Conference | Opening | # Venn\n\n```mermaid\nvenn-beta\n    set Desirable\n    set Feasible\n``` |
+    When I am on the "Conference" "mudeck activity" page logged in as "teacher1"
+    And I follow "Start presentation"
+    Then I should see "Venn"
+    And I should see "set Desirable"
+    And ".mudeck-slides [data-marp-mermaid]" "css_element" should not exist
+
   @javascript @_file_upload
   Scenario: A teacher imports slides as a plain Markdown file
     Given I am on the "Conference" "mod_mudeck > overview" page logged in as "teacher1"

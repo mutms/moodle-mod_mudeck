@@ -232,6 +232,31 @@ DOMPurify.addHook('uponSanitizeAttribute', (node: Element, data: {attrName: stri
     }
 });
 
+/** Diagram text is 13px; this brings it close to slide text. */
+const DIAGRAMSCALE = 2.2;
+
+/** The room a diagram may take on a 1280x720 slide, leaving the theme's padding and a heading. */
+const DIAGRAMMAXWIDTH = 1100;
+const DIAGRAMMAXHEIGHT = 540;
+
+/*
+ * A diagram is drawn at its own pixel size, which is small on a slide. Its viewBox keeps
+ * the proportions, so scaling is a matter of the width and height attributes.
+ */
+DOMPurify.addHook('afterSanitizeAttributes', (node: Element) => {
+    if (node.tagName.toLowerCase() !== 'svg' || !node.hasAttribute('data-marp-mermaid')) {
+        return;
+    }
+    const width = parseFloat(node.getAttribute('width') ?? '');
+    const height = parseFloat(node.getAttribute('height') ?? '');
+    if (!(width > 0) || !(height > 0)) {
+        return;
+    }
+    const factor = Math.min(DIAGRAMSCALE, DIAGRAMMAXWIDTH / width, DIAGRAMMAXHEIGHT / height);
+    node.setAttribute('width', (width * factor).toFixed(2));
+    node.setAttribute('height', (height * factor).toFixed(2));
+});
+
 /*
  * Every link opens in a new tab, so a click during a talk never leaves the presentation.
  * The rel stops the new tab reaching back through window.opener.
