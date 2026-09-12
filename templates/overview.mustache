@@ -30,7 +30,7 @@
     * partsjson - JSON encoded parts for the slide view, each with id, name, markdown and action URLs
     * themecssjson - JSON encoded CSS of the plugin themes, keyed by name
     * labelsjson - JSON encoded labels for the list of parts
-    * moveurljson - JSON encoded REST URL a part reports its new position to
+    * parturljson - JSON encoded REST URL prefix of the part resource, ending in a slash
     * sesskeyjson - JSON encoded session key for that call
 
     Example context (json):
@@ -47,7 +47,7 @@
         "partsjson": "[]",
         "themecssjson": "{}",
         "labelsjson": "{}",
-        "moveurljson": "\"/api/rest/v2/mod_mudeck/part/\"",
+        "parturljson": "\"/api/rest/v2/mod_mudeck/part/\"",
         "sesskeyjson": "\"abc123\""
     }
 }}
@@ -59,7 +59,7 @@
         "parts": {{{partsjson}}},
         "themecss": {{{themecssjson}}},
         "labels": {{{labelsjson}}},
-        "moveurl": {{{moveurljson}}},
+        "parturl": {{{parturljson}}},
         "sesskey": {{{sesskeyjson}}}
     },
     "id": "mudeck-overview",

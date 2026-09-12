@@ -21,18 +21,18 @@
 namespace mod_mudeck\phpunit\route\api;
 
 use core\tests\router\route_testcase;
-use mod_mudeck\route\api\draft_images;
+use mod_mudeck\route\api\part_edit_images;
 
 /**
- * Draft area picture listing test.
+ * Pictures offered while editing a part.
  *
  * @package    mod_mudeck
  * @copyright  2026 Petr Skoda
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  *
- * @covers \mod_mudeck\route\api\draft_images
+ * @covers \mod_mudeck\route\api\part_edit_images
  */
-final class draft_images_test extends route_testcase {
+final class part_edit_images_test extends route_testcase {
     public function setUp(): void {
         parent::setUp();
         $this->resetAfterTest();
@@ -76,7 +76,7 @@ final class draft_images_test extends route_testcase {
     public function test_only_the_pictures_are_offered(): void {
         $user = $this->getDataGenerator()->create_user();
         $this->setUser($user);
-        $this->add_class_routes_to_route_loader(draft_images::class);
+        $this->add_class_routes_to_route_loader(part_edit_images::class);
 
         $draftitemid = file_get_unused_draft_itemid();
         $this->add_draft_file($user, $draftitemid, 'photo.gif', '/', $this->gif());
@@ -84,7 +84,7 @@ final class draft_images_test extends route_testcase {
         // Not a picture, so it has no business inside an image.
         $this->add_draft_file($user, $draftitemid, 'slides.md', '/', '# Hello');
 
-        $response = $this->process_api_request('GET', "/draft/{$draftitemid}/images");
+        $response = $this->process_api_request('GET', "/part/edit/{$draftitemid}/images");
 
         $this->assertEquals(200, $response->getStatusCode());
         $payload = json_decode((string)$response->getBody(), true);
@@ -101,9 +101,9 @@ final class draft_images_test extends route_testcase {
         $this->add_draft_file($owner, $draftitemid, 'photo.gif', '/', $this->gif());
 
         $this->setUser($other);
-        $this->add_class_routes_to_route_loader(draft_images::class);
+        $this->add_class_routes_to_route_loader(part_edit_images::class);
 
-        $response = $this->process_api_request('GET', "/draft/{$draftitemid}/images");
+        $response = $this->process_api_request('GET', "/part/edit/{$draftitemid}/images");
 
         $this->assertEquals(200, $response->getStatusCode());
         $payload = json_decode((string)$response->getBody(), true);

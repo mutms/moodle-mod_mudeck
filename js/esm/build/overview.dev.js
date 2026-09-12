@@ -23,7 +23,7 @@ function PositionChooser({ id, label, confirm, count, current, onPick, onCancel 
   return /* @__PURE__ */ jsxDEV(Fragment, { children: [
     /* @__PURE__ */ jsxDEV("label", { className: "visually-hidden", htmlFor: id, children: label }, void 0, false, {
       fileName: "public/mod/mudeck/js/esm/src/overview.tsx",
-      lineNumber: 94,
+      lineNumber: 95,
       columnNumber: 13
     }, this),
     /* @__PURE__ */ jsxDEV(
@@ -40,7 +40,7 @@ function PositionChooser({ id, label, confirm, count, current, onPick, onCancel 
         },
         children: Array.from({ length: count }, (_value, place) => /* @__PURE__ */ jsxDEV("option", { value: place + 1, children: place + 1 }, place, false, {
           fileName: "public/mod/mudeck/js/esm/src/overview.tsx",
-          lineNumber: 107,
+          lineNumber: 108,
           columnNumber: 21
         }, this))
       },
@@ -48,7 +48,7 @@ function PositionChooser({ id, label, confirm, count, current, onPick, onCancel 
       false,
       {
         fileName: "public/mod/mudeck/js/esm/src/overview.tsx",
-        lineNumber: 95,
+        lineNumber: 96,
         columnNumber: 13
       },
       this
@@ -65,19 +65,19 @@ function PositionChooser({ id, label, confirm, count, current, onPick, onCancel 
       false,
       {
         fileName: "public/mod/mudeck/js/esm/src/overview.tsx",
-        lineNumber: 110,
+        lineNumber: 111,
         columnNumber: 13
       },
       this
     )
   ] }, void 0, true, {
     fileName: "public/mod/mudeck/js/esm/src/overview.tsx",
-    lineNumber: 93,
+    lineNumber: 94,
     columnNumber: 9
   }, this);
 }
 __name(PositionChooser, "PositionChooser");
-function Overview({ parts, themecss, labels, moveurl, sesskey }) {
+function Overview({ parts, themecss, labels, parturl, sesskey }) {
   const thumbsref = useRef(null);
   const [open, setOpen] = useState(null);
   const [rendered, setRendered] = useState({});
@@ -141,8 +141,8 @@ function Overview({ parts, themecss, labels, moveurl, sesskey }) {
     const previous = order;
     setOrder(order.filter((one) => one.id !== part.id));
     try {
-      const response = await fetch(`${moveurl}${part.id}/delete`, {
-        method: "POST",
+      const response = await fetch(`${parturl}${part.id}`, {
+        method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ sesskey })
       });
@@ -164,7 +164,7 @@ function Overview({ parts, themecss, labels, moveurl, sesskey }) {
     moved.splice(to, 0, ...moved.splice(from, 1));
     setOrder(moved);
     setAnnouncement(labels.moved.replace("{$a}", String(position)));
-    fetch(`${moveurl}${id}/position`, {
+    fetch(`${parturl}${id}/move`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ sesskey, position })
@@ -189,14 +189,14 @@ function Overview({ parts, themecss, labels, moveurl, sesskey }) {
   if (!order.length) {
     return /* @__PURE__ */ jsxDEV("div", { className: "alert alert-info", role: "status", children: labels.noparts }, void 0, false, {
       fileName: "public/mod/mudeck/js/esm/src/overview.tsx",
-      lineNumber: 271,
+      lineNumber: 272,
       columnNumber: 13
     }, this);
   }
   return /* @__PURE__ */ jsxDEV("div", { className: "mudeck-parts", children: [
     /* @__PURE__ */ jsxDEV("div", { className: "visually-hidden", "aria-live": "polite", children: announcement }, void 0, false, {
       fileName: "public/mod/mudeck/js/esm/src/overview.tsx",
-      lineNumber: 277,
+      lineNumber: 278,
       columnNumber: 13
     }, this),
     order.map((part, index) => /* @__PURE__ */ jsxDEV(
@@ -235,14 +235,14 @@ function Overview({ parts, themecss, labels, moveurl, sesskey }) {
                     false,
                     {
                       fileName: "public/mod/mudeck/js/esm/src/overview.tsx",
-                      lineNumber: 302,
+                      lineNumber: 303,
                       columnNumber: 29
                     },
                     this
                   ),
                   /* @__PURE__ */ jsxDEV("span", { className: "mudeck-part-name", children: part.name }, void 0, false, {
                     fileName: "public/mod/mudeck/js/esm/src/overview.tsx",
-                    lineNumber: 306,
+                    lineNumber: 307,
                     columnNumber: 29
                   }, this)
                 ]
@@ -251,7 +251,7 @@ function Overview({ parts, themecss, labels, moveurl, sesskey }) {
               true,
               {
                 fileName: "public/mod/mudeck/js/esm/src/overview.tsx",
-                lineNumber: 295,
+                lineNumber: 296,
                 columnNumber: 25
               },
               this
@@ -259,7 +259,7 @@ function Overview({ parts, themecss, labels, moveurl, sesskey }) {
             /* @__PURE__ */ jsxDEV("div", { className: "mudeck-part-actions", children: [
               /* @__PURE__ */ jsxDEV("a", { href: part.editurl, className: "btn btn-sm btn-primary", children: labels.edit }, void 0, false, {
                 fileName: "public/mod/mudeck/js/esm/src/overview.tsx",
-                lineNumber: 310,
+                lineNumber: 311,
                 columnNumber: 29
               }, this),
               order.length > 1 && choosing !== part.id && /* @__PURE__ */ jsxDEV(
@@ -272,12 +272,12 @@ function Overview({ parts, themecss, labels, moveurl, sesskey }) {
                   children: [
                     /* @__PURE__ */ jsxDEV("i", { className: "fa fa-arrows-up-down-left-right", "aria-hidden": "true" }, void 0, false, {
                       fileName: "public/mod/mudeck/js/esm/src/overview.tsx",
-                      lineNumber: 318,
+                      lineNumber: 319,
                       columnNumber: 37
                     }, this),
                     /* @__PURE__ */ jsxDEV("span", { className: "visually-hidden", children: labels.move }, void 0, false, {
                       fileName: "public/mod/mudeck/js/esm/src/overview.tsx",
-                      lineNumber: 319,
+                      lineNumber: 320,
                       columnNumber: 37
                     }, this)
                   ]
@@ -286,7 +286,7 @@ function Overview({ parts, themecss, labels, moveurl, sesskey }) {
                 true,
                 {
                   fileName: "public/mod/mudeck/js/esm/src/overview.tsx",
-                  lineNumber: 312,
+                  lineNumber: 313,
                   columnNumber: 33
                 },
                 this
@@ -309,7 +309,7 @@ function Overview({ parts, themecss, labels, moveurl, sesskey }) {
                 false,
                 {
                   fileName: "public/mod/mudeck/js/esm/src/overview.tsx",
-                  lineNumber: 323,
+                  lineNumber: 324,
                   columnNumber: 33
                 },
                 this
@@ -317,17 +317,17 @@ function Overview({ parts, themecss, labels, moveurl, sesskey }) {
               /* @__PURE__ */ jsxDEV("a", { href: part.exporturl, className: "btn btn-sm btn-secondary", title: labels.export, children: [
                 /* @__PURE__ */ jsxDEV("i", { className: "fa fa-download", "aria-hidden": "true" }, void 0, false, {
                   fileName: "public/mod/mudeck/js/esm/src/overview.tsx",
-                  lineNumber: 337,
+                  lineNumber: 338,
                   columnNumber: 33
                 }, this),
                 /* @__PURE__ */ jsxDEV("span", { className: "visually-hidden", children: labels.export }, void 0, false, {
                   fileName: "public/mod/mudeck/js/esm/src/overview.tsx",
-                  lineNumber: 338,
+                  lineNumber: 339,
                   columnNumber: 33
                 }, this)
               ] }, void 0, true, {
                 fileName: "public/mod/mudeck/js/esm/src/overview.tsx",
-                lineNumber: 336,
+                lineNumber: 337,
                 columnNumber: 29
               }, this),
               /* @__PURE__ */ jsxDEV(
@@ -340,12 +340,12 @@ function Overview({ parts, themecss, labels, moveurl, sesskey }) {
                   children: [
                     /* @__PURE__ */ jsxDEV("i", { className: "fa fa-trash", "aria-hidden": "true" }, void 0, false, {
                       fileName: "public/mod/mudeck/js/esm/src/overview.tsx",
-                      lineNumber: 346,
+                      lineNumber: 347,
                       columnNumber: 33
                     }, this),
                     /* @__PURE__ */ jsxDEV("span", { className: "visually-hidden", children: labels.delete }, void 0, false, {
                       fileName: "public/mod/mudeck/js/esm/src/overview.tsx",
-                      lineNumber: 347,
+                      lineNumber: 348,
                       columnNumber: 33
                     }, this)
                   ]
@@ -354,31 +354,31 @@ function Overview({ parts, themecss, labels, moveurl, sesskey }) {
                 true,
                 {
                   fileName: "public/mod/mudeck/js/esm/src/overview.tsx",
-                  lineNumber: 340,
+                  lineNumber: 341,
                   columnNumber: 29
                 },
                 this
               )
             ] }, void 0, true, {
               fileName: "public/mod/mudeck/js/esm/src/overview.tsx",
-              lineNumber: 309,
+              lineNumber: 310,
               columnNumber: 25
             }, this)
           ] }, void 0, true, {
             fileName: "public/mod/mudeck/js/esm/src/overview.tsx",
-            lineNumber: 294,
+            lineNumber: 295,
             columnNumber: 21
           }, this),
           open === part.id && /* @__PURE__ */ jsxDEV("div", { className: "mudeck-part-body", id: `mudeck-part-${part.id}`, children: [
             !part.slides && /* @__PURE__ */ jsxDEV("p", { className: "text-muted", children: labels.empty }, void 0, false, {
               fileName: "public/mod/mudeck/js/esm/src/overview.tsx",
-              lineNumber: 354,
+              lineNumber: 355,
               columnNumber: 46
             }, this),
             !!part.slides && rendered[part.id] && /* @__PURE__ */ jsxDEV(Fragment, { children: [
               /* @__PURE__ */ jsxDEV("style", { children: rendered[part.id].css }, void 0, false, {
                 fileName: "public/mod/mudeck/js/esm/src/overview.tsx",
-                lineNumber: 357,
+                lineNumber: 358,
                 columnNumber: 37
               }, this),
               /* @__PURE__ */ jsxDEV("ol", { className: "mudeck-thumbs", ref: thumbsref, children: rendered[part.id].slides.map((slide, index2) => /* @__PURE__ */ jsxDEV("li", { className: "mudeck-thumb", children: /* @__PURE__ */ jsxDEV(
@@ -399,14 +399,14 @@ function Overview({ parts, themecss, labels, moveurl, sesskey }) {
                       false,
                       {
                         fileName: "public/mod/mudeck/js/esm/src/overview.tsx",
-                        lineNumber: 368,
+                        lineNumber: 369,
                         columnNumber: 53
                       },
                       this
                     ),
                     /* @__PURE__ */ jsxDEV("span", { className: "mudeck-thumb-number", children: index2 + 1 }, void 0, false, {
                       fileName: "public/mod/mudeck/js/esm/src/overview.tsx",
-                      lineNumber: 373,
+                      lineNumber: 374,
                       columnNumber: 53
                     }, this)
                   ]
@@ -415,27 +415,27 @@ function Overview({ parts, themecss, labels, moveurl, sesskey }) {
                 true,
                 {
                   fileName: "public/mod/mudeck/js/esm/src/overview.tsx",
-                  lineNumber: 361,
+                  lineNumber: 362,
                   columnNumber: 49
                 },
                 this
               ) }, index2, false, {
                 fileName: "public/mod/mudeck/js/esm/src/overview.tsx",
-                lineNumber: 360,
+                lineNumber: 361,
                 columnNumber: 45
               }, this)) }, void 0, false, {
                 fileName: "public/mod/mudeck/js/esm/src/overview.tsx",
-                lineNumber: 358,
+                lineNumber: 359,
                 columnNumber: 37
               }, this)
             ] }, void 0, true, {
               fileName: "public/mod/mudeck/js/esm/src/overview.tsx",
-              lineNumber: 356,
+              lineNumber: 357,
               columnNumber: 33
             }, this)
           ] }, void 0, true, {
             fileName: "public/mod/mudeck/js/esm/src/overview.tsx",
-            lineNumber: 353,
+            lineNumber: 354,
             columnNumber: 25
           }, this)
         ]
@@ -444,14 +444,14 @@ function Overview({ parts, themecss, labels, moveurl, sesskey }) {
       true,
       {
         fileName: "public/mod/mudeck/js/esm/src/overview.tsx",
-        lineNumber: 279,
+        lineNumber: 280,
         columnNumber: 17
       },
       this
     ))
   ] }, void 0, true, {
     fileName: "public/mod/mudeck/js/esm/src/overview.tsx",
-    lineNumber: 276,
+    lineNumber: 277,
     columnNumber: 9
   }, this);
 }

@@ -112,6 +112,35 @@ final class part {
     }
 
     /**
+     * The part ids of a presentation, in the order they are shown.
+     *
+     * @param int $mudeckid
+     * @return int[]
+     */
+    public static function get_order(int $mudeckid): array {
+        return array_values(array_map(fn($one) => (int)$one->id, self::get_all($mudeckid)));
+    }
+
+    /**
+     * A part, its presentation and its context - if the current user may edit it.
+     *
+     * @param int $partid
+     * @return array{stdClass, stdClass, \context_module}
+     */
+    public static function require_editable(int $partid): array {
+        global $DB;
+
+        $part = $DB->get_record('mudeck_part', ['id' => $partid], '*', MUST_EXIST);
+        $mudeck = $DB->get_record('mudeck', ['id' => $part->mudeckid], '*', MUST_EXIST);
+        $cm = get_coursemodule_from_instance('mudeck', $mudeck->id, $mudeck->course, false, MUST_EXIST);
+        $context = \context_module::instance($cm->id);
+
+        require_capability('mod/mudeck:edit', $context);
+
+        return [$part, $mudeck, $context];
+    }
+
+    /**
      * The parts that actually hold slides.
      *
      * An empty part is skipped by the show, it is not a blank slide.

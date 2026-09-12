@@ -120,7 +120,7 @@ export default function Viewer({parts, themecss, exiturl, labels, sync, reachede
             return;
         }
         fetch(sync.url, {
-            method: 'POST',
+            method: 'PATCH',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({
                 sesskey: sync.sesskey,

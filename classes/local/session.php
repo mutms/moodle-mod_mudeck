@@ -162,6 +162,37 @@ final class session {
     }
 
     /**
+     * The session, if it is the given user's and device sync is still allowed.
+     *
+     * Synced notes are a full access feature, so both ends check the same capability -
+     * a device that may not see the notes has no business following the slides either.
+     *
+     * @param int $sessionid
+     * @param int $userid
+     * @return stdClass
+     */
+    public static function require_own(int $sessionid, int $userid): stdClass {
+        global $DB;
+
+        $session = self::get_own_one($sessionid, $userid);
+        if (!$session) {
+            throw new \core\exception\moodle_exception('invalidrecord', 'error');
+        }
+
+        $mudeck = $DB->get_record('mudeck', ['id' => $session->mudeckid], '*', MUST_EXIST);
+        $cm = get_coursemodule_from_instance('mudeck', $mudeck->id, $mudeck->course, false, MUST_EXIST);
+        $context = \context_module::instance($cm->id);
+
+        require_capability('mod/mudeck:syncdevices', $context);
+        require_capability('mod/mudeck:fullaccess', $context);
+        if (!$mudeck->allowdevicesync) {
+            throw new \core\exception\moodle_exception('nopermissions', 'error', '', 'device sync');
+        }
+
+        return $session;
+    }
+
+    /**
      * Record where the presentation is now.
      *
      * @param stdClass $session

@@ -151,7 +151,7 @@ echo $OUTPUT->render_from_template('mod_mudeck/editor', [
     // The pictures worth offering are the ones in the form, uploads included, which is
     // the draft area rather than the part.
     'imagesurljson' => json_encode(
-        \core\url::routed_path("/api/rest/v2/mod_mudeck/draft/{$draftitemid}/images")->out(false)
+        \core\url::routed_path("/api/rest/v2/mod_mudeck/part/edit/{$draftitemid}/images")->out(false)
     ),
     // The preview reads the pictures from the same place, so an upload shows in the
     // slides before the part has been saved anywhere.

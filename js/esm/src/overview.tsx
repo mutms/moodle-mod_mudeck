@@ -61,7 +61,8 @@ type OverviewProps = {
     themecss?: Record<string, string>;
     labels: Labels;
     /** Where a part reports its new place, and the key that lets it. */
-    moveurl: string;
+    /** REST URL prefix of the part resource, ending in a slash. */
+    parturl: string;
     sesskey: string;
 };
 
@@ -124,7 +125,7 @@ type Rendered = {
     css: string;
 };
 
-export default function Overview({parts, themecss, labels, moveurl, sesskey}: OverviewProps) {
+export default function Overview({parts, themecss, labels, parturl, sesskey}: OverviewProps) {
     const thumbsref = useRef<HTMLOListElement>(null);
     const [open, setOpen] = useState<number | null>(null);
     const [rendered, setRendered] = useState<Record<number, Rendered>>({});
@@ -205,8 +206,8 @@ export default function Overview({parts, themecss, labels, moveurl, sesskey}: Ov
         setOrder(order.filter((one) => one.id !== part.id));
 
         try {
-            const response = await fetch(`${moveurl}${part.id}/delete`, {
-                method: 'POST',
+            const response = await fetch(`${parturl}${part.id}`, {
+                method: 'DELETE',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({sesskey}),
             });
@@ -236,7 +237,7 @@ export default function Overview({parts, themecss, labels, moveurl, sesskey}: Ov
         setOrder(moved);
         setAnnouncement(labels.moved.replace('{$a}', String(position)));
 
-        fetch(`${moveurl}${id}/position`, {
+        fetch(`${parturl}${id}/move`, {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({sesskey, position}),

@@ -106,7 +106,7 @@ echo $OUTPUT->render_from_template('mod_mudeck/overview', [
     'partsjson' => json_encode($rows),
     'themecssjson' => json_encode(theme::get_custom_css(new \core\url('/mod/mudeck'))),
     // Where a part reports its new place; the id is appended by the browser.
-    'moveurljson' => json_encode(\core\url::routed_path('/api/rest/v2/mod_mudeck/part/')->out(false)),
+    'parturljson' => json_encode(\core\url::routed_path('/api/rest/v2/mod_mudeck/part/')->out(false)),
     'sesskeyjson' => json_encode(sesskey()),
     'labelsjson' => json_encode([
         'edit' => get_string('part_edit', 'mod_mudeck'),

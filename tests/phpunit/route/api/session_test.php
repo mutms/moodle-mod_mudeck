@@ -23,18 +23,18 @@ namespace mod_mudeck\phpunit\route\api;
 use core\tests\router\route_testcase;
 use GuzzleHttp\Psr7\Utils;
 use mod_mudeck\local\session;
-use mod_mudeck\route\api\session_position;
+use mod_mudeck\route\api\session as session_route;
 
 /**
- * Device sync REST route test.
+ * Device sync session REST resource test - reporting and reading a position.
  *
  * @package    mod_mudeck
  * @copyright  2026 Petr Skoda
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  *
- * @covers \mod_mudeck\route\api\session_position
+ * @covers \mod_mudeck\route\api\session
  */
-final class session_position_test extends route_testcase {
+final class session_test extends route_testcase {
     /** @var \stdClass the presentation under test */
     private \stdClass $mudeck;
     /** @var \stdClass the presenter */
@@ -59,10 +59,10 @@ final class session_position_test extends route_testcase {
         global $DB;
 
         $this->setUser($this->teacher);
-        $this->add_class_routes_to_route_loader(session_position::class);
+        $this->add_class_routes_to_route_loader(session_route::class);
 
         $response = $this->process_api_request(
-            'POST',
+            'PATCH',
             "/session/{$this->sessionid}",
             body: Utils::streamFor(json_encode([
                 'sesskey' => sesskey(),
@@ -85,7 +85,7 @@ final class session_position_test extends route_testcase {
 
     public function test_the_other_device_reads_it_back(): void {
         $this->setUser($this->teacher);
-        $this->add_class_routes_to_route_loader(session_position::class);
+        $this->add_class_routes_to_route_loader(session_route::class);
 
         session::move(
             (object)['id' => $this->sessionid],
@@ -109,29 +109,6 @@ final class session_position_test extends route_testcase {
         $this->assertGreaterThanOrEqual(0, $payload['elapsed']);
     }
 
-    public function test_leaving_the_presentation_ends_the_session(): void {
-        global $DB;
-
-        $this->setUser($this->teacher);
-        $this->add_class_routes_to_route_loader(session_position::class);
-
-        $response = $this->process_api_request(
-            'POST',
-            "/session/{$this->sessionid}/end",
-            body: Utils::streamFor(json_encode(['sesskey' => sesskey()])),
-        );
-
-        $this->assertEquals(200, $response->getStatusCode());
-        $session = $DB->get_record('mudeck_session', ['id' => $this->sessionid], '*', MUST_EXIST);
-        $this->assertNotEmpty($session->timeended);
-        // A session that has ended is not one another device should still be following.
-        $this->assertFalse(session::is_live($session));
-
-        $reading = $this->process_api_request('GET', "/session/{$this->sessionid}");
-        $payload = json_decode((string)$reading->getBody(), true);
-        $this->assertTrue($payload['ended']);
-    }
-
     public function test_a_session_of_another_user_is_not_readable(): void {
         $stranger = $this->getDataGenerator()->create_and_enrol(
             get_course($this->mudeck->course),
@@ -139,7 +116,7 @@ final class session_position_test extends route_testcase {
         );
 
         $this->setUser($stranger);
-        $this->add_class_routes_to_route_loader(session_position::class);
+        $this->add_class_routes_to_route_loader(session_route::class);
 
         $response = $this->process_api_request('GET', "/session/{$this->sessionid}");
         $this->assertGreaterThanOrEqual(400, $response->getStatusCode());
@@ -149,10 +126,10 @@ final class session_position_test extends route_testcase {
         global $DB;
 
         $this->setUser($this->teacher);
-        $this->add_class_routes_to_route_loader(session_position::class);
+        $this->add_class_routes_to_route_loader(session_route::class);
 
         $response = $this->process_api_request(
-            'POST',
+            'PATCH',
             "/session/{$this->sessionid}",
             body: Utils::streamFor(json_encode(['slide' => 2])),
         );

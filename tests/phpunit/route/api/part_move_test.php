@@ -23,18 +23,18 @@ namespace mod_mudeck\phpunit\route\api;
 use core\tests\router\route_testcase;
 use GuzzleHttp\Psr7\Utils;
 use mod_mudeck\local\part;
-use mod_mudeck\route\api\part_actions;
+use mod_mudeck\route\api\part_move;
 
 /**
- * Overview REST route test - reordering and deleting a part.
+ * Part move REST route test - putting a part at a given place.
  *
  * @package    mod_mudeck
  * @copyright  2026 Petr Skoda
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  *
- * @covers \mod_mudeck\route\api\part_actions
+ * @covers \mod_mudeck\route\api\part_move
  */
-final class part_actions_test extends route_testcase {
+final class part_move_test extends route_testcase {
     /** @var \stdClass the presentation under test */
     private \stdClass $mudeck;
     /** @var \stdClass the teacher who may edit */
@@ -57,35 +57,35 @@ final class part_actions_test extends route_testcase {
     }
 
     public function test_a_part_moves_to_the_place_it_is_given(): void {
-        $this->add_class_routes_to_route_loader(part_actions::class);
+        $this->add_class_routes_to_route_loader(part_move::class);
 
         // The last part becomes the first.
         $response = $this->process_api_request(
             'POST',
-            "/part/{$this->partids[2]}/position",
+            "/part/{$this->partids[2]}/move",
             body: Utils::streamFor(json_encode(['sesskey' => sesskey(), 'position' => 1])),
         );
 
         $this->assertEquals(200, $response->getStatusCode());
         $this->assertSame(
             [$this->partids[2], $this->partids[0], $this->partids[1]],
-            $this->current_order()
+            part::get_order($this->mudeck->id)
         );
         // What the browser is told matches what was stored.
         $payload = json_decode((string)$response->getBody(), true);
-        $this->assertSame($this->current_order(), $payload['order']);
+        $this->assertSame(part::get_order($this->mudeck->id), $payload['order']);
     }
 
     public function test_a_position_outside_the_list_changes_nothing(): void {
-        $this->add_class_routes_to_route_loader(part_actions::class);
+        $this->add_class_routes_to_route_loader(part_move::class);
 
         $this->process_api_request(
             'POST',
-            "/part/{$this->partids[0]}/position",
+            "/part/{$this->partids[0]}/move",
             body: Utils::streamFor(json_encode(['sesskey' => sesskey(), 'position' => 9])),
         );
 
-        $this->assertSame($this->partids, $this->current_order());
+        $this->assertSame($this->partids, part::get_order($this->mudeck->id));
     }
 
     public function test_somebody_who_may_not_edit_cannot_reorder(): void {
@@ -94,93 +94,28 @@ final class part_actions_test extends route_testcase {
             'student'
         );
         $this->setUser($student);
-        $this->add_class_routes_to_route_loader(part_actions::class);
+        $this->add_class_routes_to_route_loader(part_move::class);
 
         $response = $this->process_api_request(
             'POST',
-            "/part/{$this->partids[2]}/position",
+            "/part/{$this->partids[2]}/move",
             body: Utils::streamFor(json_encode(['sesskey' => sesskey(), 'position' => 1])),
         );
 
         $this->assertGreaterThanOrEqual(400, $response->getStatusCode());
-        $this->assertSame($this->partids, $this->current_order());
+        $this->assertSame($this->partids, part::get_order($this->mudeck->id));
     }
 
     public function test_a_move_without_a_sesskey_is_refused(): void {
-        $this->add_class_routes_to_route_loader(part_actions::class);
+        $this->add_class_routes_to_route_loader(part_move::class);
 
         $response = $this->process_api_request(
             'POST',
-            "/part/{$this->partids[2]}/position",
+            "/part/{$this->partids[2]}/move",
             body: Utils::streamFor(json_encode(['position' => 1])),
         );
 
         $this->assertGreaterThanOrEqual(400, $response->getStatusCode());
-        $this->assertSame($this->partids, $this->current_order());
-    }
-
-    public function test_a_part_can_be_deleted(): void {
-        global $DB;
-
-        $this->add_class_routes_to_route_loader(part_actions::class);
-
-        $response = $this->process_api_request(
-            'POST',
-            "/part/{$this->partids[1]}/delete",
-            body: Utils::streamFor(json_encode(['sesskey' => sesskey()])),
-        );
-
-        $this->assertEquals(200, $response->getStatusCode());
-        $this->assertFalse($DB->record_exists('mudeck_part', ['id' => $this->partids[1]]));
-        $this->assertSame([$this->partids[0], $this->partids[2]], $this->current_order());
-        $payload = json_decode((string)$response->getBody(), true);
-        $this->assertSame($this->current_order(), $payload['order']);
-    }
-
-    public function test_somebody_who_may_not_edit_cannot_delete(): void {
-        global $DB;
-
-        $student = $this->getDataGenerator()->create_and_enrol(
-            get_course($this->mudeck->course),
-            'student'
-        );
-        $this->setUser($student);
-        $this->add_class_routes_to_route_loader(part_actions::class);
-
-        $response = $this->process_api_request(
-            'POST',
-            "/part/{$this->partids[1]}/delete",
-            body: Utils::streamFor(json_encode(['sesskey' => sesskey()])),
-        );
-
-        $this->assertGreaterThanOrEqual(400, $response->getStatusCode());
-        $this->assertTrue($DB->record_exists('mudeck_part', ['id' => $this->partids[1]]));
-    }
-
-    public function test_a_delete_without_a_sesskey_is_refused(): void {
-        global $DB;
-
-        $this->add_class_routes_to_route_loader(part_actions::class);
-
-        $response = $this->process_api_request(
-            'POST',
-            "/part/{$this->partids[1]}/delete",
-            body: Utils::streamFor(json_encode([])),
-        );
-
-        $this->assertGreaterThanOrEqual(400, $response->getStatusCode());
-        $this->assertTrue($DB->record_exists('mudeck_part', ['id' => $this->partids[1]]));
-    }
-
-    /**
-     * The part ids as they are ordered now.
-     *
-     * @return int[]
-     */
-    private function current_order(): array {
-        return array_values(array_map(
-            fn($part) => (int)$part->id,
-            part::get_all($this->mudeck->id)
-        ));
+        $this->assertSame($this->partids, part::get_order($this->mudeck->id));
     }
 }

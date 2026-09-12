@@ -16,14 +16,6 @@
 
 // phpcs:disable moodle.Files.BoilerplateComment.CommentEndedTooSoon
 
-/**
- * The viewer reports that the last slide was reached.
- *
- * @package    mod_mudeck
- * @copyright  2026 Petr Skoda
- * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
 namespace mod_mudeck\route\api;
 
 use core\param;
@@ -41,8 +33,12 @@ use Psr\Http\Message\ServerRequestInterface;
 
 /**
  * Completion by reaching the end, posted once by the viewer.
+ *
+ * @package    mod_mudeck
+ * @copyright  2026 Petr Skoda
+ * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class reached_end {
+class presentation_reached_end {
     /**
      * The user watching this presentation has reached its last slide.
      *

@@ -16,14 +16,6 @@
 
 // phpcs:disable moodle.Files.BoilerplateComment.CommentEndedTooSoon
 
-/**
- * The pictures an author has to hand while writing.
- *
- * @package    mod_mudeck
- * @copyright  2026 Petr Skoda
- * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
 namespace mod_mudeck\route\api;
 
 use core\param;
@@ -35,12 +27,16 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
 /**
- * The images sitting in a draft file area, so the editor can offer them by name.
+ * The images uploaded while editing a part, so the editor can offer them by name.
  *
  * A draft area belongs to the user who owns it, and this only ever looks in the caller's
  * own user context - an id belonging to somebody else simply finds nothing there.
+ *
+ * @package    mod_mudeck
+ * @copyright  2026 Petr Skoda
+ * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class draft_images {
+class part_edit_images {
     /**
      * Every image in one draft area, by the name the Markdown would use.
      *
@@ -50,7 +46,7 @@ class draft_images {
      * @return payload_response
      */
     #[route(
-        path: '/draft/{draftitemid}/images',
+        path: '/part/edit/{draftitemid}/images',
         method: ['GET'],
         pathtypes: [
             new path_parameter(name: 'draftitemid', type: param::INT),
