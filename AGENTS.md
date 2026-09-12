@@ -64,6 +64,7 @@ underlying Moodle commands instead; the helper name tells you which one.
 |------------------------|-------------------------------------------|-----------------------------------------------------------------------------------------------------------------|
 | build ES modules       | `npx grunt esm --root=public/mod/mudeck`  | needs Node 22: `PATH=$HOME/.nvm/versions/node/v22.23.2/bin:$PATH`; Node 24 is refused                           |
 | lint ES modules        | `npx eslint public/mod/mudeck/js/esm/src` | must exit 0; CI's grunt step does not lint ESM                                                                  |
+| PHP code checker       | `mpci phpcs public/mod/mudeck`            | CI runs it with zero warnings allowed; run before pushing                                                       |
 | rebuild vendor bundles | `npm run build:vendor` in the plugin dir  | only when a dependency changes                                                                                  |
 | PHPUnit                | `phpunit --filter=mod_mudeck`             | after a `version.php` bump run `phpunit-util --upgrade`; if `requires` changed, `phpunit-init` (full reinstall) |
 | Behat                  | `behat --tags=@mod_mudeck`                | after a version bump or a generator change run `behat-init` first; it reinstalls when `requires` changed        |
