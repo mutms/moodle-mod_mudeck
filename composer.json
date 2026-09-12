@@ -1,0 +1,25 @@
+{
+  "name": "mutms/moodle-mod_mudeck",
+  "type": "moodle-mod",
+  "description": "Markdown slide deck activity module for Moodle LMS",
+  "keywords": [
+    "moodle",
+    "moodle-plugin",
+    "slides",
+    "markdown",
+    "marp"
+  ],
+  "homepage": "https://github.com/mutms/moodle-mod_mudeck",
+  "license": "GPL-3.0-or-later",
+  "require": {
+    "php": ">=8.3",
+    "composer/installers": "^2.3"
+  },
+  "extra": {
+    "installer-name": "mudeck"
+  },
+  "support": {
+    "issues": "https://github.com/mutms/moodle-mod_mudeck/issues",
+    "source": "https://github.com/mutms/moodle-mod_mudeck"
+  }
+}
