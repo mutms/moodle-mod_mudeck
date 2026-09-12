@@ -85,8 +85,10 @@ export default function Print({parts, themecss, exiturl, labels, notes}: PrintPr
     }, [deck]);
 
     return (
-        <div className="mudeck-print">
+        <div className={notes ? 'mudeck-print' : 'mudeck-print mudeck-print-handout'}>
             <style>{deck.css}</style>
+            {/* The handout's sheet is the slide itself, 1280x720 CSS pixels; printers fit it to paper. */}
+            {!notes && <style>{'@page { size: 1280px 720px; margin: 0; }'}</style>}
 
             <div className="mudeck-print-actions">
                 <button type="button" className="btn btn-primary" onClick={() => window.print()}>

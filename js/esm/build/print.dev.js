@@ -50,26 +50,31 @@ function Print({ parts, themecss, exiturl, labels, notes }) {
     window.addEventListener("resize", fit);
     return () => window.removeEventListener("resize", fit);
   }, [deck]);
-  return /* @__PURE__ */ jsxDEV("div", { className: "mudeck-print", children: [
+  return /* @__PURE__ */ jsxDEV("div", { className: notes ? "mudeck-print" : "mudeck-print mudeck-print-handout", children: [
     /* @__PURE__ */ jsxDEV("style", { children: deck.css }, void 0, false, {
       fileName: "public/mod/mudeck/js/esm/src/print.tsx",
       lineNumber: 89,
       columnNumber: 13
     }, this),
+    !notes && /* @__PURE__ */ jsxDEV("style", { children: "@page { size: 1280px 720px; margin: 0; }" }, void 0, false, {
+      fileName: "public/mod/mudeck/js/esm/src/print.tsx",
+      lineNumber: 91,
+      columnNumber: 24
+    }, this),
     /* @__PURE__ */ jsxDEV("div", { className: "mudeck-print-actions", children: [
       /* @__PURE__ */ jsxDEV("button", { type: "button", className: "btn btn-primary", onClick: () => window.print(), children: labels.print }, void 0, false, {
         fileName: "public/mod/mudeck/js/esm/src/print.tsx",
-        lineNumber: 92,
+        lineNumber: 94,
         columnNumber: 17
       }, this),
       /* @__PURE__ */ jsxDEV("a", { href: exiturl, className: "btn btn-secondary", children: labels.exit }, void 0, false, {
         fileName: "public/mod/mudeck/js/esm/src/print.tsx",
-        lineNumber: 95,
+        lineNumber: 97,
         columnNumber: 17
       }, this)
     ] }, void 0, true, {
       fileName: "public/mod/mudeck/js/esm/src/print.tsx",
-      lineNumber: 91,
+      lineNumber: 93,
       columnNumber: 13
     }, this),
     /* @__PURE__ */ jsxDEV("div", { className: "mudeck-print-pages", ref: pagesref, children: deck.slides.map((slide, index) => /* @__PURE__ */ jsxDEV("div", { className: "mudeck-print-page", children: [
@@ -83,7 +88,7 @@ function Print({ parts, themecss, exiturl, labels, notes }) {
         false,
         {
           fileName: "public/mod/mudeck/js/esm/src/print.tsx",
-          lineNumber: 102,
+          lineNumber: 104,
           columnNumber: 25
         },
         this
@@ -94,35 +99,35 @@ function Print({ parts, themecss, exiturl, labels, notes }) {
           " ",
           /* @__PURE__ */ jsxDEV("span", { className: "mudeck-print-number", children: index + 1 }, void 0, false, {
             fileName: "public/mod/mudeck/js/esm/src/print.tsx",
-            lineNumber: 109,
+            lineNumber: 111,
             columnNumber: 52
           }, this)
         ] }, void 0, true, {
           fileName: "public/mod/mudeck/js/esm/src/print.tsx",
-          lineNumber: 108,
+          lineNumber: 110,
           columnNumber: 33
         }, this),
         deck.notes[index] ? /* @__PURE__ */ jsxDEV("pre", { className: "mudeck-print-note", children: deck.notes[index] }, void 0, false, {
           fileName: "public/mod/mudeck/js/esm/src/print.tsx",
-          lineNumber: 112,
+          lineNumber: 114,
           columnNumber: 39
         }, this) : /* @__PURE__ */ jsxDEV("p", { className: "text-muted", children: labels.nonotes }, void 0, false, {
           fileName: "public/mod/mudeck/js/esm/src/print.tsx",
-          lineNumber: 113,
+          lineNumber: 115,
           columnNumber: 39
         }, this)
       ] }, void 0, true, {
         fileName: "public/mod/mudeck/js/esm/src/print.tsx",
-        lineNumber: 107,
+        lineNumber: 109,
         columnNumber: 29
       }, this)
     ] }, index, true, {
       fileName: "public/mod/mudeck/js/esm/src/print.tsx",
-      lineNumber: 100,
+      lineNumber: 102,
       columnNumber: 21
     }, this)) }, void 0, false, {
       fileName: "public/mod/mudeck/js/esm/src/print.tsx",
-      lineNumber: 98,
+      lineNumber: 100,
       columnNumber: 13
     }, this)
   ] }, void 0, true, {

@@ -455,6 +455,36 @@
     font-size: 0.9rem;
 }
 
+/* Handout: the sheet is 1280x720, so a slide is printed unscaled, one per sheet. */
+@media print {
+    /* Any padding the page layout adds around the deck would push a sheet onto the next. */
+    body:has(.mudeck-print-handout) :is(#page, #page-wrapper, #topofscroll, .embedded-main, #region-main, .main-inner) {
+        margin: 0;
+        padding: 0;
+    }
+
+    .mudeck-print-handout {
+        max-width: none;
+        padding: 0;
+
+        .mudeck-print-page {
+            width: 1280px;
+            height: 720px;
+            margin: 0;
+        }
+
+        .mudeck-print-slide {
+            width: 1280px;
+            height: 720px;
+            border: 0;
+
+            section {
+                transform: none;
+            }
+        }
+    }
+}
+
 @media print {
     .mudeck-print-cover {
         break-after: page;
