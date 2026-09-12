@@ -31,24 +31,6 @@ yet; it arrives through tool_mulib after it is proven elsewhere. Do not start it
 
 ## Code rules that are not visible from the structure
 
-- PHP page scripts hint their globals once, wrapped so phpcs stays quiet:
-  ```php
-  // phpcs:disable moodle.Commenting.InlineComment.TypeHintingMatch
-  /** @var stdClass $CFG */
-  /** @var moodle_database $DB */
-  /** @var moodle_page $PAGE */
-  /** @var \core\output\core_renderer $OUTPUT */
-  /** @var stdClass $USER */
-  // phpcs:enable moodle.Commenting.InlineComment.TypeHintingMatch
-  ```
-  Fixed order, only the ones the file uses, placed after the `use` block and before
-  `require(config.php)`.
-- Import classes with `use`; no fully qualified names inline. Use namespaced core
-  classes (`\core\context\module`, `\core\output\core_renderer`, `\core\url`); the
-  legacy aliases (`context_module`, `core_renderer`, `moodle_url`) are not to be added.
-- Callables are written `theme::get_menu(...)`, never `[theme::class, 'get_menu']`.
-- `format_text()` on a language string gets no context option. The context goes only on
-  user content inside a course.
 - Write pages repeat their `require_capability()` even when `admin_externalpage_setup()`
   already checked it. Privileged pages use `require_login($course, false, $cm)`; only
   pages guests may see use `require_course_login()`.
@@ -56,8 +38,7 @@ yet; it arrives through tool_mulib after it is proven elsewhere. Do not start it
   `/api/rest/v2/...`, or it breaks on servers without the rewrite.
 - Comments are short and factual: one line inline, one or two sentences in a docblock,
   JSDoc `@param`/`@returns` kept. No history, no alternatives, no em dashes.
-- Strings live in `lang/en`, `lang/cs` and `lang/de`; add all three. The German file
-  is machine translated and says so in its header.
+- Strings live in `lang/en`, `lang/cs` and `lang/de`; add all three.
 
 ## Security boundary
 
@@ -79,14 +60,14 @@ runs `public/admin/tool/phpunit/cli/util.php`, `behat-init` runs
 `public/admin/tool/behat/cli/init.php`, and so on. In another environment, run the
 underlying Moodle commands instead; the helper name tells you which one.
 
-| Task                   | Command                                               | Note                                                                                        |
-|------------------------|-------------------------------------------------------|---------------------------------------------------------------------------------------------|
-| build ES modules       | `npx grunt esm --root=public/mod/mudeck`              | needs Node 22: `PATH=$HOME/.nvm/versions/node/v22.23.2/bin:$PATH`; Node 24 is refused       |
-| lint ES modules        | `npx eslint public/mod/mudeck/js/esm/src`             | must exit 0; CI's grunt step does not lint ESM                                              |
-| rebuild vendor bundles | `npm run build:vendor` in the plugin dir              | only when a dependency changes                                                              |
-| PHPUnit                | `phpunit --filter=mod_mudeck`                         | after a `version.php` bump run `phpunit-util --upgrade`; if `requires` changed, `phpunit-init` (full reinstall) |
-| Behat                  | `behat --tags=@mod_mudeck`                            | after a version bump or a generator change run `behat-init` first; it reinstalls when `requires` changed                           |
-| purge dev site caches  | `mdl-cache-purge`                                     | after adding or renaming a route class, or the old path keeps being served                  |
+| Task                   | Command                                   | Note                                                                                                            |
+|------------------------|-------------------------------------------|-----------------------------------------------------------------------------------------------------------------|
+| build ES modules       | `npx grunt esm --root=public/mod/mudeck`  | needs Node 22: `PATH=$HOME/.nvm/versions/node/v22.23.2/bin:$PATH`; Node 24 is refused                           |
+| lint ES modules        | `npx eslint public/mod/mudeck/js/esm/src` | must exit 0; CI's grunt step does not lint ESM                                                                  |
+| rebuild vendor bundles | `npm run build:vendor` in the plugin dir  | only when a dependency changes                                                                                  |
+| PHPUnit                | `phpunit --filter=mod_mudeck`             | after a `version.php` bump run `phpunit-util --upgrade`; if `requires` changed, `phpunit-init` (full reinstall) |
+| Behat                  | `behat --tags=@mod_mudeck`                | after a version bump or a generator change run `behat-init` first; it reinstalls when `requires` changed        |
+| purge dev site caches  | `mdl-cache-purge`                         | after adding or renaming a route class, or the old path keeps being served                                      |
 
 ## Known traps
 
@@ -102,6 +83,5 @@ underlying Moodle commands instead; the helper name tells you which one.
 ## Do not
 
 - Open or suggest pull requests; the project does not accept them.
-- Extract the renderer into a shared plugin; mudeck and mubook stay separate.
 - Bump `version.php` for each change; the maintainer bumps once per refactoring round.
 - Add a `pull_request` trigger to CI.
