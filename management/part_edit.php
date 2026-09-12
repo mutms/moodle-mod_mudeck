@@ -171,8 +171,8 @@ echo $OUTPUT->render_from_template('mod_mudeck/editor', [
     ]),
     // Help that stays open and can be copied from, which a popover cannot do.
     'helpjson' => json_encode([
-        'markdown' => format_text(get_string('help_markdown', 'mod_mudeck'), FORMAT_MARKDOWN),
-        'media' => format_text(get_string('help_media', 'mod_mudeck'), FORMAT_MARKDOWN),
+        'markdown' => markdown_to_html(get_string('help_markdown', 'mod_mudeck')),
+        'media' => markdown_to_html(get_string('help_media', 'mod_mudeck')),
     ]),
 ]);
 
