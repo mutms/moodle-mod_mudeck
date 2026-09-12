@@ -126,6 +126,26 @@
 }
 
 /* Welcome page. */
+/* The start card: the first slide as a poster, the button under it. */
+.mudeck-poster {
+    max-width: 40rem;
+    margin-bottom: 1rem;
+}
+
+/* Marp draws at 1280x720; welcome.js sets the width. */
+.mudeck-poster-box {
+    overflow: hidden;
+    aspect-ratio: 16 / 9;
+    background: var(--bs-secondary-bg, #f1f3f5);
+}
+
+.mudeck-poster-slide {
+    width: 1280px;
+    height: 720px;
+    transform: scale(calc(var(--mudeck-poster-width, 640) / 1280));
+    transform-origin: top left;
+}
+
 .mudeck-welcome-actions {
     display: flex;
     flex-wrap: wrap;

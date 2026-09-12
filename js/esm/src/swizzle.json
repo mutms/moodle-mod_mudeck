@@ -18,5 +18,9 @@
   "viewer": {
     "eject": "risky",
     "wrap": "risky"
+  },
+  "welcome": {
+    "eject": "risky",
+    "wrap": "risky"
   }
 }

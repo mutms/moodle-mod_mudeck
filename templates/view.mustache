@@ -23,9 +23,12 @@
     * hasslides - true when there is something to present
     * presenturl - URL that starts the presentation
     * canpresent - true when the current user may present
+    * cannotpresent - true when there are slides but the current user may not present; the button is shown disabled
     * printurl - URL of the printable handout, slides without notes
+    * posterjson - JSON encoded first slide for the poster: markdown, theme, themecss; null without slides
     * canedit - true when there are no slides and the current user may write them
     * caneditone - true when the presentation has exactly one part and may be edited
+    * caneditmany - true when it has several parts and may be edited; the overview is the way in
     * editurl - URL that opens that one part in the editor
     * overviewurl - URL of the overview, where parts are added
     * importurl - URL of the import page, for slides written elsewhere
@@ -35,9 +38,12 @@
         "hasslides": true,
         "presenturl": "#",
         "canpresent": true,
+        "cannotpresent": false,
         "printurl": "#",
+        "posterjson": "null",
         "canedit": false,
         "caneditone": true,
+        "caneditmany": false,
         "editurl": "#",
         "overviewurl": "#",
         "importurl": "#"
@@ -48,28 +54,66 @@
         <div class="alert alert-info" role="status">{{#str}}nopartcontent, mod_mudeck{{/str}}</div>
     {{/hasslides}}
 
-    <div class="mudeck-welcome-actions">
-        {{#canpresent}}
-            <a href="{{presenturl}}" class="btn btn-primary btn-lg mudeck-welcome-present">
-                {{#str}}present, mod_mudeck{{/str}}
-            </a>
-            <a href="{{printurl}}" class="btn btn-secondary btn-lg" title="{{#str}}print_slides_help, mod_mudeck{{/str}}">
-                {{#str}}print_slides, mod_mudeck{{/str}}
-            </a>
-        {{/canpresent}}
-        {{#caneditone}}
-            <a href="{{editurl}}" class="btn btn-secondary btn-lg">
-                {{#str}}part_edit, mod_mudeck{{/str}}
-            </a>
-        {{/caneditone}}
-        {{#canedit}}
-            <a href="{{overviewurl}}" class="btn btn-primary btn-lg">
-                {{#str}}part_add, mod_mudeck{{/str}}
-            </a>
-            {{! A deck written in another editor arrives whole, which is the quicker start. }}
-            <a href="{{importurl}}" class="btn btn-secondary btn-lg">
-                {{#str}}import, mod_mudeck{{/str}}
-            </a>
-        {{/canedit}}
-    </div>
+    {{#hasslides}}
+        {{! The first slide is the poster; the button under it starts the show. }}
+        <div class="card shadow-sm mudeck-poster">
+            <div class="card-img-top mudeck-poster-image">
+                {{#react}}
+{
+    "component": "@moodle/lms/mod_mudeck/welcome",
+    "props": {{{posterjson}}},
+    "id": "mudeck-poster",
+    "class": "mudeck-poster-mount"
+}
+                {{/react}}
+            </div>
+            <div class="card-body d-flex justify-content-center position-relative">
+                {{#canpresent}}
+                    <a href="{{presenturl}}" class="btn btn-primary btn-lg mudeck-welcome-present">
+                        {{#str}}present, mod_mudeck{{/str}}
+                    </a>
+                {{/canpresent}}
+                {{#cannotpresent}}
+                    <a class="btn btn-primary btn-lg disabled mudeck-welcome-present" role="button" aria-disabled="true" tabindex="-1">
+                        {{#str}}present, mod_mudeck{{/str}}
+                    </a>
+                {{/cannotpresent}}
+                {{! Tools at the right edge of the same row. }}
+                <div class="position-absolute top-50 end-0 translate-middle-y me-3 d-flex gap-1">
+                    {{#caneditone}}
+                        <a href="{{editurl}}" class="btn btn-outline-secondary btn-sm" title="{{#str}}part_edit, mod_mudeck{{/str}}">
+                            {{#pix}}t/edit, core{{/pix}}
+                            <span class="visually-hidden">{{#str}}part_edit, mod_mudeck{{/str}}</span>
+                        </a>
+                    {{/caneditone}}
+                    {{#caneditmany}}
+                        <a href="{{overviewurl}}" class="btn btn-outline-secondary btn-sm" title="{{#str}}tab_overview, mod_mudeck{{/str}}">
+                            {{#pix}}i/section, core{{/pix}}
+                            <span class="visually-hidden">{{#str}}tab_overview, mod_mudeck{{/str}}</span>
+                        </a>
+                    {{/caneditmany}}
+                    {{#canpresent}}
+                        <a href="{{printurl}}" class="btn btn-outline-secondary btn-sm" title="{{#str}}print_slides_help, mod_mudeck{{/str}}">
+                            {{#pix}}t/print, core{{/pix}}
+                            <span class="visually-hidden">{{#str}}print_slides, mod_mudeck{{/str}}</span>
+                        </a>
+                    {{/canpresent}}
+                </div>
+            </div>
+        </div>
+    {{/hasslides}}
+
+    {{^hasslides}}
+        <div class="mudeck-welcome-actions">
+            {{#canedit}}
+                <a href="{{overviewurl}}" class="btn btn-primary btn-lg">
+                    {{#str}}part_add, mod_mudeck{{/str}}
+                </a>
+                {{! A deck written in another editor arrives whole, which is the quicker start. }}
+                <a href="{{importurl}}" class="btn btn-secondary btn-lg">
+                    {{#str}}import, mod_mudeck{{/str}}
+                </a>
+            {{/canedit}}
+        </div>
+    {{/hasslides}}
 </div>

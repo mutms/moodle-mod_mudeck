@@ -257,10 +257,7 @@ final class part {
     }
 
     /**
-     * How many slides the part holds.
-     *
-     * Marp starts a new slide at every thematic break, so counting them is enough
-     * for the welcome page and avoids rendering anything on the server.
+     * How many slides Marp renders from a part.
      *
      * @param stdClass|null $part
      * @return int
@@ -269,15 +266,60 @@ final class part {
         if (!self::has_content($part)) {
             return 0;
         }
-        // Front matter is not a slide separator.
-        $content = (string)preg_replace('/^\s*---\r?\n.*?\r?\n---[ \t]*(\r?\n|$)/s', '', $part->content);
+        return count(self::slide_breaks(self::body($part->content))) + 1;
+    }
 
-        $slides = 1;
+    /**
+     * The front matter and the first slide of a part, nothing after the first break.
+     *
+     * @param string $content Markdown of a part
+     * @return string
+     */
+    public static function first_slide(string $content): string {
+        $front = self::front_matter($content);
+        $lines = preg_split('/\r?\n/', self::body($content));
+        $breaks = self::slide_breaks(self::body($content));
+        if ($breaks) {
+            $lines = array_slice($lines, 0, $breaks[0]);
+        }
+        return $front . implode("\n", $lines);
+    }
+
+    /**
+     * Front matter at the very top, which belongs to the deck rather than to a slide.
+     *
+     * @param string $content
+     * @return string the front matter with its trailing newline, or empty
+     */
+    private static function front_matter(string $content): string {
+        return preg_match('/^\s*---\r?\n.*?\r?\n---[ \t]*(\r?\n|$)/s', $content, $match) ? $match[0] : '';
+    }
+
+    /**
+     * The Markdown after the front matter.
+     *
+     * @param string $content
+     * @return string
+     */
+    private static function body(string $content): string {
+        return substr($content, strlen(self::front_matter($content)));
+    }
+
+    /**
+     * Line numbers of the slide breaks, by the rules Marp applies.
+     *
+     * A break is three dashes on a line of their own, outside a code fence, and not
+     * directly under prose, where dashes underline a heading instead.
+     *
+     * @param string $body Markdown without front matter
+     * @return int[] zero-based line numbers
+     */
+    private static function slide_breaks(string $body): array {
+        $breaks = [];
         $fence = null;
         $previousblank = true;
-        foreach (preg_split('/\r?\n/', $content) as $line) {
-            // Nothing inside a code block separates anything.
-            // \x60 is a backtick - written this way to keep it out of the string itself.
+        foreach (preg_split('/\r?\n/', $body) as $number => $line) {
+            // \x60 is a backtick, written this way to keep it out of the string itself.
             if (preg_match('/^[ \t]{0,3}(\x60{3,}|~{3,})/', $line, $match)) {
                 $marker = substr(trim($match[1]), 0, 3);
                 $fence = $fence === null ? $marker : ($fence === $marker ? null : $fence);
@@ -285,9 +327,7 @@ final class part {
                 continue;
             }
             if ($fence === null && $previousblank && preg_match('/^[ \t]{0,3}(-{3,}|_{3,}|\*{3,})[ \t]*$/', $line)) {
-                // Dashes directly under a line of prose underline it as a heading instead
-                // of separating slides - everywhere else they are a slide break.
-                $slides++;
+                $breaks[] = $number;
                 $previousblank = false;
                 continue;
             }
@@ -295,8 +335,7 @@ final class part {
             $previousblank = trim($line) === ''
                 || (bool)preg_match('/^[ \t]{0,3}([#>|]|[-*+][ \t]|\d+[.)][ \t])/', $line);
         }
-
-        return $slides;
+        return $breaks;
     }
 
     /**

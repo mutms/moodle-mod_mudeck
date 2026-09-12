@@ -79,6 +79,18 @@ Feature: Markdown slide deck
     When I am on the "Conference" "mudeck activity" page
     Then "Edit slides" "link" should not exist
 
+  Scenario: A presentation of several parts is edited through the overview
+    Given the following "mod_mudeck > parts" exist:
+      | mudeck     | name   | content   |
+      | Conference | First  | # One     |
+      | Conference | Second | # Two     |
+    When I am on the "Conference" "mudeck activity" page logged in as "teacher1"
+    Then "Overview" "link" should exist in the ".mudeck-poster" "css_element"
+    And "Edit slides" "link" should not exist in the ".mudeck-poster" "css_element"
+    When I click on "Overview" "link" in the ".mudeck-poster" "css_element"
+    Then I should see "First"
+    And I should see "Second"
+
   @javascript
   Scenario: An administrator adds a theme the whole site can use
     Given I log in as "admin"
@@ -141,7 +153,7 @@ Feature: Markdown slide deck
     Then I should see "Start presentation"
     And "Overview" "link" should not exist
 
-  Scenario: The present button is gone without the capability to present
+  Scenario: The present button is disabled without the capability to present
     Given the following "mod_mudeck > parts" exist:
       | mudeck     | name    | content  |
       | Conference | Opening | # Hello  |
@@ -150,7 +162,8 @@ Feature: Markdown slide deck
       | mod/mudeck:present | Prevent    | user | Course       | C1        |
     When I am on the "Conference" "mudeck activity" page logged in as "student1"
     Then I should see "About the topic."
-    And I should not see "Start presentation"
+    And ".mudeck-poster .btn-primary.disabled" "css_element" should exist
+    And "Print slides" "link" should not exist
 
   @javascript
   Scenario: A teacher previews one part and can look at its notes

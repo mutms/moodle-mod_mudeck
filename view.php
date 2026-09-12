@@ -63,6 +63,21 @@ mudeck_name_presentation_tab($PAGE);
 
 $parts = \mod_mudeck\local\part::get_playable($mudeck->id);
 $hasslides = (bool)$parts;
+// The first part, notes stripped, is enough to draw the first slide as the poster.
+$poster = null;
+if ($hasslides) {
+    $firstpart = reset($parts);
+    $poster = [
+        // Only the first slide travels: a viewer may not read the rest of the part.
+        'markdown' => \mod_mudeck\local\media::rewrite(
+            \mod_mudeck\local\part::first_slide(\mod_mudeck\local\notes::strip($firstpart->content)),
+            $context,
+            (int)$firstpart->id
+        ),
+        'theme' => \mod_mudeck\local\theme::resolve($mudeck->theme),
+        'themecss' => \mod_mudeck\local\theme::get_custom_css(new url('/mod/mudeck')),
+    ];
+}
 $canedit = has_capability('mod/mudeck:edit', $context);
 // A presentation of one part has one obvious thing to edit, so it can be offered from
 // here. With several, which one to open is a question, and the overview answers it.
@@ -76,11 +91,15 @@ echo $OUTPUT->render_from_template('mod_mudeck/view', [
     'hasslides' => $hasslides,
     'presenturl' => (new url('/mod/mudeck/present.php', ['id' => $cm->id]))->out(false),
     'canpresent' => $hasslides && has_capability('mod/mudeck:present', $context),
+    'cannotpresent' => $hasslides && !has_capability('mod/mudeck:present', $context),
+    'posterjson' => json_encode($poster),
     'printurl' => (new url('/mod/mudeck/print.php', ['id' => $cm->id]))->out(false),
     // An empty presentation is a dead end for anybody who cannot write slides, and one
     // click from being a presentation for anybody who can.
     'canedit' => !$hasslides && $canedit,
     'caneditone' => $hasslides && $canedit && $onepart !== null,
+    // Several parts: the overview is where the one to edit is chosen.
+    'caneditmany' => $hasslides && $canedit && $onepart === null,
     'editurl' => $onepart
         ? (new url('/mod/mudeck/management/part_edit.php', [
             'cmid' => $cm->id,
