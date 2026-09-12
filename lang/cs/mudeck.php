@@ -87,6 +87,8 @@ $string['help_markdown'] = 'Snímky se píší v Markdownu. Řádek, na kterém 
 
 Blok `mermaid` kreslí vývojové, sekvenční, stavové a třídní diagramy, vztahy entit a jednoduché grafy; jiné druhy diagramů se zobrazí jako zdrojový text.
 
+`transition: slide` nebo `transition: fade` v úvodním bloku animuje každou změnu snímku; `_transition` na jednom snímku mění jen ten a `none` animaci vypne.
+
 Blok na úplném začátku nastavuje celou prezentaci; komentář s podtržítkem, například `_class`, `_backgroundColor` nebo `_color`, nastavuje jen jeden snímek.
 
 Obrázky se uvádějí jménem souboru a nahrávají se pod Média. Přímé HTML a bloky `<style>` se zahazují, snímek si tedy nemůže přinést vlastní kód.';

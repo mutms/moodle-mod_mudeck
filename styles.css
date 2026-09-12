@@ -125,6 +125,66 @@
     }
 }
 
+/* Slide transitions through the View Transitions API. The linter predates it. */
+/* stylelint-disable csstree/validator, selector-type-no-unknown */
+:root:has(.mudeck-present-page) {
+    view-transition-name: none;
+}
+
+.mudeck-slides section:not([hidden]) {
+    view-transition-name: mudeck-slide;
+}
+
+::view-transition-old(mudeck-slide),
+::view-transition-new(mudeck-slide) {
+    animation-duration: 0.25s;
+}
+
+html[data-mudeck-transition="slide"]::view-transition-old(mudeck-slide) {
+    animation: 0.3s ease-in both mudeck-slide-out-left;
+}
+
+html[data-mudeck-transition="slide"]::view-transition-new(mudeck-slide) {
+    animation: 0.3s ease-out both mudeck-slide-in-right;
+}
+
+html[data-mudeck-transition="slide"][data-mudeck-direction="back"]::view-transition-old(mudeck-slide) {
+    animation-name: mudeck-slide-out-right;
+}
+
+html[data-mudeck-transition="slide"][data-mudeck-direction="back"]::view-transition-new(mudeck-slide) {
+    animation-name: mudeck-slide-in-left;
+}
+/* stylelint-enable csstree/validator, selector-type-no-unknown */
+
+@keyframes mudeck-slide-out-left {
+    to {
+        transform: translateX(-100%);
+        opacity: 0;
+    }
+}
+
+@keyframes mudeck-slide-out-right {
+    to {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+}
+
+@keyframes mudeck-slide-in-right {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+}
+
+@keyframes mudeck-slide-in-left {
+    from {
+        transform: translateX(-100%);
+        opacity: 0;
+    }
+}
+
 /* Welcome page. */
 /* The start card: the first slide as a poster, the button under it. */
 .mudeck-poster {

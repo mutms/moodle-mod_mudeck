@@ -94,6 +94,8 @@ $string['help_markdown'] = 'Folien werden in Markdown geschrieben. Eine Zeile, d
 
 Ein `mermaid`-Block zeichnet Fluss-, Sequenz-, Zustands- und Klassendiagramme, Entitätsbeziehungen und einfache Charts; andere Diagrammarten erscheinen als Quelltext.
 
+`transition: slide` oder `transition: fade` im Vorspann animiert jeden Folienwechsel; `_transition` auf einer Folie ändert nur diese, und `none` schaltet es ab.
+
 Der Vorspann (Front Matter) ganz oben gilt für die gesamte Präsentation; ein Kommentar mit Unterstrich, etwa `_class`, `_backgroundColor` oder `_color`, gilt nur für eine einzelne Folie.
 
 Bilder werden über ihren Dateinamen angesprochen und unter Medien hochgeladen. Rohes HTML und `<style>`-Blöcke werden verworfen, eine Folie kann also kein eigenes Markup mitbringen.';

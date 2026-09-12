@@ -31,6 +31,66 @@ const SWIPEDISTANCE = 50;
 /** Width of the tap zone on each edge, as a fraction of the deck. */
 const TAPZONE = 0.25;
 
+/** What a slide gets without a transition directive of its own. */
+const DEFAULTTRANSITION = 'fade';
+
+type ViewTransitionLike = {
+    finished: Promise<void>;
+    skipTransition: () => void;
+};
+
+/** The View Transitions API where the browser has it. */
+const startViewTransition = (document as Document & {startViewTransition?: (change: () => void) => ViewTransitionLike})
+    .startViewTransition?.bind(document);
+
+/**
+ * What an element is, for matching it across two slides.
+ *
+ * @param el
+ * @return a key, or null for elements not worth matching
+ */
+const sharedKey = (el: Element): string | null => {
+    if (el instanceof HTMLImageElement) {
+        const src = el.getAttribute('src');
+        return src ? `img:${src}` : null;
+    }
+    const text = el.textContent?.trim();
+    return text ? `${el.tagName}:${text}` : null;
+};
+
+/**
+ * Name the pictures and headings two slides share, so the browser morphs them rather than fading.
+ *
+ * @param from the slide on screen
+ * @param to the slide about to be shown
+ * @return the elements named, to be unnamed once the transition is over
+ */
+const tagShared = (from: HTMLElement, to: HTMLElement): HTMLElement[] => {
+    const candidates = (slide: HTMLElement) => Array.from(slide.querySelectorAll<HTMLElement>('img, h1, h2, h3'));
+    const before = new Map<string, HTMLElement>();
+    for (const el of candidates(from)) {
+        const key = sharedKey(el);
+        if (key && !before.has(key)) {
+            before.set(key, el);
+        }
+    }
+    const tagged: HTMLElement[] = [];
+    const used = new Set<string>();
+    for (const el of candidates(to)) {
+        const key = sharedKey(el);
+        const match = key ? before.get(key) : undefined;
+        if (!key || !match || used.has(key)) {
+            continue;
+        }
+        used.add(key);
+        const name = `mudeck-shared-${tagged.length}`;
+        match.style.setProperty('view-transition-name', name);
+        el.style.setProperty('view-transition-name', name);
+        tagged.push(match, el);
+    }
+    return tagged;
+};
+
 export type PresenterState = {
     current: number;
     total: number;
@@ -107,14 +167,8 @@ export function mountPresenter(container: HTMLElement, onState: (state: Presente
     }
 
     let index = 0;
-
-    const show = (next: number) => {
-        index = Math.max(0, Math.min(slides.length - 1, next));
-        slides.forEach((slide, i) => {
-            slide.hidden = i !== index;
-        });
-        onState({current: index + 1, total: slides.length});
-    };
+    let running: ViewTransitionLike | null = null;
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
     // Marp slides have a fixed pixel size, so scale that box into the container.
     const fit = () => {
@@ -127,10 +181,40 @@ export function mountPresenter(container: HTMLElement, onState: (state: Presente
         container.style.setProperty('--mudeck-slide-height', `${height}px`);
     };
 
-    const showAndFit = (next: number) => {
-        show(next);
-        fit();
+    const show = (next: number) => {
+        const target = Math.max(0, Math.min(slides.length - 1, next));
+        const change = () => {
+            index = target;
+            slides.forEach((slide, i) => {
+                slide.hidden = i !== index;
+            });
+            fit();
+            onState({current: index + 1, total: slides.length});
+        };
+        const kind = slides[target].dataset.transition ?? DEFAULTTRANSITION;
+        if (target === index || kind === 'none' || reducedMotion.matches || !startViewTransition) {
+            change();
+            return;
+        }
+        // A transition still running is finished at once; navigating fast must not queue up.
+        running?.skipTransition();
+        const root = document.documentElement;
+        root.dataset.mudeckTransition = kind;
+        root.dataset.mudeckDirection = target > index ? 'forward' : 'back';
+        const shared = tagShared(slides[index], slides[target]);
+        const transition = startViewTransition(change);
+        running = transition;
+        transition.finished.finally(() => {
+            shared.forEach((el) => el.style.removeProperty('view-transition-name'));
+            if (running === transition) {
+                delete root.dataset.mudeckTransition;
+                delete root.dataset.mudeckDirection;
+                running = null;
+            }
+        });
     };
+
+    const showAndFit = show;
 
     const onKey = (event: KeyboardEvent) => {
         if (isTextEntry(event.target)) {

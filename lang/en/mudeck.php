@@ -87,6 +87,8 @@ $string['help_markdown'] = 'Slides are written in Markdown. A line holding nothi
 
 A `mermaid` block draws flowcharts, sequence, state and class diagrams, entity relationships and simple charts; other diagram kinds show as their source.
 
+`transition: slide` or `transition: fade` in the front matter animates every change of slide; `_transition` on one slide changes just that one, and `none` switches it off.
+
 Front matter at the very top sets the whole deck; a comment with an underscore, such as `_class`, `_backgroundColor` or `_color`, sets one slide only.
 
 Pictures are referred to by file name and uploaded under Media. Raw HTML and `<style>` blocks are dropped, so a slide cannot bring its own markup.';

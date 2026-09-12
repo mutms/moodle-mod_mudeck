@@ -28,6 +28,7 @@ const ALLOWEDDIRECTIVES = [
   "backgroundRepeat",
   "backgroundSize",
   "color",
+  "transition",
   "marp"
 ];
 const STYLEBLOCK = /<style\b[\s\S]*?<\/style\s*>/gi;

@@ -12,7 +12,7 @@ import{DOMPurify as l}from"@mudeck/marp-core";/**
  *
  * @module     mod_mudeck/sanitize
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */const $=["theme","paginate","header","footer","class","backgroundColor","backgroundImage","backgroundPosition","backgroundRepeat","backgroundSize","color","marp"],d=/<style\b[\s\S]*?<\/style\s*>/gi,f=/<style\b[\s\S]*$/i,h=/<!--([\s\S]*?)-->/g,b=e=>{const t=e.match(/^\s*(_?)([A-Za-z][\w-]*)\s*:/);return t?$.includes(t[2]):!1},g=e=>/^\s*_?[A-Za-z][\w-]*\s*:/.test(e),p=e=>{const t=e.split(`
+ */const $=["theme","paginate","header","footer","class","backgroundColor","backgroundImage","backgroundPosition","backgroundRepeat","backgroundSize","color","transition","marp"],d=/<style\b[\s\S]*?<\/style\s*>/gi,f=/<style\b[\s\S]*$/i,h=/<!--([\s\S]*?)-->/g,b=e=>{const t=e.match(/^\s*(_?)([A-Za-z][\w-]*)\s*:/);return t?$.includes(t[2]):!1},g=e=>/^\s*_?[A-Za-z][\w-]*\s*:/.test(e),p=e=>{const t=e.split(`
 `);if(!t.filter(g).length)return e;const n=[];let r=null;for(const a of t){const c=(a.match(/^[ \t]*/)??[""])[0].length;if(g(a)&&(r===null||c<=r)){r=b(a)?null:c,r===null&&n.push(a);continue}r!==null&&(a.trim()===""||c>r)||(r=null,n.push(a))}return n.join(`
 `)};function D(e){let t=e.replace(d,"").replace(f,"");const i=t.match(/^(\s*)---\r?\n([\s\S]*?)\r?\n---[ \t]*(\r?\n|$)/);if(i){const n=p(i[2]);t=t.replace(i[0],`${i[1]}---
 ${n}

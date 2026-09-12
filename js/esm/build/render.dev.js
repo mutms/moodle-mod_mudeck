@@ -77,6 +77,20 @@ ${rules}
 }`;
 }
 __name(mermaidCss, "mermaidCss");
+const TRANSITIONS = ["fade", "slide", "none"];
+const transitionDirective = /* @__PURE__ */ __name((md) => {
+  md.marpit.customDirectives.local.transition = (value) => ({
+    transition: TRANSITIONS.includes(String(value)) ? String(value) : void 0
+  });
+  md.core.ruler.after("marpit_directives_apply", "mudeck_transition", (state) => {
+    for (const token of state.tokens) {
+      const transition = token.meta?.marpitDirectives?.transition;
+      if (token.type === "marpit_slide_open" && typeof transition === "string") {
+        token.attrSet("data-transition", transition);
+      }
+    }
+  });
+}, "transitionDirective");
 function createMarp(plugins, themecss) {
   const marp = new Marp({
     // Never raw HTML from the author.
@@ -92,6 +106,7 @@ function createMarp(plugins, themecss) {
     emoji: { shortcode: true, unicode: false }
   });
   plugins.forEach((plugin) => marp.use(plugin()));
+  marp.use(transitionDirective);
   Object.values(themecss).forEach((css) => {
     try {
       marp.themeSet.add(css);

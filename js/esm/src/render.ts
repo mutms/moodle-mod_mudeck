@@ -23,7 +23,7 @@
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-import {Marp, type MarpPlugin} from '@mudeck/marp-core';
+import {Marp, type MarkdownIt, type MarpPlugin} from '@mudeck/marp-core';
 import {detectNeeds, loadPlugins, type Needs} from './plugins';
 import {filterMarkdown, sanitizeHtml} from './sanitize';
 
@@ -140,6 +140,31 @@ function mermaidCss(html: string): string {
     return `svg[data-marp-mermaid] {\n${rules}\n}`;
 }
 
+/** Transition kinds the presenter knows; anything else is dropped. */
+const TRANSITIONS = ['fade', 'slide', 'none'];
+
+/**
+ * The transition directive, as Marp CLI spells it: a slide's data-transition attribute.
+ *
+ * Marpit reads custom directives at parse time but lists the ones it applies at start,
+ * so the attribute is set by a rule of our own after Marpit's own apply step.
+ *
+ * @param md markdown-it instance with marpit attached
+ */
+const transitionDirective = (md: MarkdownIt): void => {
+    md.marpit.customDirectives.local.transition = (value: unknown) => ({
+        transition: TRANSITIONS.includes(String(value)) ? String(value) : undefined,
+    });
+    md.core.ruler.after('marpit_directives_apply', 'mudeck_transition', (state) => {
+        for (const token of state.tokens) {
+            const transition = token.meta?.marpitDirectives?.transition;
+            if (token.type === 'marpit_slide_open' && typeof transition === 'string') {
+                token.attrSet('data-transition', transition);
+            }
+        }
+    });
+};
+
 /**
  * Create a renderer with the deck's options, plugins and site themes registered.
  *
@@ -162,6 +187,7 @@ function createMarp(plugins: MarpPlugin[], themecss: Record<string, string>): {m
         emoji: {shortcode: true, unicode: false},
     });
     plugins.forEach((plugin) => marp.use(plugin()));
+    marp.use(transitionDirective);
 
     // Site themes must be registered before they can be named.
     Object.values(themecss).forEach((css) => {

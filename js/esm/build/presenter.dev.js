@@ -11,6 +11,41 @@ const FALLBACKWIDTH = 1280;
 const FALLBACKHEIGHT = 720;
 const SWIPEDISTANCE = 50;
 const TAPZONE = 0.25;
+const DEFAULTTRANSITION = "fade";
+const startViewTransition = document.startViewTransition?.bind(document);
+const sharedKey = /* @__PURE__ */ __name((el) => {
+  if (el instanceof HTMLImageElement) {
+    const src = el.getAttribute("src");
+    return src ? `img:${src}` : null;
+  }
+  const text = el.textContent?.trim();
+  return text ? `${el.tagName}:${text}` : null;
+}, "sharedKey");
+const tagShared = /* @__PURE__ */ __name((from, to) => {
+  const candidates = /* @__PURE__ */ __name((slide) => Array.from(slide.querySelectorAll("img, h1, h2, h3")), "candidates");
+  const before = /* @__PURE__ */ new Map();
+  for (const el of candidates(from)) {
+    const key = sharedKey(el);
+    if (key && !before.has(key)) {
+      before.set(key, el);
+    }
+  }
+  const tagged = [];
+  const used = /* @__PURE__ */ new Set();
+  for (const el of candidates(to)) {
+    const key = sharedKey(el);
+    const match = key ? before.get(key) : void 0;
+    if (!key || !match || used.has(key)) {
+      continue;
+    }
+    used.add(key);
+    const name = `mudeck-shared-${tagged.length}`;
+    match.style.setProperty("view-transition-name", name);
+    el.style.setProperty("view-transition-name", name);
+    tagged.push(match, el);
+  }
+  return tagged;
+}, "tagShared");
 const isInteractive = /* @__PURE__ */ __name((target) => {
   const el = target instanceof Element ? target.closest("a,button,input,select,textarea,summary,[role=button]") : null;
   return el !== null;
@@ -41,13 +76,8 @@ function mountPresenter(container, onState) {
     };
   }
   let index = 0;
-  const show = /* @__PURE__ */ __name((next) => {
-    index = Math.max(0, Math.min(slides.length - 1, next));
-    slides.forEach((slide, i) => {
-      slide.hidden = i !== index;
-    });
-    onState({ current: index + 1, total: slides.length });
-  }, "show");
+  let running = null;
+  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
   const fit = /* @__PURE__ */ __name(() => {
     const slide = slides[index];
     const width = slide.offsetWidth || FALLBACKWIDTH;
@@ -57,10 +87,38 @@ function mountPresenter(container, onState) {
     container.style.setProperty("--mudeck-slide-width", `${width}px`);
     container.style.setProperty("--mudeck-slide-height", `${height}px`);
   }, "fit");
-  const showAndFit = /* @__PURE__ */ __name((next) => {
-    show(next);
-    fit();
-  }, "showAndFit");
+  const show = /* @__PURE__ */ __name((next) => {
+    const target = Math.max(0, Math.min(slides.length - 1, next));
+    const change = /* @__PURE__ */ __name(() => {
+      index = target;
+      slides.forEach((slide, i) => {
+        slide.hidden = i !== index;
+      });
+      fit();
+      onState({ current: index + 1, total: slides.length });
+    }, "change");
+    const kind = slides[target].dataset.transition ?? DEFAULTTRANSITION;
+    if (target === index || kind === "none" || reducedMotion.matches || !startViewTransition) {
+      change();
+      return;
+    }
+    running?.skipTransition();
+    const root = document.documentElement;
+    root.dataset.mudeckTransition = kind;
+    root.dataset.mudeckDirection = target > index ? "forward" : "back";
+    const shared = tagShared(slides[index], slides[target]);
+    const transition = startViewTransition(change);
+    running = transition;
+    transition.finished.finally(() => {
+      shared.forEach((el) => el.style.removeProperty("view-transition-name"));
+      if (running === transition) {
+        delete root.dataset.mudeckTransition;
+        delete root.dataset.mudeckDirection;
+        running = null;
+      }
+    });
+  }, "show");
+  const showAndFit = show;
   const onKey = /* @__PURE__ */ __name((event) => {
     if (isTextEntry(event.target)) {
       return;

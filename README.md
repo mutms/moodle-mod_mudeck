@@ -63,6 +63,8 @@ Three slides. Copy it into a new activity, press **Start presentation**, and see
   ` ```php `.
 * **Diagrams** — a fenced block named `mermaid` becomes a diagram: flowcharts, sequence,
   state and class diagrams, entity relationships and simple charts.
+* **Transitions** — `transition: slide` at the top of the deck animates every change of
+  slide; pictures and headings that appear on two slides in a row move between them.
 * **Colours** — `<!-- _backgroundColor: #123456 -->` or `<!-- _color: white -->` on a
   slide changes just that slide.
 

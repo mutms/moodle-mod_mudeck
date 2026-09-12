@@ -24,9 +24,23 @@ declare module '@mudeck/marp-core' {
     /** What a plugin factory returns and marp.use() takes. */
     export type MarpPlugin = () => unknown;
 
+    /** A markdown-it token as far as a plugin of our own reads it. */
+    export type Token = {
+        type: string;
+        meta?: {marpitDirectives?: Record<string, unknown>};
+        attrSet: (name: string, value: string) => void;
+    };
+
+    /** The slice of markdown-it a plugin of our own touches. */
+    export type MarkdownIt = {
+        marpit: {customDirectives: {local: Record<string, (value: unknown) => Record<string, unknown>>}};
+        core: {ruler: {after: (after: string, name: string, rule: (state: {tokens: Token[]}) => void) => void}};
+    };
+
     export class Marp {
         constructor(options?: Record<string, unknown>);
         use(plugin: unknown): this;
+        customDirectives: {local: Record<string, unknown>};
         render(markdown: string): {html: string; css: string; comments: string[][]};
         themeSet: {add(css: string): unknown};
     }

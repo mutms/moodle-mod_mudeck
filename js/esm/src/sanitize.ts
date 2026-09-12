@@ -48,6 +48,7 @@ const ALLOWEDDIRECTIVES = [
     'backgroundRepeat',
     'backgroundSize',
     'color',
+    'transition',
     'marp',
 ];
 

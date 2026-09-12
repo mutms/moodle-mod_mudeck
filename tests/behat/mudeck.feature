@@ -300,6 +300,22 @@ Feature: Markdown slide deck
     And ".mudeck-slides section style" "css_element" should not exist
 
   @javascript
+  Scenario: A deck asking for transitions still navigates
+    Given the following "mod_mudeck > parts" exist:
+      | mudeck     | name    | content                                                                 |
+      | Conference | Opening | ---\ntransition: slide\n---\n\n# First\n\n---\n\n<!-- _transition: none -->\n\n# Second |
+    When I am on the "Conference" "mudeck activity" page logged in as "teacher1"
+    And I follow "Start presentation"
+    Then ".mudeck-slides section[data-transition=slide]" "css_element" should exist
+    And ".mudeck-slides section[data-transition=none]" "css_element" should exist
+    When I click on "Next slide" "button"
+    Then I should see "Second"
+    And I should see "Slide 2 of 2" in the "[data-region=mudeck-chrome]" "css_element"
+    When I click on "Previous slide" "button"
+    Then I should see "First"
+    And I should see "Slide 1 of 2" in the "[data-region=mudeck-chrome]" "css_element"
+
+  @javascript
   Scenario: A diagram of a kind the renderer does not draw is shown as its source
     Given the following "mod_mudeck > parts" exist:
       | mudeck     | name    | content                                                              |
