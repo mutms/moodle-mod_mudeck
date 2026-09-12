@@ -319,7 +319,7 @@ final class part {
         $fence = null;
         $previousblank = true;
         foreach (preg_split('/\r?\n/', $body) as $number => $line) {
-            // \x60 is a backtick, written this way to keep it out of the string itself.
+            // The escape \x60 is a backtick, kept out of the string itself.
             if (preg_match('/^[ \t]{0,3}(\x60{3,}|~{3,})/', $line, $match)) {
                 $marker = substr(trim($match[1]), 0, 3);
                 $fence = $fence === null ? $marker : ($fence === $marker ? null : $fence);

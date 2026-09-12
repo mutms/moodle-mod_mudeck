@@ -17,6 +17,7 @@
 // phpcs:disable moodle.Files.BoilerplateComment.CommentEndedTooSoon
 
 // phpcs:disable moodle.Commenting.DocblockDescription.Missing
+// phpcs:disable moodle.Strings.ForbiddenStrings.Found
 
 namespace mod_mudeck\phpunit\local;
 
@@ -133,7 +134,10 @@ final class part_test extends \advanced_testcase {
             'one slide' => ["# Hello\n\nText", "# Hello\n\nText"],
             'cut at the break' => ["# One\n\n---\n\n# Two", "# One\n"],
             'front matter kept' => ["---\ntheme: gaia\n---\n\n# One\n\n---\n\n# Two", "---\ntheme: gaia\n---\n\n# One\n"],
-            'dashes in a fence are not a break' => ["```\n---\n```\n\n# Still one\n\n---\n\n# Two", "```\n---\n```\n\n# Still one\n"],
+            'dashes in a fence are not a break' => [
+                "```\n---\n```\n\n# Still one\n\n---\n\n# Two",
+                "```\n---\n```\n\n# Still one\n",
+            ],
             'dashes under prose underline it' => ["Title\n---\n\nText\n\n---\n\n# Two", "Title\n---\n\nText\n"],
         ];
     }
