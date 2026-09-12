@@ -71,10 +71,10 @@ Open the activity and press **Start presentation**. Move with the arrow keys, th
 a swipe, or a click near the edge of the slide. Click the slide number to see all slides
 at once and jump to any of them. There is a full screen button.
 
-Worried the plugin might not work on the day, or presenting somewhere offline? Press
-**Print slides** on the welcome page and save the result as a PDF. Every page is one
-slide at full size, so the file works as a backup of the whole presentation in any PDF
-viewer. **Print with notes** on the overview gives you the presenter copy instead.
+**Print slides** on the welcome page, saved as a PDF, gives you the whole presentation
+as one file: every page is a slide at full size, so it opens in any PDF viewer and works
+as a backup when you present somewhere without the plugin, or offline. **Print with
+notes** on the overview gives you the presenter copy instead.
 
 If you like, your phone or tablet can follow along with the presentation you are running
 from your computer.
