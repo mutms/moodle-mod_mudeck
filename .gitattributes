@@ -7,3 +7,6 @@ tests export-ignore
 
 # Minified bundles: text for storage and delta compression, but pointless to diff or merge.
 js/vendor/*.js -diff -merge
+AGENTS.md export-ignore
+CLAUDE.md export-ignore
+DEV.md export-ignore
