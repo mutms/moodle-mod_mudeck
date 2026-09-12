@@ -90,7 +90,13 @@ Decisions come from the status and headers, never from the body.
 - No page loads a plain ES module yet; every entry point is reached through a React
   mount. The htmx bootstrap needs a module script in the template.
 
-### Suggested order
+### When
+
+Not in mudeck first. The htmx layer is built in tool_mulib and proven in a new plugin
+with pages that need it from the start (a cohort rules manager: list, preview,
+activation). mudeck's sessions and themes pages are converted after that.
+
+### Suggested order, once it is mudeck's turn
 
 1. Sessions: fixes the GET-with-sesskey links, and its rows go stale on their own,
    which makes it the natural first user of polling.
