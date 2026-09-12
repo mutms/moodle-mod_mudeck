@@ -2,16 +2,12 @@ var __defProp = Object.defineProperty;
 var __name = (target, value) => __defProp(target, "name", { value, configurable: true });
 import { jsxDEV } from "react/jsx-dev-runtime";
 /**
- * The presentation as a document: every slide with its notes underneath.
- *
- * The presenter's copy, meant for the browser's own print. Slides are laid out one to a
- * page so the notes stay with the slide they belong to.
+ * Printable copy of the presentation: one slide per page, with the speaker notes underneath.
  *
  * @module     mod_mudeck/print
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 import { useEffect, useRef, useState } from "react";
-import { filterSlides } from "./filters";
 import { renderParts } from "./render";
 function Print({ parts, themecss, exiturl, labels, notes }) {
   const pagesref = useRef(null);
@@ -21,14 +17,23 @@ function Print({ parts, themecss, exiturl, labels, notes }) {
     css: ""
   });
   useEffect(() => {
-    const { html, css, notes: notes2 } = renderParts(parts ?? [], themecss ?? {});
-    const holder = document.createElement("div");
-    holder.innerHTML = html;
-    setDeck({
-      slides: Array.from(holder.querySelectorAll("section")).map((one) => one.outerHTML),
-      notes: notes2,
-      css
-    });
+    let cancelled = false;
+    (async () => {
+      const { html, css, notes: notes2 } = await renderParts(parts ?? [], themecss ?? {});
+      if (cancelled) {
+        return;
+      }
+      const holder = document.createElement("div");
+      holder.innerHTML = html;
+      setDeck({
+        slides: Array.from(holder.querySelectorAll("section")).map((one) => one.outerHTML),
+        notes: notes2,
+        css
+      });
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, [parts, themecss]);
   useEffect(() => {
     const node = pagesref.current;
@@ -42,30 +47,29 @@ function Print({ parts, themecss, exiturl, labels, notes }) {
       }
     }, "fit");
     fit();
-    filterSlides(node);
     window.addEventListener("resize", fit);
     return () => window.removeEventListener("resize", fit);
   }, [deck]);
   return /* @__PURE__ */ jsxDEV("div", { className: "mudeck-print", children: [
     /* @__PURE__ */ jsxDEV("style", { children: deck.css }, void 0, false, {
       fileName: "public/mod/mudeck/js/esm/src/print.tsx",
-      lineNumber: 85,
+      lineNumber: 89,
       columnNumber: 13
     }, this),
     /* @__PURE__ */ jsxDEV("div", { className: "mudeck-print-actions", children: [
       /* @__PURE__ */ jsxDEV("button", { type: "button", className: "btn btn-primary", onClick: () => window.print(), children: labels.print }, void 0, false, {
         fileName: "public/mod/mudeck/js/esm/src/print.tsx",
-        lineNumber: 88,
+        lineNumber: 92,
         columnNumber: 17
       }, this),
       /* @__PURE__ */ jsxDEV("a", { href: exiturl, className: "btn btn-secondary", children: labels.exit }, void 0, false, {
         fileName: "public/mod/mudeck/js/esm/src/print.tsx",
-        lineNumber: 91,
+        lineNumber: 95,
         columnNumber: 17
       }, this)
     ] }, void 0, true, {
       fileName: "public/mod/mudeck/js/esm/src/print.tsx",
-      lineNumber: 87,
+      lineNumber: 91,
       columnNumber: 13
     }, this),
     /* @__PURE__ */ jsxDEV("div", { className: "mudeck-print-pages", ref: pagesref, children: deck.slides.map((slide, index) => /* @__PURE__ */ jsxDEV("div", { className: "mudeck-print-page", children: [
@@ -79,7 +83,7 @@ function Print({ parts, themecss, exiturl, labels, notes }) {
         false,
         {
           fileName: "public/mod/mudeck/js/esm/src/print.tsx",
-          lineNumber: 98,
+          lineNumber: 102,
           columnNumber: 25
         },
         this
@@ -90,40 +94,40 @@ function Print({ parts, themecss, exiturl, labels, notes }) {
           " ",
           /* @__PURE__ */ jsxDEV("span", { className: "mudeck-print-number", children: index + 1 }, void 0, false, {
             fileName: "public/mod/mudeck/js/esm/src/print.tsx",
-            lineNumber: 105,
+            lineNumber: 109,
             columnNumber: 52
           }, this)
         ] }, void 0, true, {
           fileName: "public/mod/mudeck/js/esm/src/print.tsx",
-          lineNumber: 104,
+          lineNumber: 108,
           columnNumber: 33
         }, this),
         deck.notes[index] ? /* @__PURE__ */ jsxDEV("pre", { className: "mudeck-print-note", children: deck.notes[index] }, void 0, false, {
           fileName: "public/mod/mudeck/js/esm/src/print.tsx",
-          lineNumber: 108,
+          lineNumber: 112,
           columnNumber: 39
         }, this) : /* @__PURE__ */ jsxDEV("p", { className: "text-muted", children: labels.nonotes }, void 0, false, {
           fileName: "public/mod/mudeck/js/esm/src/print.tsx",
-          lineNumber: 109,
+          lineNumber: 113,
           columnNumber: 39
         }, this)
       ] }, void 0, true, {
         fileName: "public/mod/mudeck/js/esm/src/print.tsx",
-        lineNumber: 103,
+        lineNumber: 107,
         columnNumber: 29
       }, this)
     ] }, index, true, {
       fileName: "public/mod/mudeck/js/esm/src/print.tsx",
-      lineNumber: 96,
+      lineNumber: 100,
       columnNumber: 21
     }, this)) }, void 0, false, {
       fileName: "public/mod/mudeck/js/esm/src/print.tsx",
-      lineNumber: 94,
+      lineNumber: 98,
       columnNumber: 13
     }, this)
   ] }, void 0, true, {
     fileName: "public/mod/mudeck/js/esm/src/print.tsx",
-    lineNumber: 84,
+    lineNumber: 88,
     columnNumber: 9
   }, this);
 }

@@ -1,8 +1,6 @@
 /**
- * The deck runtime that marp-core does not provide.
- *
- * Shows one slide at a time, scales it to the viewport, and accepts keyboard,
- * swipe and edge tap input. Plain DOM on purpose - the chrome around it is React.
+ * Deck runtime on top of marp-core output: shows one slide at a time, scales it to the
+ * viewport, and handles keyboard, swipe and edge tap input. Plain DOM; the chrome is React.
  *
  * @module     mod_mudeck/presenter
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later

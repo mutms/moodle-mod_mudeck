@@ -14,11 +14,9 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * The parts a presentation is made of, as slides rather than as a table.
+ * The parts of a presentation, shown as slide thumbnails.
  *
- * Every action is still an ordinary link to the page that does it, so a broken bundle
- * costs the slide previews and nothing else - the server renders the same list behind
- * this component until it mounts.
+ * Every action is an ordinary link, so the server-rendered list works until this mounts.
  *
  * @module     mod_mudeck/overview
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -28,7 +26,7 @@ import {useEffect, useRef, useState} from 'react';
 import {confirmed} from './confirm';
 import {renderPart, type PartSource} from './render';
 
-/** Where the open part is remembered, so a full page reload does not collapse everything. */
+/** The sessionStorage key remembering the open part across reloads. */
 const OPENKEY = 'mudeck-overview-open';
 
 type Part = PartSource & {
@@ -60,19 +58,17 @@ type OverviewProps = {
     parts: Part[];
     themecss?: Record<string, string>;
     labels: Labels;
-    /** Where a part reports its new place, and the key that lets it. */
     /** REST URL prefix of the part resource, ending in a slash. */
     parturl: string;
     sesskey: string;
 };
 
 /**
- * Choose where a part goes, for anybody not using a mouse.
+ * Keyboard alternative to dragging: pick a position from a list.
  *
- * The move waits for the button: arrowing through a list of positions must not move
- * anything until the choice is made.
+ * The move waits for the button so arrowing through the options moves nothing.
  *
- * @param props places to choose from, where the part is now, and what to do with the answer
+ * @param props positions to choose from, the current one, and the callbacks
  * @returns the position chooser
  */
 function PositionChooser({id, label, confirm, count, current, onPick, onCancel}: {
@@ -119,7 +115,7 @@ function PositionChooser({id, label, confirm, count, current, onPick, onCancel}:
     );
 }
 
-/** One part rendered to slides, kept until the page is left. */
+/** One part rendered to slides. */
 type Rendered = {
     slides: string[];
     css: string;
@@ -136,45 +132,53 @@ export default function Overview({parts, themecss, labels, parturl, sesskey}: Ov
 
     useEffect(() => setOrder(parts), [parts]);
 
-    // Come back to the part that was open before the page reloaded.
+    // Restore the part that was open before the reload.
     useEffect(() => {
         let remembered = null;
         try {
             remembered = window.sessionStorage.getItem(OPENKEY);
         } catch {
-            // Private windows and blocked storage simply start collapsed.
+            // Blocked storage starts collapsed.
         }
         const id = remembered ? Number(remembered) : null;
         if (id && parts.some((part) => part.id === id)) {
             setOpen(id);
         } else if (parts.length === 1) {
-            // One part is the usual case, and a single collapsed row helps nobody.
             setOpen(parts[0].id);
         }
     }, [parts]);
 
-    // Slides are only built for the part on screen, so a long deck costs nothing until asked.
+    // Slides are rendered lazily, only for the open part.
     useEffect(() => {
         if (open === null || rendered[open]) {
-            return;
+            return undefined;
         }
         const part = parts.find((one) => one.id === open);
         if (!part) {
-            return;
+            return undefined;
         }
-        const {html, css} = renderPart(part.markdown, part.theme, themecss ?? {});
-        const holder = document.createElement('div');
-        holder.innerHTML = html;
-        setRendered((all) => ({
-            ...all,
-            [open]: {
-                slides: Array.from(holder.querySelectorAll('section')).map((one) => one.outerHTML),
-                css,
-            },
-        }));
+        let cancelled = false;
+        (async() => {
+            const {html, css} = await renderPart(part.markdown, part.theme, themecss ?? {});
+            if (cancelled) {
+                return;
+            }
+            const holder = document.createElement('div');
+            holder.innerHTML = html;
+            setRendered((all) => ({
+                ...all,
+                [open]: {
+                    slides: Array.from(holder.querySelectorAll('section')).map((one) => one.outerHTML),
+                    css,
+                },
+            }));
+        })();
+        return () => {
+            cancelled = true;
+        };
     }, [open, parts, themecss, rendered]);
 
-    // A thumbnail is a whole slide scaled into one grid column, so it has to be measured.
+    // Thumbnails are whole slides scaled to the measured column width.
     useEffect(() => {
         const list = thumbsref.current;
         if (!list) {
@@ -192,12 +196,9 @@ export default function Overview({parts, themecss, labels, parturl, sesskey}: Ov
     }, [open, rendered]);
 
     /**
-     * Delete a part, once the person has said so out loud.
-     *
-     * The part leaves the page first; if the server refuses, it comes back, because
-     * pretending something is gone when it is not would be the worse lie.
+     * Delete a part after confirmation, optimistically; a server refusal restores it.
      */
-    const remove = async (part: Part) => {
+    const remove = async(part: Part) => {
         const question = labels.deleteconfirm.replace('{$a}', part.name);
         if (!await confirmed(labels.deletetitle, question, labels.delete)) {
             return;
@@ -220,10 +221,7 @@ export default function Overview({parts, themecss, labels, parturl, sesskey}: Ov
     };
 
     /**
-     * Put a part at a given place, on the page and then on the server.
-     *
-     * The list is moved first so the page keeps up with the mouse; a refusal from the
-     * server puts it back, because the order on the server is the one that counts.
+     * Move a part to a position, optimistically; a server refusal restores the old order.
      */
     const moveTo = (id: number, position: number) => {
         const from = order.findIndex((part) => part.id === id);
@@ -237,18 +235,20 @@ export default function Overview({parts, themecss, labels, parturl, sesskey}: Ov
         setOrder(moved);
         setAnnouncement(labels.moved.replace('{$a}', String(position)));
 
-        fetch(`${parturl}${id}/move`, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({sesskey, position}),
-        })
-            .then((response) => {
+        (async() => {
+            try {
+                const response = await fetch(`${parturl}${id}/move`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({sesskey, position}),
+                });
                 if (!response.ok) {
-                    // The order on the server is the one that counts.
                     setOrder(previous);
                 }
-            })
-            .catch(() => setOrder(previous));
+            } catch {
+                setOrder(previous);
+            }
+        })();
     };
 
     const toggle = (id: number) => {
@@ -261,13 +261,12 @@ export default function Overview({parts, themecss, labels, parturl, sesskey}: Ov
                 window.sessionStorage.setItem(OPENKEY, String(next));
             }
         } catch {
-            // Not being able to remember it is not worth telling anybody about.
+            // Blocked storage is ignored.
         }
     };
 
     if (!order.length) {
-        // The server says the same thing until this mounts; it has to keep saying it
-        // afterwards, or a presentation with no parts looks like a page still loading.
+        // Keep the empty message after mount, or a presentation with no parts looks like it is still loading.
         return (
             <div className="alert alert-info" role="status">{labels.noparts}</div>
         );
@@ -364,8 +363,7 @@ export default function Overview({parts, themecss, labels, parturl, sesskey}: Ov
                                                     className="mudeck-thumb-link"
                                                     title={`${labels.show} ${index + 1}`}
                                                 >
-                                                    {/* Marp scopes its CSS to "div.marpit > section",
-                                                        so a lone slide keeps that parent. */}
+                                                    {/* Marp scopes its CSS to "div.marpit > section". */}
                                                     <div
                                                         className="mudeck-thumb-slide marpit"
                                                         aria-hidden="true"

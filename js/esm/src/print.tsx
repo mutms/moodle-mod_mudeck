@@ -14,17 +14,13 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * The presentation as a document: every slide with its notes underneath.
- *
- * The presenter's copy, meant for the browser's own print. Slides are laid out one to a
- * page so the notes stay with the slide they belong to.
+ * Printable copy of the presentation: one slide per page, with the speaker notes underneath.
  *
  * @module     mod_mudeck/print
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 import {useEffect, useRef, useState} from 'react';
-import {filterSlides} from './filters';
 import {renderParts, type PartSource} from './render';
 
 type Labels = {
@@ -39,7 +35,7 @@ type PrintProps = {
     themecss?: Record<string, string>;
     exiturl: string;
     labels: Labels;
-    /** Put the speaker notes under every slide - the presenter copy rather than the handout. */
+    /** Put the speaker notes under every slide. */
     notes?: boolean;
 };
 
@@ -52,17 +48,26 @@ export default function Print({parts, themecss, exiturl, labels, notes}: PrintPr
     });
 
     useEffect(() => {
-        const {html, css, notes} = renderParts(parts ?? [], themecss ?? {});
-        const holder = document.createElement('div');
-        holder.innerHTML = html;
-        setDeck({
-            slides: Array.from(holder.querySelectorAll('section')).map((one) => one.outerHTML),
-            notes,
-            css,
-        });
+        let cancelled = false;
+        (async() => {
+            const {html, css, notes} = await renderParts(parts ?? [], themecss ?? {});
+            if (cancelled) {
+                return;
+            }
+            const holder = document.createElement('div');
+            holder.innerHTML = html;
+            setDeck({
+                slides: Array.from(holder.querySelectorAll('section')).map((one) => one.outerHTML),
+                notes,
+                css,
+            });
+        })();
+        return () => {
+            cancelled = true;
+        };
     }, [parts, themecss]);
 
-    // Marp lays a slide out at a fixed pixel size, so each one is scaled to the page width.
+    // Marp slides have a fixed pixel size, so they are scaled to the page width.
     useEffect(() => {
         const node = pagesref.current;
         if (!node) {
@@ -75,7 +80,6 @@ export default function Print({parts, themecss, exiturl, labels, notes}: PrintPr
             }
         };
         fit();
-        filterSlides(node);
         window.addEventListener('resize', fit);
         return () => window.removeEventListener('resize', fit);
     }, [deck]);

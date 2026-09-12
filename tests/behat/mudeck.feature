@@ -250,17 +250,41 @@ Feature: Markdown slide deck
     Then the "Reach the last slide" completion condition of "Lecture" is displayed as "done"
 
   @javascript
-  Scenario: A deck with dollar signs, code and maths still renders
+  Scenario: A deck with dollar signs, code and maths renders each the right way
     Given the following "mod_mudeck > parts" exist:
-      | mudeck     | name    | content                                                                     |
-      | Conference | Opening | # Rozpocet\n\n- cena je $200\n\n```php\n$deck = new mudeck();\n```\n\n---\n\n# Vzorec\n\nPlocha je \\( \\pi r^2 \\) presne. |
+      | mudeck     | name    | content                                                                                          |
+      | Conference | Opening | # Rozpocet\n\n- cena je $200\n\n```php\n$deck = new mudeck();\n```\n\n---\n\n# Vzorec\n\nPlocha je $\\pi r^2$ presne. |
     When I am on the "Conference" "mudeck activity" page logged in as "teacher1"
     And I follow "Start presentation"
     Then I should see "Rozpocet"
+    # A lone dollar sign is money, not maths.
     And I should see "cena je $200"
+    # The code block was coloured token by token.
+    And ".mudeck-slides pre.shiki span[style]" "css_element" should exist
     And I should see "Slide 1 of 2" in the "[data-region=mudeck-chrome]" "css_element"
     When I click on "Next slide" "button"
     Then I should see "Vzorec"
+    # The formula was typeset into a picture, so its TeX is no longer on the page.
+    # Inline SVG elements are invisible to XPath by name, so the container stands for the picture.
+    And ".mudeck-slides mjx-container[jax=SVG]" "css_element" should exist
+    And I should not see "\pi"
+
+  @javascript
+  Scenario: Diagrams and slide colours come from the Markdown alone
+    Given the following "mod_mudeck > parts" exist:
+      | mudeck     | name    | content                                                                                                  |
+      | Conference | Opening | <!-- _backgroundColor: #123456 -->\n<!-- _color: white; position: fixed -->\n\n# Tmavy\n\n```mermaid\ngraph LR\n  A[Napad] --> B[Snimky]\n```\n\n<style>body { display: none; }</style> |
+    When I am on the "Conference" "mudeck activity" page logged in as "teacher1"
+    And I follow "Start presentation"
+    Then I should see "Tmavy"
+    # The diagram is a drawing with the labels in it.
+    And ".mudeck-slides [data-marp-mermaid]" "css_element" should exist
+    And I should see "Napad"
+    # The colour directives took, and only as colours: nothing else from that value survived.
+    And ".mudeck-slides section[style*='background-color']" "css_element" should exist
+    And ".mudeck-slides section[style*='position']" "css_element" should not exist
+    # A style element from the author never reaches the slide; the deck's own stylesheet sits outside the sections.
+    And ".mudeck-slides section style" "css_element" should not exist
 
   @javascript @_file_upload
   Scenario: A teacher imports slides as a plain Markdown file

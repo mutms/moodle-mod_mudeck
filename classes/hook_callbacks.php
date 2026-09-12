@@ -31,7 +31,7 @@ namespace mod_mudeck;
  */
 final class hook_callbacks {
     /**
-     * Make the bundled Marp renderer importable from our ES modules.
+     * Make the bundled Marp renderer and its plugins importable from our ES modules.
      *
      * Core builds ES modules without bundling, so third party libraries have to be
      * shipped pre-bundled and registered here, otherwise the bare specifier cannot
@@ -40,10 +40,13 @@ final class hook_callbacks {
      * @param \core\hook\output\before_import_map_config $hook
      */
     public static function before_import_map_config(\core\hook\output\before_import_map_config $hook): void {
-        $hook->add_import(
-            '@mudeck/marp-core',
-            path: 'public/mod/mudeck/js/vendor/marp-core',
-            devreplacements: [],
-        );
+        // The renderer, and the three plugins a deck loads only when it needs them.
+        foreach (['marp-core', 'marp-mathjax', 'marp-shiki', 'marp-mermaid'] as $bundle) {
+            $hook->add_import(
+                "@mudeck/{$bundle}",
+                path: "public/mod/mudeck/js/vendor/{$bundle}",
+                devreplacements: [],
+            );
+        }
     }
 }

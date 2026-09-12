@@ -14,33 +14,23 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * Where each slide sits in the Markdown.
- *
- * Marp hands back slides with no idea which part of the text they came from, so the
- * editor works it out from the text itself. The rules are the ones
- * `mod_mudeck\local\part::count_slides()` applies on the server - keep the two in step:
- *
- *  - front matter at the top of the text is not a slide break;
- *  - nothing inside a fenced code block separates anything;
- *  - three dashes are a break only when the line above is blank or a list, heading or
- *    quote marker. Under a line of prose they underline it as a heading instead, which
- *    is the CommonMark rule that once had the welcome page counting six slides in a
- *    four-slide deck.
+ * Find where each slide sits in the Markdown. The rules match
+ * `mod_mudeck\local\part::count_slides()` on the server; keep the two in step.
  *
  * @module     mod_mudeck/source
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-/** Front matter, which belongs to the deck rather than to its first slide. */
+/** Front matter, which is not part of the first slide. */
 const FRONTMATTER = /^\s*---\r?\n[\s\S]*?\r?\n---[ \t]*(\r?\n|$)/;
 
-/** The start of a fenced code block, and its end: the same line shape either way. */
+/** A fence line, opening or closing a code block. */
 const FENCE = /^[ \t]{0,3}(\x60{3,}|~{3,})/;
 
 /** A line of nothing but dashes, underscores or stars. */
 const RULE = /^[ \t]{0,3}(-{3,}|_{3,}|\*{3,})[ \t]*$/;
 
-/** A line that dashes below it cannot turn into a heading, so a rule stays a rule. */
+/** A line that dashes below it cannot turn into a setext heading. */
 const UNDERLINABLE = /^[ \t]{0,3}([#>|]|[-*+][ \t]|\d+[.)][ \t])/;
 
 /**
@@ -92,8 +82,7 @@ function fenceAfter(line: string, fence: string | null): string | null {
  */
 export function slideBreaks(text: string): number[] {
     const front = text.match(FRONTMATTER);
-    // Front matter is skipped rather than removed: every offset has to point into the
-    // author's own text, because that is where the cursor goes.
+    // Skipped rather than removed, so offsets point into the author's own text.
     let at = front ? front[0].length : 0;
 
     const breaks: number[] = [];
@@ -126,10 +115,7 @@ export function slideBreaks(text: string): number[] {
 }
 
 /**
- * Where the cursor belongs when somebody asks for a slide.
- *
- * The end of the slide rather than its start: on the empty line before the break, which
- * is where the next bullet or paragraph goes. The last slide ends where the text does.
+ * The cursor offset for a slide: its end, on the blank line before the break.
  *
  * @param text the Markdown as written
  * @param slide 1-based slide number, as the preview strip numbers them
@@ -137,15 +123,13 @@ export function slideBreaks(text: string): number[] {
  */
 export function slideEnd(text: string, slide: number): number {
     const breaks = slideBreaks(text);
-    // Clamped rather than refused: if this ever disagrees with Marp about a deck, a
-    // cursor in roughly the right place beats a click that does nothing.
+    // Clamped rather than refused, in case this disagrees with Marp about a deck.
     const wanted = Math.min(Math.max(slide, 1), breaks.length + 1);
     if (wanted > breaks.length) {
         return text.length;
     }
 
     const at = breaks[wanted - 1];
-    // One step back off the break line lands on the blank line above it, or at the end
-    // of the last line of content when the author left no blank line there.
+    // Step back onto the blank line above the break, or the end of the last content line.
     return at > 0 && text.charAt(at - 1) === '\n' ? at - 1 : at;
 }

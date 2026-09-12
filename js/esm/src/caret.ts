@@ -14,17 +14,13 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * Where a text area is drawing its cursor.
- *
- * A text area keeps that to itself, so the only way to find out is to lay the same text
- * out again in an element that can be measured, and look at where the next character
- * would land.
+ * Locates the caret of a text area by laying its text out again in a measurable mirror element.
  *
  * @module     mod_mudeck/caret
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-/** Everything that decides where a character ends up. */
+/** Styles that affect where a character is laid out. */
 const COPIED = [
     'font-family',
     'font-size',
@@ -50,7 +46,7 @@ type Point = {
 };
 
 /**
- * The place on screen where the character at an offset is drawn.
+ * Window coordinates of the character at an offset in a text area.
  *
  * @param textarea the field being written in
  * @param index how far into its text to look
@@ -61,8 +57,7 @@ export function caretPoint(textarea: HTMLTextAreaElement, index: number): Point 
     const mirror = document.createElement('div');
 
     COPIED.forEach((name) => mirror.style.setProperty(name, style.getPropertyValue(name)));
-    // Off the page, laid out the way the text area lays its text out. The width is the
-    // room the text really has, so the lines wrap where they wrap in the field itself.
+    // The width must match the text area's content width so lines wrap identically.
     mirror.style.position = 'absolute';
     mirror.style.top = '0';
     mirror.style.left = '-9999px';
@@ -77,8 +72,7 @@ export function caretPoint(textarea: HTMLTextAreaElement, index: number): Point 
 
     mirror.textContent = textarea.value.slice(0, index);
     const spot = document.createElement('span');
-    // The rest of the text goes in so that a wrapping line breaks where it would in the
-    // field; an empty span at the very end has nowhere to sit, hence the full stop.
+    // The remaining text keeps the wrapping identical; an empty span at the end has no position.
     spot.textContent = textarea.value.slice(index) || '.';
     mirror.appendChild(spot);
     document.body.appendChild(mirror);

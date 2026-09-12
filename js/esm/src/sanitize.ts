@@ -14,14 +14,16 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * Everything that keeps an untrusted deck harmless.
+ * Sanitise untrusted decks: the rendered HTML is cleaned here, and the CSS never comes
+ * from the author's render (see render.ts). The Markdown filter is a feature allowlist,
+ * not a security boundary.
  *
- * Slides may be written by students, so nothing an author types is trusted, and
- * neither is what Marp makes of it. The rendered HTML is sanitised here before it
- * reaches the page, inline styles included; the CSS never comes from the author's
- * render at all (see render.ts). The Markdown filter in this module is an allowlist
- * of features, not a security boundary: it decides which directives a deck may use,
- * and it happens to throw away author CSS before Marp spends time on it.
+ * What the renderer emits, and how each piece is handled:
+ *
+ *  - HTML from Markdown: DOMPurify's HTML profile; raw HTML is off in Marp.
+ *  - Inline styles: parsed by the browser's CSS engine, only listed properties with matching values are kept.
+ *  - SVG from MathJax and Mermaid: DOMPurify's SVG profile, foreignObject and style elements forbidden.
+ *  - MathJax's container: a custom element admitted by name with three attributes.
  *
  * @module     mod_mudeck/sanitize
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -30,12 +32,9 @@
 import {DOMPurify} from '@mudeck/marp-core';
 
 /**
- * Directives an author may use.
+ * Directives an author may use, in plain and spot (underscore) form.
  *
- * Anything else is removed. A leading underscore marks the spot form of a
- * directive (this slide only) and is allowed for the same keys. Colours and
- * backgrounds by directive are CSS in disguise, so they are not here: a slide
- * that wants a look picks a class from its theme, or uses a background image.
+ * The style directive stays out because it carries CSS rules rather than values the style hook can check.
  */
 const ALLOWEDDIRECTIVES = [
     'theme',
@@ -43,6 +42,12 @@ const ALLOWEDDIRECTIVES = [
     'header',
     'footer',
     'class',
+    'backgroundColor',
+    'backgroundImage',
+    'backgroundPosition',
+    'backgroundRepeat',
+    'backgroundSize',
+    'color',
     'marp',
 ];
 
@@ -70,9 +75,7 @@ const isAllowedDirective = (line: string): boolean => {
 };
 
 /**
- * Does the line look like a directive at all?
- *
- * Lines that are not directives are presenter notes and stay as they are.
+ * Does the line look like a directive? Lines that do not are presenter notes.
  *
  * @param line
  * @return bool
@@ -89,14 +92,12 @@ const filterDirectiveBlock = (body: string): string => {
     const lines = body.split('\n');
     const directives = lines.filter(looksLikeDirective);
     if (!directives.length) {
-        // No directives at all - this is a presenter note, leave it alone.
+        // A presenter note.
         return body;
     }
 
     const kept: string[] = [];
-    // A directive can run over several lines: "style: |" carries a block of CSS beneath
-    // it. Dropping its first line and leaving the rest behind turns valid front matter
-    // into rubbish, and then the whole block is thrown away - theme and all.
+    // A dropped directive takes its indented continuation lines ("style: |") with it.
     let dropped: number | null = null;
     for (const line of lines) {
         const indent = (line.match(/^[ \t]*/) ?? [''])[0].length;
@@ -107,7 +108,7 @@ const filterDirectiveBlock = (body: string): string => {
             }
             continue;
         }
-        // Indented deeper, or empty: still part of the directive that was dropped.
+        // Still part of the dropped directive.
         if (dropped !== null && (line.trim() === '' || indent > dropped)) {
             continue;
         }
@@ -139,31 +140,59 @@ export function filterMarkdown(markdown: string): string {
     return out;
 }
 
-/**
- * The inline styles Marp is allowed to put on a slide, and what their values may be.
- *
- * Marp draws a background image as a figure with the picture in its style attribute,
- * and the bg keywords for size and blur go with it. Nothing else has any business in
- * a style attribute, and DOMPurify does not look inside one, so this does.
- */
+/** A theme variable the renderer's plugins colour by, with an optional fallback variable. */
+const VAR = 'var\\(--marp-[a-z-]+(?:, var\\(--marp-[a-z-]+\\))?\\)';
+
+/** A colour as the CSS engine writes it back: a keyword, a hex value, a function, or a theme variable. */
+const COLOUR = `(?:[a-z]+|#[0-9a-f]{3,8}|(?:rgb|rgba|hsl|hsla)\\([0-9., %/]+\\)|${VAR})`;
+
+/** A length, as a bare zero or a number with a unit. */
+const LENGTH = '(?:0|-?\\d*\\.?\\d+(?:px|em|ex|rem|%|vw|vh))';
+
+/** Inline style properties Marp or its plugins write, and the values each may take. */
 const ALLOWEDSTYLES: Record<string, RegExp> = {
-    // A single quoted url. What is inside came through markdown-it, which has already
-    // percent-encoded quotes, backslashes and whitespace; the scheme is checked below.
-    'background-image': /^url\("[^"'\\()\s]*"\)$/,
-    'background-size': /^(?:cover|contain|auto|\d*\.?\d+(?:px|%)?)(?: (?:auto|\d*\.?\d+(?:px|%)?))?$/,
+    // The url was percent-encoded by markdown-it; the scheme is checked separately below.
+    'background-image': /^(?:none|url\("[^"'\\()\s]*"\))$/,
+    'background-size': new RegExp(`^(?:cover|contain|auto|${LENGTH})(?: (?:auto|${LENGTH}))?$`),
+    'background-position': new RegExp(
+        `^(?:left|right|top|bottom|center|${LENGTH})(?: (?:left|right|top|bottom|center|${LENGTH}))?$`,
+    ),
+    'background-repeat': /^(?:repeat|no-repeat|repeat-x|repeat-y|space|round)(?: (?:repeat|no-repeat|space|round))?$/,
+    'background-color': new RegExp(`^${COLOUR}$`),
+    'color': new RegExp(`^${COLOUR}$`),
     'filter': /^(?:[a-z-]+\(\d*\.?\d+(?:px|%|deg)?\) ?)+$/,
+    'font-style': /^(?:normal|italic)$/,
+    'font-weight': /^(?:normal|bold|[1-9]00)$/,
+    'text-decoration': new RegExp(
+        `^(?:none|underline|line-through|overline)(?: (?:solid|double|dotted|dashed|wavy))?(?: ${COLOUR})?$`,
+    ),
+    'vertical-align': new RegExp(`^${LENGTH}$`),
+    'display': /^(?:block|inline|inline-block)$/,
+    'width': new RegExp(`^(?:auto|${LENGTH})$`),
+    'min-width': new RegExp(`^(?:auto|${LENGTH})$`),
+    'max-width': new RegExp(`^(?:none|${LENGTH})$`),
+    'height': new RegExp(`^(?:auto|${LENGTH})$`),
+    'max-height': new RegExp(`^(?:none|${LENGTH})$`),
+    'margin-top': new RegExp(`^(?:auto|${LENGTH})$`),
+    'margin-right': new RegExp(`^(?:auto|${LENGTH})$`),
+    'margin-bottom': new RegExp(`^(?:auto|${LENGTH})$`),
+    'margin-left': new RegExp(`^(?:auto|${LENGTH})$`),
 };
+
+/** A custom property is kept only when it hands on a theme variable, as Mermaid's palette does. */
+const CUSTOMPROPERTY = /^--[a-z][a-z0-9_-]*$/;
+const CUSTOMVALUE = new RegExp(`^${VAR}$`);
 
 /** Where a background picture may come from: this site, another site, or the data itself. */
 const ALLOWEDURL = /^url\("(?:https?:\/\/|data:image\/|[^:]*$)/i;
 
-/** A scratch element whose CSSOM parses the styles, so no regex has to. */
+/** A scratch element whose CSSOM parses the styles. */
 let probe: HTMLElement | null = null;
 
 /**
- * Keep only the declarations in a style attribute that Marp needs for backgrounds.
+ * Keep only the declarations in a style attribute that the renderer is allowed to make.
  *
- * @param value the attribute as Marp wrote it
+ * @param value the attribute as the renderer wrote it
  * @return the declarations that may stay, possibly none
  */
 const cleanStyle = (value: string): string => {
@@ -172,15 +201,18 @@ const cleanStyle = (value: string): string => {
     const kept: string[] = [];
     for (let i = 0; i < probe.style.length; i++) {
         const name = probe.style.item(i);
-        const pattern = ALLOWEDSTYLES[name];
-        if (!pattern) {
-            continue;
-        }
         const declared = probe.style.getPropertyValue(name).trim();
-        if (!pattern.test(declared)) {
+        if (CUSTOMPROPERTY.test(name)) {
+            if (CUSTOMVALUE.test(declared)) {
+                kept.push(`${name}:${declared}`);
+            }
             continue;
         }
-        if (name === 'background-image' && !ALLOWEDURL.test(declared)) {
+        const pattern = ALLOWEDSTYLES[name];
+        if (!pattern || !pattern.test(declared)) {
+            continue;
+        }
+        if (name === 'background-image' && declared !== 'none' && !ALLOWEDURL.test(declared)) {
             continue;
         }
         kept.push(`${name}:${declared}`);
@@ -189,9 +221,7 @@ const cleanStyle = (value: string): string => {
     return kept.join(';');
 };
 
-/*
- * A style attribute keeps only the declarations listed above, or goes.
- */
+/* A style attribute keeps only the listed declarations, or is removed. */
 DOMPurify.addHook('uponSanitizeAttribute', (node: Element, data: {attrName: string; attrValue: string; keepAttr: boolean}) => {
     if (data.attrName !== 'style') {
         return;
@@ -203,12 +233,8 @@ DOMPurify.addHook('uponSanitizeAttribute', (node: Element, data: {attrName: stri
 });
 
 /*
- * Every link in a slide opens in a tab of its own.
- *
- * A link clicked during a talk must never take the presentation off the screen - and a
- * browser already in full screen opens the new tab full screen too, so a demonstration
- * can be shown and left without the room ever seeing a toolbar. The rel goes with it:
- * a tab opened this way has no business reaching back through window.opener.
+ * Every link opens in a new tab, so a click during a talk never leaves the presentation.
+ * The rel stops the new tab reaching back through window.opener.
  */
 DOMPurify.addHook('afterSanitizeAttributes', (node: Element) => {
     if (node.tagName === 'A' && node.hasAttribute('href')) {
@@ -227,9 +253,16 @@ export function sanitizeHtml(html: string): string {
     return DOMPurify.sanitize(html, {
         // Marp emits plain sections with data-marpit-* attributes.
         ALLOW_DATA_ATTR: true,
-        // Plain HTML only: with raw HTML off and inline SVG off, Marp has no SVG to emit.
-        USE_PROFILES: {html: true},
-        FORBID_TAGS: ['style', 'script', 'iframe', 'object', 'embed', 'form', 'base', 'link', 'meta'],
+        // HTML from Markdown, SVG from MathJax and Mermaid.
+        USE_PROFILES: {html: true, svg: true},
+        // MathJax's container element and its three attributes.
+        CUSTOM_ELEMENT_HANDLING: {
+            tagNameCheck: /^mjx-[a-z-]+$/,
+            attributeNameCheck: /^(?:jax|display|overflow)$/,
+            allowCustomizedBuiltInElements: false,
+        },
+        ADD_ATTR: ['focusable'],
+        FORBID_TAGS: ['style', 'script', 'iframe', 'object', 'embed', 'form', 'base', 'link', 'meta', 'foreignobject'],
         FORBID_ATTR: ['srcdoc', 'formaction', 'ping'],
     });
 }

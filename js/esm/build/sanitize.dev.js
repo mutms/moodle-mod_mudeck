@@ -1,14 +1,16 @@
 var __defProp = Object.defineProperty;
 var __name = (target, value) => __defProp(target, "name", { value, configurable: true });
 /**
- * Everything that keeps an untrusted deck harmless.
+ * Sanitise untrusted decks: the rendered HTML is cleaned here, and the CSS never comes
+ * from the author's render (see render.ts). The Markdown filter is a feature allowlist,
+ * not a security boundary.
  *
- * Slides may be written by students, so nothing an author types is trusted, and
- * neither is what Marp makes of it. The rendered HTML is sanitised here before it
- * reaches the page, inline styles included; the CSS never comes from the author's
- * render at all (see render.ts). The Markdown filter in this module is an allowlist
- * of features, not a security boundary: it decides which directives a deck may use,
- * and it happens to throw away author CSS before Marp spends time on it.
+ * What the renderer emits, and how each piece is handled:
+ *
+ *  - HTML from Markdown: DOMPurify's HTML profile; raw HTML is off in Marp.
+ *  - Inline styles: parsed by the browser's CSS engine, only listed properties with matching values are kept.
+ *  - SVG from MathJax and Mermaid: DOMPurify's SVG profile, foreignObject and style elements forbidden.
+ *  - MathJax's container: a custom element admitted by name with three attributes.
  *
  * @module     mod_mudeck/sanitize
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -20,6 +22,12 @@ const ALLOWEDDIRECTIVES = [
   "header",
   "footer",
   "class",
+  "backgroundColor",
+  "backgroundImage",
+  "backgroundPosition",
+  "backgroundRepeat",
+  "backgroundSize",
+  "color",
   "marp"
 ];
 const STYLEBLOCK = /<style\b[\s\S]*?<\/style\s*>/gi;
@@ -72,13 +80,39 @@ ${filtered}
   return out;
 }
 __name(filterMarkdown, "filterMarkdown");
+const VAR = "var\\(--marp-[a-z-]+(?:, var\\(--marp-[a-z-]+\\))?\\)";
+const COLOUR = `(?:[a-z]+|#[0-9a-f]{3,8}|(?:rgb|rgba|hsl|hsla)\\([0-9., %/]+\\)|${VAR})`;
+const LENGTH = "(?:0|-?\\d*\\.?\\d+(?:px|em|ex|rem|%|vw|vh))";
 const ALLOWEDSTYLES = {
-  // A single quoted url. What is inside came through markdown-it, which has already
-  // percent-encoded quotes, backslashes and whitespace; the scheme is checked below.
-  "background-image": /^url\("[^"'\\()\s]*"\)$/,
-  "background-size": /^(?:cover|contain|auto|\d*\.?\d+(?:px|%)?)(?: (?:auto|\d*\.?\d+(?:px|%)?))?$/,
-  "filter": /^(?:[a-z-]+\(\d*\.?\d+(?:px|%|deg)?\) ?)+$/
+  // The url was percent-encoded by markdown-it; the scheme is checked separately below.
+  "background-image": /^(?:none|url\("[^"'\\()\s]*"\))$/,
+  "background-size": new RegExp(`^(?:cover|contain|auto|${LENGTH})(?: (?:auto|${LENGTH}))?$`),
+  "background-position": new RegExp(
+    `^(?:left|right|top|bottom|center|${LENGTH})(?: (?:left|right|top|bottom|center|${LENGTH}))?$`
+  ),
+  "background-repeat": /^(?:repeat|no-repeat|repeat-x|repeat-y|space|round)(?: (?:repeat|no-repeat|space|round))?$/,
+  "background-color": new RegExp(`^${COLOUR}$`),
+  "color": new RegExp(`^${COLOUR}$`),
+  "filter": /^(?:[a-z-]+\(\d*\.?\d+(?:px|%|deg)?\) ?)+$/,
+  "font-style": /^(?:normal|italic)$/,
+  "font-weight": /^(?:normal|bold|[1-9]00)$/,
+  "text-decoration": new RegExp(
+    `^(?:none|underline|line-through|overline)(?: (?:solid|double|dotted|dashed|wavy))?(?: ${COLOUR})?$`
+  ),
+  "vertical-align": new RegExp(`^${LENGTH}$`),
+  "display": /^(?:block|inline|inline-block)$/,
+  "width": new RegExp(`^(?:auto|${LENGTH})$`),
+  "min-width": new RegExp(`^(?:auto|${LENGTH})$`),
+  "max-width": new RegExp(`^(?:none|${LENGTH})$`),
+  "height": new RegExp(`^(?:auto|${LENGTH})$`),
+  "max-height": new RegExp(`^(?:none|${LENGTH})$`),
+  "margin-top": new RegExp(`^(?:auto|${LENGTH})$`),
+  "margin-right": new RegExp(`^(?:auto|${LENGTH})$`),
+  "margin-bottom": new RegExp(`^(?:auto|${LENGTH})$`),
+  "margin-left": new RegExp(`^(?:auto|${LENGTH})$`)
 };
+const CUSTOMPROPERTY = /^--[a-z][a-z0-9_-]*$/;
+const CUSTOMVALUE = new RegExp(`^${VAR}$`);
 const ALLOWEDURL = /^url\("(?:https?:\/\/|data:image\/|[^:]*$)/i;
 let probe = null;
 const cleanStyle = /* @__PURE__ */ __name((value) => {
@@ -87,15 +121,18 @@ const cleanStyle = /* @__PURE__ */ __name((value) => {
   const kept = [];
   for (let i = 0; i < probe.style.length; i++) {
     const name = probe.style.item(i);
-    const pattern = ALLOWEDSTYLES[name];
-    if (!pattern) {
-      continue;
-    }
     const declared = probe.style.getPropertyValue(name).trim();
-    if (!pattern.test(declared)) {
+    if (CUSTOMPROPERTY.test(name)) {
+      if (CUSTOMVALUE.test(declared)) {
+        kept.push(`${name}:${declared}`);
+      }
       continue;
     }
-    if (name === "background-image" && !ALLOWEDURL.test(declared)) {
+    const pattern = ALLOWEDSTYLES[name];
+    if (!pattern || !pattern.test(declared)) {
+      continue;
+    }
+    if (name === "background-image" && declared !== "none" && !ALLOWEDURL.test(declared)) {
       continue;
     }
     kept.push(`${name}:${declared}`);
@@ -122,9 +159,16 @@ function sanitizeHtml(html) {
   return DOMPurify.sanitize(html, {
     // Marp emits plain sections with data-marpit-* attributes.
     ALLOW_DATA_ATTR: true,
-    // Plain HTML only: with raw HTML off and inline SVG off, Marp has no SVG to emit.
-    USE_PROFILES: { html: true },
-    FORBID_TAGS: ["style", "script", "iframe", "object", "embed", "form", "base", "link", "meta"],
+    // HTML from Markdown, SVG from MathJax and Mermaid.
+    USE_PROFILES: { html: true, svg: true },
+    // MathJax's container element and its three attributes.
+    CUSTOM_ELEMENT_HANDLING: {
+      tagNameCheck: /^mjx-[a-z-]+$/,
+      attributeNameCheck: /^(?:jax|display|overflow)$/,
+      allowCustomizedBuiltInElements: false
+    },
+    ADD_ATTR: ["focusable"],
+    FORBID_TAGS: ["style", "script", "iframe", "object", "embed", "form", "base", "link", "meta", "foreignobject"],
     FORBID_ATTR: ["srcdoc", "formaction", "ping"]
   });
 }

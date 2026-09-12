@@ -1,18 +1,20 @@
-import{DOMPurify as c}from"@mudeck/marp-core";/**
- * Everything that keeps an untrusted deck harmless.
+import{DOMPurify as u}from"@mudeck/marp-core";/**
+ * Sanitise untrusted decks: the rendered HTML is cleaned here, and the CSS never comes
+ * from the author's render (see render.ts). The Markdown filter is a feature allowlist,
+ * not a security boundary.
  *
- * Slides may be written by students, so nothing an author types is trusted, and
- * neither is what Marp makes of it. The rendered HTML is sanitised here before it
- * reaches the page, inline styles included; the CSS never comes from the author's
- * render at all (see render.ts). The Markdown filter in this module is an allowlist
- * of features, not a security boundary: it decides which directives a deck may use,
- * and it happens to throw away author CSS before Marp spends time on it.
+ * What the renderer emits, and how each piece is handled:
+ *
+ *  - HTML from Markdown: DOMPurify's HTML profile; raw HTML is off in Marp.
+ *  - Inline styles: parsed by the browser's CSS engine, only listed properties with matching values are kept.
+ *  - SVG from MathJax and Mermaid: DOMPurify's SVG profile, foreignObject and style elements forbidden.
+ *  - MathJax's container: a custom element admitted by name with three attributes.
  *
  * @module     mod_mudeck/sanitize
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */const f=["theme","paginate","header","footer","class","marp"],g=/<style\b[\s\S]*?<\/style\s*>/gi,m=/<style\b[\s\S]*$/i,p=/<!--([\s\S]*?)-->/g,d=e=>{const t=e.match(/^\s*(_?)([A-Za-z][\w-]*)\s*:/);return t?f.includes(t[2]):!1},a=e=>/^\s*_?[A-Za-z][\w-]*\s*:/.test(e),u=e=>{const t=e.split(`
-`);if(!t.filter(a).length)return e;const r=[];let n=null;for(const i of t){const o=(i.match(/^[ \t]*/)??[""])[0].length;if(a(i)&&(n===null||o<=n)){n=d(i)?null:o,n===null&&r.push(i);continue}n!==null&&(i.trim()===""||o>n)||(n=null,r.push(i))}return r.join(`
-`)};function L(e){let t=e.replace(g,"").replace(m,"");const s=t.match(/^(\s*)---\r?\n([\s\S]*?)\r?\n---[ \t]*(\r?\n|$)/);if(s){const r=u(s[2]);t=t.replace(s[0],`${s[1]}---
-${r}
+ */const $=["theme","paginate","header","footer","class","backgroundColor","backgroundImage","backgroundPosition","backgroundRepeat","backgroundSize","color","marp"],d=/<style\b[\s\S]*?<\/style\s*>/gi,f=/<style\b[\s\S]*$/i,E=/<!--([\s\S]*?)-->/g,b=t=>{const e=t.match(/^\s*(_?)([A-Za-z][\w-]*)\s*:/);return e?$.includes(e[2]):!1},g=t=>/^\s*_?[A-Za-z][\w-]*\s*:/.test(t),p=t=>{const e=t.split(`
+`);if(!e.filter(g).length)return t;const o=[];let n=null;for(const a of e){const l=(a.match(/^[ \t]*/)??[""])[0].length;if(g(a)&&(n===null||l<=n)){n=b(a)?null:l,n===null&&o.push(a);continue}n!==null&&(a.trim()===""||l>n)||(n=null,o.push(a))}return o.join(`
+`)};function T(t){let e=t.replace(d,"").replace(f,"");const i=e.match(/^(\s*)---\r?\n([\s\S]*?)\r?\n---[ \t]*(\r?\n|$)/);if(i){const o=p(i[2]);e=e.replace(i[0],`${i[1]}---
+${o}
 ---
-`)}return t=t.replace(p,(r,n)=>`<!--${u(n)}-->`),t}const A={"background-image":/^url\("[^"'\\()\s]*"\)$/,"background-size":/^(?:cover|contain|auto|\d*\.?\d+(?:px|%)?)(?: (?:auto|\d*\.?\d+(?:px|%)?))?$/,filter:/^(?:[a-z-]+\(\d*\.?\d+(?:px|%|deg)?\) ?)+$/},b=/^url\("(?:https?:\/\/|data:image\/|[^:]*$)/i;let l=null;const h=e=>{l=l??document.createElement("span"),l.style.cssText=e;const t=[];for(let s=0;s<l.style.length;s++){const r=l.style.item(s),n=A[r];if(!n)continue;const i=l.style.getPropertyValue(r).trim();n.test(i)&&(r==="background-image"&&!b.test(i)||t.push(`${r}:${i}`))}return l.style.cssText="",t.join(";")};c.addHook("uponSanitizeAttribute",(e,t)=>{t.attrName==="style"&&(t.attrValue=h(t.attrValue),t.attrValue||(t.keepAttr=!1))});c.addHook("afterSanitizeAttributes",e=>{e.tagName==="A"&&e.hasAttribute("href")&&(e.setAttribute("target","_blank"),e.setAttribute("rel","noopener noreferrer"))});function k(e){return c.sanitize(e,{ALLOW_DATA_ATTR:!0,USE_PROFILES:{html:!0},FORBID_TAGS:["style","script","iframe","object","embed","form","base","link","meta"],FORBID_ATTR:["srcdoc","formaction","ping"]})}export{L as filterMarkdown,k as sanitizeHtml};
+`)}return e=e.replace(E,(o,n)=>`<!--${p(n)}-->`),e}const m="var\\(--marp-[a-z-]+(?:, var\\(--marp-[a-z-]+\\))?\\)",c=`(?:[a-z]+|#[0-9a-f]{3,8}|(?:rgb|rgba|hsl|hsla)\\([0-9., %/]+\\)|${m})`,r="(?:0|-?\\d*\\.?\\d+(?:px|em|ex|rem|%|vw|vh))",h={"background-image":/^(?:none|url\("[^"'\\()\s]*"\))$/,"background-size":new RegExp(`^(?:cover|contain|auto|${r})(?: (?:auto|${r}))?$`),"background-position":new RegExp(`^(?:left|right|top|bottom|center|${r})(?: (?:left|right|top|bottom|center|${r}))?$`),"background-repeat":/^(?:repeat|no-repeat|repeat-x|repeat-y|space|round)(?: (?:repeat|no-repeat|space|round))?$/,"background-color":new RegExp(`^${c}$`),color:new RegExp(`^${c}$`),filter:/^(?:[a-z-]+\(\d*\.?\d+(?:px|%|deg)?\) ?)+$/,"font-style":/^(?:normal|italic)$/,"font-weight":/^(?:normal|bold|[1-9]00)$/,"text-decoration":new RegExp(`^(?:none|underline|line-through|overline)(?: (?:solid|double|dotted|dashed|wavy))?(?: ${c})?$`),"vertical-align":new RegExp(`^${r}$`),display:/^(?:block|inline|inline-block)$/,width:new RegExp(`^(?:auto|${r})$`),"min-width":new RegExp(`^(?:auto|${r})$`),"max-width":new RegExp(`^(?:none|${r})$`),height:new RegExp(`^(?:auto|${r})$`),"max-height":new RegExp(`^(?:none|${r})$`),"margin-top":new RegExp(`^(?:auto|${r})$`),"margin-right":new RegExp(`^(?:auto|${r})$`),"margin-bottom":new RegExp(`^(?:auto|${r})$`),"margin-left":new RegExp(`^(?:auto|${r})$`)},R=/^--[a-z][a-z0-9_-]*$/,x=new RegExp(`^${m}$`),w=/^url\("(?:https?:\/\/|data:image\/|[^:]*$)/i;let s=null;const k=t=>{s=s??document.createElement("span"),s.style.cssText=t;const e=[];for(let i=0;i<s.style.length;i++){const o=s.style.item(i),n=s.style.getPropertyValue(o).trim();if(R.test(o)){x.test(n)&&e.push(`${o}:${n}`);continue}const a=h[o];!a||!a.test(n)||o==="background-image"&&n!=="none"&&!w.test(n)||e.push(`${o}:${n}`)}return s.style.cssText="",e.join(";")};u.addHook("uponSanitizeAttribute",(t,e)=>{e.attrName==="style"&&(e.attrValue=k(e.attrValue),e.attrValue||(e.keepAttr=!1))});u.addHook("afterSanitizeAttributes",t=>{t.tagName==="A"&&t.hasAttribute("href")&&(t.setAttribute("target","_blank"),t.setAttribute("rel","noopener noreferrer"))});function L(t){return u.sanitize(t,{ALLOW_DATA_ATTR:!0,USE_PROFILES:{html:!0,svg:!0},CUSTOM_ELEMENT_HANDLING:{tagNameCheck:/^mjx-[a-z-]+$/,attributeNameCheck:/^(?:jax|display|overflow)$/,allowCustomizedBuiltInElements:!1},ADD_ATTR:["focusable"],FORBID_TAGS:["style","script","iframe","object","embed","form","base","link","meta","foreignobject"],FORBID_ATTR:["srcdoc","formaction","ping"]})}export{T as filterMarkdown,L as sanitizeHtml};

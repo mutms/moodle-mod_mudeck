@@ -25,7 +25,7 @@ type Target = {
     sesskey: string;
 };
 
-/** The bit of core's global that tracks work a test has to wait for. */
+/** The part of M.util that tracks pending work for tests. */
 type PendingRegistry = {
     js_pending?: (key: string) => void;
     js_complete?: (key: string) => void;
@@ -35,15 +35,11 @@ const registry = (): PendingRegistry | undefined =>
     (window as unknown as {M?: {util?: PendingRegistry}}).M?.util;
 
 /**
- * Report reaching the end, once.
+ * Report reaching the end.
  *
- * Registered as pending with core synchronously, before anything is awaited, so that a
- * test waiting for the page to settle waits for this too - loading the pending module
- * first would leave a gap in which nothing looks pending and the page can be left.
- * Sent with keepalive so that leaving the page the moment the last slide shows does not
- * lose it. Failures are ignored: completion is checked again next time the user gets there.
+ * Registered as pending synchronously so tests wait for it; sent with keepalive so leaving the page does not lose it.
  *
- * @param target where to post, and the session key that lets us
+ * @param target where to post, and the session key
  */
 export async function reportReachedEnd(target: Target): Promise<void> {
     const key = 'mod_mudeck/reachedend';
@@ -56,7 +52,7 @@ export async function reportReachedEnd(target: Target): Promise<void> {
             keepalive: true,
         });
     } catch {
-        // Nothing to do; see above.
+        // Ignored; completion is checked again next time.
     } finally {
         registry()?.js_complete?.(key);
     }

@@ -14,14 +14,14 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * Bundle marp-core into js/vendor/marp-core.js.
+ * Bundle Marp and its plugins into js/vendor/*.js.
  *
  * Core builds plugin ES modules without bundling, so a third party library has to
  * arrive pre-bundled and registered in the import map (see classes/hook_callbacks.php).
  *
- * Math is deliberately stubbed out: it is out of scope for now, and mathjax-full
- * grabs the global MathJax object, which Moodle already defines for its own filter -
- * loading both breaks the module at import time.
+ * Four bundles: the renderer with DOMPurify, and one per optional marp-core plugin -
+ * MathJax, Shiki and Mermaid - so a deck only downloads what it uses. Shiki's own
+ * language table is replaced by shiki-langs.mjs, a curated list, see there.
  *
  * Run with: npm run build:vendor - esbuild is taken from Moodle's own node_modules,
  * the plugin sits inside the tree so nothing else has to be installed for it.
@@ -32,24 +32,34 @@ import path from 'path';
 import {fileURLToPath} from 'url';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
-const stub = path.join(here, 'math-stub.mjs');
 
-/** Replace every math engine import with an inert stub. */
-const stubMath = {
-    name: 'stub-math',
+/** Point marp-core's language table at ours. */
+const curatedLanguages = {
+    name: 'curated-languages',
     setup(build) {
-        build.onResolve({filter: /^(mathjax-full|katex)(\/|$)/}, () => ({path: stub}));
+        build.onResolve({filter: /^#marp-shiki$/}, () => ({path: path.join(here, 'shiki-langs.mjs')}));
     },
 };
 
-await esbuild.build({
-    entryPoints: [path.join(here, 'entry.mjs')],
-    bundle: true,
-    format: 'esm',
-    minify: true,
-    target: 'es2020',
-    define: {'process.env.NODE_ENV': '"production"'},
-    plugins: [stubMath],
-    outfile: path.join(here, '..', 'marp-core.js'),
-    logLevel: 'info',
-});
+const bundles = {
+    'marp-core': 'entry-core.mjs',
+    'marp-mathjax': 'entry-mathjax.mjs',
+    'marp-shiki': 'entry-shiki.mjs',
+    'marp-mermaid': 'entry-mermaid.mjs',
+};
+
+for (const [name, entry] of Object.entries(bundles)) {
+    await esbuild.build({
+        entryPoints: [path.join(here, entry)],
+        bundle: true,
+        format: 'esm',
+        minify: true,
+        target: 'es2020',
+        define: {'process.env.NODE_ENV': '"production"'},
+        // Node-only globals the libraries read at load time, see process-shim.mjs.
+        inject: [path.join(here, 'process-shim.mjs')],
+        plugins: [curatedLanguages],
+        outfile: path.join(here, '..', `${name}.js`),
+        logLevel: 'info',
+    });
+}

@@ -99,3 +99,19 @@ Decisions come from the status and headers, never from the body.
 
 Both are behind capabilities most users never hold, so a rough first version costs
 nothing.
+
+## Marp 5
+
+marp-core 5 is a lightweight core plus plugins. The plugin ships four bundles built by
+`js/vendor/src/build.mjs`: the renderer with DOMPurify, and MathJax, Shiki and
+Mermaid as one bundle each. `js/esm/src/plugins.ts` reads the Markdown and fetches only
+the bundles a deck needs, so a deck of plain text downloads the renderer alone.
+
+- Maths is Marp syntax, `$x$` and `$$ ... $$`, typeset to inline SVG at render time.
+  Moodle's own MathJax filter never touched client-rendered slides and is not used.
+- Shiki's language table is replaced by a curated list in `js/vendor/src/shiki-langs.mjs`;
+  any other language renders as plain code.
+- The renderer's SVG and inline styles pass through `sanitize.ts`; see its docblock for
+  what is admitted and why. The style hook is the boundary, which is what lets the Marp
+  colour directives back in.
+- 5.0.2 is the `next` prerelease on npm, pinned in `npm-shrinkwrap.json`.

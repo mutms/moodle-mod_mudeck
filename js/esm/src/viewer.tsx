@@ -14,10 +14,7 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * Slide deck viewer.
- *
- * React is the mount point and owns the chrome around the deck. marp-core does the
- * rendering (render.ts) and the deck mechanics are plain DOM (presenter.ts).
+ * Slide deck viewer: React chrome around slides rendered by render.ts and driven by presenter.ts.
  *
  * Mounted by core/react_autoinit via data-react-component="@moodle/lms/mod_mudeck/viewer".
  *
@@ -26,21 +23,20 @@
  */
 
 import {useCallback, useEffect, useRef, useState} from 'react';
-import {filterSlides} from './filters';
 import {reportReachedEnd} from './completion';
 import {renderParts, type PartSource, type SlideOrigin} from './render';
 import {mountPresenter, type Presenter, type PresenterState} from './presenter';
 
-/** How long the controls are shown when the deck opens, so they are known to exist. */
+/** How long the controls stay visible after the deck opens, in ms. */
 const INTROFOR = 3000;
 
-/** How long after the pointer leaves the bottom of the screen they go away again. */
+/** Delay before the controls hide once the pointer leaves the bottom zone, in ms. */
 const LEAVEAFTER = 1000;
 
-/** How long a tap keeps them: a finger has no "leaves the area". */
+/** How long a tap keeps the controls visible, in ms; touch has no pointer leave. */
 const TOUCHFOR = 2500;
 
-/** The share of the window height that counts as the bottom of the screen. */
+/** Share of the window height that counts as the bottom zone. */
 const ZONE = 0.15;
 
 type Labels = {
@@ -54,13 +50,13 @@ type Labels = {
     nonotes: string;
 };
 
-/** Where to report the shown slide, so the presenter's other devices can follow. */
+/** Endpoint that receives the shown slide for the presenter's other devices. */
 type Sync = {
     url: string;
     sesskey: string;
 };
 
-/** Where to say that the last slide was reached, when the activity counts that as completion. */
+/** Endpoint that records the last slide being reached, for completion. */
 type ReachedEnd = {
     url: string;
     sesskey: string;
@@ -73,7 +69,7 @@ type ViewerProps = {
     labels: Labels;
     sync?: Sync | null;
     reachedend?: ReachedEnd | null;
-    /** Offer the speaker notes of the shown slide - preview only, never on a projector. */
+    /** Show the speaker notes of the current slide; preview only. */
     notes?: boolean;
     /** Open on this slide instead of the first one. */
     startslide?: number | null;
@@ -96,24 +92,28 @@ export default function Viewer({parts, themecss, exiturl, labels, sync, reachede
         if (!node) {
             return undefined;
         }
-        const {html, css, origins: slideorigins, notes: decknotes} = renderParts(parts ?? [], themecss ?? {});
-        origins.current = slideorigins;
-        slidenotes.current = decknotes;
-        node.innerHTML = `<style>${css}</style>${html}`;
-        presenter.current = mountPresenter(node, setState);
-        if (startslide && startslide > 1) {
-            presenter.current.goto(startslide);
-        }
-        filterSlides(node);
+        let cancelled = false;
+        (async() => {
+            const {html, css, origins: slideorigins, notes: decknotes} = await renderParts(parts ?? [], themecss ?? {});
+            if (cancelled) {
+                return;
+            }
+            origins.current = slideorigins;
+            slidenotes.current = decknotes;
+            node.innerHTML = `<style>${css}</style>${html}`;
+            presenter.current = mountPresenter(node, setState);
+            if (startslide && startslide > 1) {
+                presenter.current.goto(startslide);
+            }
+        })();
         return () => {
+            cancelled = true;
             presenter.current?.destroy();
             presenter.current = null;
         };
     }, [parts, themecss, startslide]);
 
-    // Tell the server where we are. The part and its hash travel with the position: the
-    // other device has its own copy of the deck, which may already have been edited.
-    // Failures are ignored on purpose - a show must not stop because a phone dropped out.
+    // Report the position with part id and hash, since the other device's copy may differ; failures are ignored.
     useEffect(() => {
         const origin = origins.current[state.current - 1];
         if (!sync || !state.total || !origin) {
@@ -132,8 +132,7 @@ export default function Viewer({parts, themecss, exiturl, labels, sync, reachede
         }).catch(() => undefined);
     }, [sync, state]);
 
-    // The last slide, reported once. The talk may go on, and the user may go back and
-    // forth; what is being recorded is that they got there at all.
+    // The last slide is reported once, regardless of later navigation.
     useEffect(() => {
         if (!reachedend || reported.current || !state.total || state.current !== state.total) {
             return;
@@ -142,9 +141,7 @@ export default function Viewer({parts, themecss, exiturl, labels, sync, reachede
         reportReachedEnd(reachedend);
     }, [reachedend, state]);
 
-    // Leaving says the show is over, so the session stops looking live to the speaker's
-    // other devices the moment they walk away - not half an hour later. A beacon, because
-    // an ordinary request made while the page is going away is not guaranteed to be sent.
+    // Ends the session on leaving; a beacon, since a request made while the page unloads may never be sent.
     const finish = useCallback(() => {
         if (!sync) {
             return;
@@ -163,14 +160,13 @@ export default function Viewer({parts, themecss, exiturl, labels, sync, reachede
         }).catch(() => undefined);
     }, [sync]);
 
-    // Closing the tab or window is leaving as well, and every press of the start button
-    // makes a session of its own, so there is nothing here worth keeping alive.
+    // The pagehide event covers closing the tab; each start of the show makes a fresh session anyway.
     useEffect(() => {
         window.addEventListener('pagehide', finish);
         return () => window.removeEventListener('pagehide', finish);
     }, [finish]);
 
-    /** Show the controls, and take them away again after a while. */
+    /** Show the controls, and hide them again after forHowLong ms unless null. */
     const show = useCallback((forHowLong: number | null) => {
         window.clearTimeout(hidetimer.current);
         setChromevisible(true);
@@ -179,19 +175,17 @@ export default function Viewer({parts, themecss, exiturl, labels, sync, reachede
         }
     }, []);
 
-    /** Take them away, unless something is hanging off them. */
+    /** Hide the controls after the given delay. */
     const hide = useCallback((after: number) => {
         window.clearTimeout(hidetimer.current);
         hidetimer.current = window.setTimeout(() => setChromevisible(false), after);
     }, []);
 
-    // Said once, when the deck opens: here are the controls. After this they are only
-    // ever summoned - never by a key, so moving through the slides changes nothing on
-    // screen but the slides.
+    // Shown once when the deck opens; after that keys never summon the controls, only the pointer does.
     const panelopen = overviewopen || notesopen;
     useEffect(() => {
         if (panelopen) {
-            // The overview and the notes hang off the bar; it stays while they are open.
+            // The bar stays while the overview or notes panel is open.
             window.clearTimeout(hidetimer.current);
             setChromevisible(true);
             return undefined;
@@ -200,8 +194,7 @@ export default function Viewer({parts, themecss, exiturl, labels, sync, reachede
         return () => window.clearTimeout(hidetimer.current);
     }, [show, panelopen]);
 
-    // The bottom of the screen is where a hand reaches for the controls, so that is
-    // where they answer. Anywhere else, the pointer is just passing over the slides.
+    // Only the bottom zone summons the controls; elsewhere the pointer is over the slides.
     useEffect(() => {
         if (panelopen) {
             return undefined;
@@ -214,10 +207,8 @@ export default function Viewer({parts, themecss, exiturl, labels, sync, reachede
                 hide(LEAVEAFTER);
             }
         };
-        // A pointer that has gone to another screen is not coming back for the bar.
         const left = () => hide(LEAVEAFTER);
-        // No hover on a touch screen: a tap near the bottom edge asks for the controls,
-        // and they leave by themselves. Swipes are the presenter's, not ours.
+        // Touch has no hover: a tap near the bottom edge shows the controls; swipes belong to the presenter.
         const tapped = (event: TouchEvent) => {
             const touch = event.touches[0];
             if (touch && touch.clientY >= window.innerHeight * (1 - ZONE)) {

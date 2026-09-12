@@ -16,28 +16,28 @@
 /**
  * Turn Marp Markdown into slide HTML and CSS.
  *
- * Nothing Marp produces from an author's text is trusted: the HTML is sanitised and the
- * CSS is never taken from the author's render, see sanitize.ts.
+ * The HTML is sanitised and the CSS never comes from the author's render (sanitize.ts);
+ * optional plugins are loaded on demand (plugins.ts).
  *
  * @module     mod_mudeck/render
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-import {Marp} from '@mudeck/marp-core';
+import {Marp, type MarpPlugin} from '@mudeck/marp-core';
+import {detectNeeds, loadPlugins, type Needs} from './plugins';
 import {filterMarkdown, sanitizeHtml} from './sanitize';
 
 export type RenderedPart = {
     html: string;
     css: string;
-    /** Speaker notes of each slide - Marp hands us the comments it did not consume. */
+    /** Speaker notes of each slide, the comments Marp did not consume. */
     notes: string[];
 };
 
 /**
- * Which part a slide came from, and what that part held at the time.
+ * Which part a slide came from, and the hash of that part at the time.
  *
- * Device sync travels on this rather than on a slide number: an edit while the show is
- * running renumbers the deck, and the hash is how the other device notices.
+ * Device sync uses this rather than a slide number, because an edit during a show renumbers the deck.
  */
 export type SlideOrigin = {
     partid: number;
@@ -50,18 +50,14 @@ export type RenderedDeck = RenderedPart & {
     origins: SlideOrigin[];
 };
 
-/** Front matter at the very top of a deck, which is the only place Marp reads it. */
+/** Front matter at the top of a deck, the only place Marp reads it. */
 const FRONTMATTER = /^---\r?\n([\s\S]*?)\r?\n---[ \t]*(\r?\n|$)/;
 
-/** A theme the author chose for themselves, and what they called it. */
+/** A theme directive written by the author. */
 const OWNTHEME = /^[ \t]*theme[ \t]*:[ \t]*(\S+)[ \t]*$/m;
 
 /**
- * Which theme the deck ends up with.
- *
- * The author's own when it names one this page can render, otherwise the presentation's.
- * A deck restored from another site, or one whose theme was deleted, names a theme that
- * is not here, and then the setting is what is left.
+ * Choose the theme: the author's own when this page can render it, otherwise the presentation's.
  *
  * @param markdown the author's Markdown, already filtered
  * @param theme the theme named by the presentation, may be empty
@@ -78,13 +74,9 @@ function chooseTheme(markdown: string, theme: string, known: string[]): string {
 }
 
 /**
- * Give the deck its theme, without taking the author's front matter away.
+ * Put the theme directive into the author's front matter.
  *
- * The theme has to travel as a directive, and a directive block only counts when
- * it is the first thing in the document - so ours goes *into* the author's front
- * matter when there is one. Putting a second block in front of theirs would turn
- * their "---" into a slide break: an empty first slide, and every directive they
- * wrote quietly ignored.
+ * A second front matter block would turn the author's "---" into a slide break and lose their directives.
  *
  * @param markdown the author's Markdown, already filtered
  * @param theme the theme chosen for the deck, may be empty
@@ -105,29 +97,73 @@ function withTheme(markdown: string, theme: string): string {
 }
 
 /**
- * Render one part.
+ * Build the deck stylesheet from a stub document, so no author CSS is included.
  *
- * @param markdown raw Marp Markdown
- * @param theme Marp theme name
- * @param themecss CSS of the themes shipped with the plugin, keyed by name
- * @returns slide HTML and the theme CSS
+ * Plugins only emit CSS when used, so the stub holds one formula, fenced block and diagram as needed.
+ *
+ * @param marp renderer with the deck's theme and plugins already registered
+ * @param theme the chosen theme name, empty for Marp's own default
+ * @param needs which plugins are in play
+ * @returns the CSS for the whole deck
  */
-export function renderPart(markdown: string, theme: string, themecss: Record<string, string> = {}): RenderedPart {
+function stylesheet(marp: Marp, theme: string, needs: Needs): string {
+    let stub = theme ? `---\ntheme: ${theme}\n---\n` : '';
+    if (needs.math) {
+        stub += '\n$x$\n';
+    }
+    if (needs.code) {
+        stub += '\n```js\n1\n```\n';
+    }
+    if (needs.mermaid) {
+        stub += '\n```mermaid\ngraph TD\n  A --> B\n```\n';
+    }
+    const {html, css} = marp.render(stub);
+    return needs.mermaid ? css + '\n' + mermaidCss(html) : css;
+}
+
+/**
+ * Extract the Mermaid style element, which is stripped from slides, and scope it to diagrams.
+ *
+ * @param html rendered stub holding one diagram
+ * @returns CSS, possibly empty
+ */
+function mermaidCss(html: string): string {
+    const found = html.match(/<svg data-marp-mermaid[^>]*>\s*<style>([\s\S]*?)<\/style>/);
+    if (!found) {
+        return '';
+    }
+    const rules = found[1]
+        // No third-party web font import.
+        .replace(/@import[^;]*;/g, '')
+        // Root svg rules become rules for the scope.
+        .replace(/(^|\n)[ \t]*svg[ \t]*\{/g, '$1& {');
+    return `svg[data-marp-mermaid] {\n${rules}\n}`;
+}
+
+/**
+ * Create a renderer with the deck's options, plugins and site themes registered.
+ *
+ * @param plugins the plugin factories the deck needs
+ * @param themecss CSS of the themes shipped with the plugin, keyed by name
+ * @returns a Marp instance, and the theme names it will answer to
+ */
+function createMarp(plugins: MarpPlugin[], themecss: Record<string, string>): {marp: Marp; known: string[]} {
     const marp = new Marp({
-        // No raw HTML from the author, ever.
+        // Never raw HTML from the author.
         html: false,
-        // The bundle ships without a maths engine, so a dollar sign in a slide is a dollar
-        // sign - with maths on, marp reaches for the engine that is not there and throws.
-        // Formulas are typeset by the site's own filter instead, see filters.ts.
-        math: false,
-        // Plain HTML sections rather than inline SVG, so screen readers get a sane reading order.
+        // Typeset only when the MathJax plugin is loaded.
+        math: true,
+        // Plain sections rather than inline SVG, for screen reader reading order.
         inlineSVG: false,
         script: false,
-        // Shortcodes become the character itself; nothing is fetched from an emoji CDN.
+        // Heading ids from different parts would collide on one page.
+        slug: false,
+        // No emoji images from a CDN.
         emoji: {shortcode: true, unicode: false},
     });
+    plugins.forEach((plugin) => marp.use(plugin()));
 
-    // Themes shipped with the plugin have to be registered before they can be named.
+    // Site themes must be registered before they can be named.
     Object.values(themecss).forEach((css) => {
         try {
             marp.themeSet.add(css);
@@ -136,23 +172,47 @@ export function renderPart(markdown: string, theme: string, themecss: Record<str
         }
     });
 
-    // What Marp will answer to: the three it is born with, plus everything registered
-    // above. A deck asking for anything else is asking for something that is not here.
-    const known = ['default', 'gaia', 'uncover', ...Object.keys(themecss)];
+    // Marp's three built-in themes plus the registered ones.
+    return {marp, known: ['default', 'gaia', 'uncover', ...Object.keys(themecss)]};
+}
+
+type RenderedWithNeeds = RenderedPart & {needs: Needs; theme: string};
+
+/**
+ * Render one part, remembering what it needed.
+ *
+ * @param markdown raw Marp Markdown
+ * @param theme Marp theme name
+ * @param themecss CSS of the themes shipped with the plugin, keyed by name
+ */
+async function renderOne(markdown: string, theme: string, themecss: Record<string, string>): Promise<RenderedWithNeeds> {
     const safe = filterMarkdown(markdown);
+    const needs = detectNeeds(safe);
+    const {marp, known} = createMarp(await loadPlugins(needs), themecss);
     const chosen = chooseTheme(safe, theme, known);
     const {html, comments} = marp.render(withTheme(safe, chosen));
 
-    // The stylesheet comes from a deck that holds nothing of the author's: the theme
-    // alone. Whatever CSS Marp may have collected from the Markdown - style elements,
-    // style directives, scoped styles - is never asked for.
-    const {css} = marp.render(chosen ? `---\ntheme: ${chosen}\n---\n` : '');
-
     return {
         html: sanitizeHtml(html),
-        css,
+        // Never the CSS of the author's render.
+        css: stylesheet(marp, chosen, needs),
         notes: comments.map((slide) => slide.join('\n\n')),
+        needs,
+        theme: chosen,
     };
+}
+
+/**
+ * Render one part.
+ *
+ * @param markdown raw Marp Markdown
+ * @param theme Marp theme name
+ * @param themecss CSS of the themes shipped with the plugin, keyed by name
+ * @returns slide HTML and the theme CSS
+ */
+export async function renderPart(markdown: string, theme: string, themecss: Record<string, string> = {}): Promise<RenderedPart> {
+    const {html, css, notes} = await renderOne(markdown, theme, themecss);
+    return {html, css, notes};
 }
 
 export type PartSource = {
@@ -165,19 +225,24 @@ export type PartSource = {
 /**
  * Render every part of a presentation into one deck.
  *
- * Each part is rendered on its own so that one part's directives cannot leak into
- * another, and only the slide markup is joined - never the Markdown.
+ * Parts are rendered separately so directives cannot leak between them; only the slide markup is joined.
  *
  * @param parts the parts in the order they are shown
  * @param themecss CSS of the themes shipped with the plugin, keyed by name
  * @returns the slides of the whole presentation and the CSS to go with them
  */
-export function renderParts(parts: PartSource[], themecss: Record<string, string> = {}): RenderedDeck {
-    const rendered = parts.map((part) => renderPart(part.markdown, part.theme, themecss));
+export async function renderParts(parts: PartSource[], themecss: Record<string, string> = {}): Promise<RenderedDeck> {
+    const rendered = await Promise.all(parts.map((part) => renderOne(part.markdown, part.theme, themecss)));
+    const needs: Needs = {
+        math: rendered.some((one) => one.needs.math),
+        code: rendered.some((one) => one.needs.code),
+        mermaid: rendered.some((one) => one.needs.mermaid),
+    };
+    // The first part's theme stands for the deck.
+    const {marp} = createMarp(await loadPlugins(needs), themecss);
     return {
         html: rendered.map((one) => one.html).join('\n'),
-        // Every part uses the same theme set, so the first stylesheet covers them all.
-        css: rendered.length ? rendered[0].css : '',
+        css: rendered.length ? stylesheet(marp, rendered[0].theme, needs) : '',
         notes: rendered.flatMap((one) => one.notes),
         origins: rendered.flatMap((one, index) => one.notes.map((_note, slide) => ({
             partid: parts[index].id,

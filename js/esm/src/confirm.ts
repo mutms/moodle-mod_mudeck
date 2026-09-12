@@ -14,10 +14,7 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * Asking before something is destroyed.
- *
- * Moodle already has the dialogue for this, so the plugin borrows it rather than growing
- * a modal of its own - and falls back to the browser's own question if it cannot be had.
+ * Confirmation dialogue using Moodle's core/notification, with window.confirm as fallback.
  *
  * @module     mod_mudeck/confirm
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -30,7 +27,7 @@ type Notification = {
 };
 
 /**
- * Ask before doing something that cannot be undone.
+ * Asks for confirmation before a destructive action.
  *
  * @param title heading of the question
  * @param question what is about to happen
@@ -42,7 +39,7 @@ export async function confirmed(title: string, question: string, save: string): 
     try {
         notification = await requireAsync<Notification>('core/notification');
     } catch {
-        // No dialogue to be had, so ask the plainest way there is.
+        // eslint-disable-next-line no-alert -- the fallback when core/notification cannot load
         return window.confirm(question);
     }
 
@@ -50,7 +47,7 @@ export async function confirmed(title: string, question: string, save: string): 
         await notification.saveCancelPromise(title, question, save);
         return true;
     } catch {
-        // Cancelling rejects the promise - that is an answer, not a failure.
+        // Cancelling rejects the promise.
         return false;
     }
 }

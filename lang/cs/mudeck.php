@@ -60,8 +60,22 @@ $string['help_markdown'] = 'Snímky se píší v Markdownu. Řádek, na kterém 
     - **tučně** a *kurzívou* a `kód`
     - [odkaz](https://example.org)
     - ![obrázek](foto.jpg)
+    - matematika: $x^2$ ve větě, nebo $$ ... $$ na vlastních řádcích
 
     <!-- Komentář, který není direktiva, je poznámka přednášejícího. -->
+
+    ---
+
+    ## Kód a diagramy
+
+    ```php
+    echo "obarveno podle jazyka";
+    ```
+
+    ```mermaid
+    graph LR
+      A[Nápad] --> B[Snímky]
+    ```
 
     ---
 
@@ -71,7 +85,7 @@ $string['help_markdown'] = 'Snímky se píší v Markdownu. Řádek, na kterém 
 
     # Snímek s pozadím
 
-Blok na úplném začátku nastavuje celou prezentaci; komentář s podtržítkem, například `_class` nebo `_paginate`, nastavuje jen jeden snímek.
+Blok na úplném začátku nastavuje celou prezentaci; komentář s podtržítkem, například `_class`, `_backgroundColor` nebo `_color`, nastavuje jen jeden snímek.
 
 Obrázky se uvádějí jménem souboru a nahrávají se pod Média. Přímé HTML a bloky `<style>` se zahazují, snímek si tedy nemůže přinést vlastní kód.';
 $string['help_media'] = 'Média, na která se snímky odkazují jménem souboru. Nahrajte soubor sem a v Markdownu použijte jeho jméno.

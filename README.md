@@ -57,7 +57,13 @@ Three slides. Copy it into a new activity, press **Start presentation**, and see
 * **Speaker notes** — anything between `<!--` and `-->` is shown only to you,
   never to students: `<!-- Ask them to guess the third one. -->`
 * **Themes** — choose one when you set up the activity. Your site may offer extra ones.
-* **Maths** — works the same way as everywhere else in your Moodle site.
+* **Maths** — put a formula between dollar signs: `$x^2$` inside a sentence, or
+  `$$ ... $$` on lines of its own for a big one.
+* **Code** — a fenced block with the language name after the backticks is coloured:
+  ` ```php `.
+* **Diagrams** — a fenced block named `mermaid` becomes a diagram.
+* **Colours** — `<!-- _backgroundColor: #123456 -->` or `<!-- _color: white -->` on a
+  slide changes just that slide.
 
 ## Presenting
 
@@ -85,8 +91,11 @@ Moodle 5.3 or later. No other plugins.
 
 ## Credits
 
-Slide rendering by [Marp](https://marp.app/) (MIT), sanitisation by
-[DOMPurify](https://github.com/cure53/DOMPurify) (MIT).
+Slide rendering by [Marp](https://marp.app/) (MIT), maths by
+[MathJax](https://www.mathjax.org/) (Apache 2.0), code colouring by
+[Shiki](https://shiki.style/) (MIT), diagrams by
+[beautiful-mermaid](https://github.com/lukilabs/beautiful-mermaid) (MIT), sanitisation
+by [DOMPurify](https://github.com/cure53/DOMPurify) (MPL 2.0).
 
 ## AI disclosure
 

@@ -2,10 +2,7 @@ var __defProp = Object.defineProperty;
 var __name = (target, value) => __defProp(target, "name", { value, configurable: true });
 import { jsxDEV } from "react/jsx-dev-runtime";
 /**
- * Slide deck viewer.
- *
- * React is the mount point and owns the chrome around the deck. marp-core does the
- * rendering (render.ts) and the deck mechanics are plain DOM (presenter.ts).
+ * Slide deck viewer: React chrome around slides rendered by render.ts and driven by presenter.ts.
  *
  * Mounted by core/react_autoinit via data-react-component="@moodle/lms/mod_mudeck/viewer".
  *
@@ -13,7 +10,6 @@ import { jsxDEV } from "react/jsx-dev-runtime";
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 import { useCallback, useEffect, useRef, useState } from "react";
-import { filterSlides } from "./filters";
 import { reportReachedEnd } from "./completion";
 import { renderParts } from "./render";
 import { mountPresenter } from "./presenter";
@@ -37,16 +33,22 @@ function Viewer({ parts, themecss, exiturl, labels, sync, reachedend, notes, sta
     if (!node) {
       return void 0;
     }
-    const { html, css, origins: slideorigins, notes: decknotes } = renderParts(parts ?? [], themecss ?? {});
-    origins.current = slideorigins;
-    slidenotes.current = decknotes;
-    node.innerHTML = `<style>${css}</style>${html}`;
-    presenter.current = mountPresenter(node, setState);
-    if (startslide && startslide > 1) {
-      presenter.current.goto(startslide);
-    }
-    filterSlides(node);
+    let cancelled = false;
+    (async () => {
+      const { html, css, origins: slideorigins, notes: decknotes } = await renderParts(parts ?? [], themecss ?? {});
+      if (cancelled) {
+        return;
+      }
+      origins.current = slideorigins;
+      slidenotes.current = decknotes;
+      node.innerHTML = `<style>${css}</style>${html}`;
+      presenter.current = mountPresenter(node, setState);
+      if (startslide && startslide > 1) {
+        presenter.current.goto(startslide);
+      }
+    })();
     return () => {
+      cancelled = true;
       presenter.current?.destroy();
       presenter.current = null;
     };
@@ -148,7 +150,7 @@ function Viewer({ parts, themecss, exiturl, labels, sync, reachedend, notes, sta
   return /* @__PURE__ */ jsxDEV("div", { className: `mudeck-deck${chromevisible ? "" : " mudeck-chrome-hidden"}`, children: [
     /* @__PURE__ */ jsxDEV("div", { ref: slidesref, className: "mudeck-slides", tabIndex: -1 }, void 0, false, {
       fileName: "public/mod/mudeck/js/esm/src/viewer.tsx",
-      lineNumber: 246,
+      lineNumber: 237,
       columnNumber: 13
     }, this),
     /* @__PURE__ */ jsxDEV("div", { className: "mudeck-chrome", "data-region": "mudeck-chrome", children: [
@@ -165,12 +167,12 @@ function Viewer({ parts, themecss, exiturl, labels, sync, reachedend, notes, sta
           children: [
             /* @__PURE__ */ jsxDEV("i", { className: "fa fa-chevron-left", "aria-hidden": "true" }, void 0, false, {
               fileName: "public/mod/mudeck/js/esm/src/viewer.tsx",
-              lineNumber: 258,
+              lineNumber: 249,
               columnNumber: 21
             }, this),
             /* @__PURE__ */ jsxDEV("span", { className: "visually-hidden", children: labels.previous }, void 0, false, {
               fileName: "public/mod/mudeck/js/esm/src/viewer.tsx",
-              lineNumber: 259,
+              lineNumber: 250,
               columnNumber: 21
             }, this)
           ]
@@ -179,7 +181,7 @@ function Viewer({ parts, themecss, exiturl, labels, sync, reachedend, notes, sta
         true,
         {
           fileName: "public/mod/mudeck/js/esm/src/viewer.tsx",
-          lineNumber: 249,
+          lineNumber: 240,
           columnNumber: 17
         },
         this
@@ -195,7 +197,7 @@ function Viewer({ parts, themecss, exiturl, labels, sync, reachedend, notes, sta
           title: labels.overview,
           children: /* @__PURE__ */ jsxDEV("span", { "aria-live": "polite", children: counter }, void 0, false, {
             fileName: "public/mod/mudeck/js/esm/src/viewer.tsx",
-            lineNumber: 270,
+            lineNumber: 261,
             columnNumber: 21
           }, this)
         },
@@ -203,7 +205,7 @@ function Viewer({ parts, themecss, exiturl, labels, sync, reachedend, notes, sta
         false,
         {
           fileName: "public/mod/mudeck/js/esm/src/viewer.tsx",
-          lineNumber: 262,
+          lineNumber: 253,
           columnNumber: 17
         },
         this
@@ -221,12 +223,12 @@ function Viewer({ parts, themecss, exiturl, labels, sync, reachedend, notes, sta
           children: [
             /* @__PURE__ */ jsxDEV("i", { className: "fa fa-chevron-right", "aria-hidden": "true" }, void 0, false, {
               fileName: "public/mod/mudeck/js/esm/src/viewer.tsx",
-              lineNumber: 282,
+              lineNumber: 273,
               columnNumber: 21
             }, this),
             /* @__PURE__ */ jsxDEV("span", { className: "visually-hidden", children: labels.next }, void 0, false, {
               fileName: "public/mod/mudeck/js/esm/src/viewer.tsx",
-              lineNumber: 283,
+              lineNumber: 274,
               columnNumber: 21
             }, this)
           ]
@@ -235,7 +237,7 @@ function Viewer({ parts, themecss, exiturl, labels, sync, reachedend, notes, sta
         true,
         {
           fileName: "public/mod/mudeck/js/esm/src/viewer.tsx",
-          lineNumber: 273,
+          lineNumber: 264,
           columnNumber: 17
         },
         this
@@ -252,12 +254,12 @@ function Viewer({ parts, themecss, exiturl, labels, sync, reachedend, notes, sta
           children: [
             /* @__PURE__ */ jsxDEV("i", { className: "fa fa-expand", "aria-hidden": "true" }, void 0, false, {
               fileName: "public/mod/mudeck/js/esm/src/viewer.tsx",
-              lineNumber: 294,
+              lineNumber: 285,
               columnNumber: 21
             }, this),
             /* @__PURE__ */ jsxDEV("span", { className: "visually-hidden", children: labels.fullscreen }, void 0, false, {
               fileName: "public/mod/mudeck/js/esm/src/viewer.tsx",
-              lineNumber: 295,
+              lineNumber: 286,
               columnNumber: 21
             }, this)
           ]
@@ -266,7 +268,7 @@ function Viewer({ parts, themecss, exiturl, labels, sync, reachedend, notes, sta
         true,
         {
           fileName: "public/mod/mudeck/js/esm/src/viewer.tsx",
-          lineNumber: 286,
+          lineNumber: 277,
           columnNumber: 17
         },
         this
@@ -283,12 +285,12 @@ function Viewer({ parts, themecss, exiturl, labels, sync, reachedend, notes, sta
           children: [
             /* @__PURE__ */ jsxDEV("i", { className: "fa fa-sticky-note", "aria-hidden": "true" }, void 0, false, {
               fileName: "public/mod/mudeck/js/esm/src/viewer.tsx",
-              lineNumber: 307,
+              lineNumber: 298,
               columnNumber: 25
             }, this),
             /* @__PURE__ */ jsxDEV("span", { className: "visually-hidden", children: labels.notes }, void 0, false, {
               fileName: "public/mod/mudeck/js/esm/src/viewer.tsx",
-              lineNumber: 308,
+              lineNumber: 299,
               columnNumber: 25
             }, this)
           ]
@@ -297,7 +299,7 @@ function Viewer({ parts, themecss, exiturl, labels, sync, reachedend, notes, sta
         true,
         {
           fileName: "public/mod/mudeck/js/esm/src/viewer.tsx",
-          lineNumber: 299,
+          lineNumber: 290,
           columnNumber: 21
         },
         this
@@ -305,31 +307,31 @@ function Viewer({ parts, themecss, exiturl, labels, sync, reachedend, notes, sta
       /* @__PURE__ */ jsxDEV("a", { href: exiturl, className: "btn btn-secondary mudeck-control", onClick: finish, children: [
         /* @__PURE__ */ jsxDEV("i", { className: "fa fa-times", "aria-hidden": "true" }, void 0, false, {
           fileName: "public/mod/mudeck/js/esm/src/viewer.tsx",
-          lineNumber: 313,
+          lineNumber: 304,
           columnNumber: 21
         }, this),
         /* @__PURE__ */ jsxDEV("span", { className: "visually-hidden", children: labels.exit }, void 0, false, {
           fileName: "public/mod/mudeck/js/esm/src/viewer.tsx",
-          lineNumber: 314,
+          lineNumber: 305,
           columnNumber: 21
         }, this)
       ] }, void 0, true, {
         fileName: "public/mod/mudeck/js/esm/src/viewer.tsx",
-        lineNumber: 312,
+        lineNumber: 303,
         columnNumber: 17
       }, this)
     ] }, void 0, true, {
       fileName: "public/mod/mudeck/js/esm/src/viewer.tsx",
-      lineNumber: 248,
+      lineNumber: 239,
       columnNumber: 13
     }, this),
     notes && notesopen && /* @__PURE__ */ jsxDEV("div", { className: "mudeck-slide-notes", id: "mudeck-slide-notes", "data-region": "mudeck-slide-notes", children: /* @__PURE__ */ jsxDEV("pre", { className: "mudeck-slide-notes-text", children: slidenotes.current[state.current - 1] || labels.nonotes }, void 0, false, {
       fileName: "public/mod/mudeck/js/esm/src/viewer.tsx",
-      lineNumber: 320,
+      lineNumber: 311,
       columnNumber: 21
     }, this) }, void 0, false, {
       fileName: "public/mod/mudeck/js/esm/src/viewer.tsx",
-      lineNumber: 319,
+      lineNumber: 310,
       columnNumber: 17
     }, this),
     overviewopen && /* @__PURE__ */ jsxDEV("div", { className: "mudeck-overview", id: "mudeck-overview", "data-region": "mudeck-overview", children: /* @__PURE__ */ jsxDEV("ul", { className: "mudeck-overview-list", children: (presenter.current?.titles() ?? []).map((title, i) => /* @__PURE__ */ jsxDEV("li", { children: /* @__PURE__ */ jsxDEV(
@@ -346,12 +348,12 @@ function Viewer({ parts, themecss, exiturl, labels, sync, reachedend, notes, sta
         children: [
           /* @__PURE__ */ jsxDEV("span", { className: "mudeck-overview-number", children: i + 1 }, void 0, false, {
             fileName: "public/mod/mudeck/js/esm/src/viewer.tsx",
-            lineNumber: 341,
+            lineNumber: 332,
             columnNumber: 37
           }, this),
           /* @__PURE__ */ jsxDEV("span", { className: "mudeck-overview-title", children: title }, void 0, false, {
             fileName: "public/mod/mudeck/js/esm/src/viewer.tsx",
-            lineNumber: 342,
+            lineNumber: 333,
             columnNumber: 37
           }, this)
         ]
@@ -360,26 +362,26 @@ function Viewer({ parts, themecss, exiturl, labels, sync, reachedend, notes, sta
       true,
       {
         fileName: "public/mod/mudeck/js/esm/src/viewer.tsx",
-        lineNumber: 331,
+        lineNumber: 322,
         columnNumber: 33
       },
       this
     ) }, i, false, {
       fileName: "public/mod/mudeck/js/esm/src/viewer.tsx",
-      lineNumber: 330,
+      lineNumber: 321,
       columnNumber: 29
     }, this)) }, void 0, false, {
       fileName: "public/mod/mudeck/js/esm/src/viewer.tsx",
-      lineNumber: 328,
+      lineNumber: 319,
       columnNumber: 21
     }, this) }, void 0, false, {
       fileName: "public/mod/mudeck/js/esm/src/viewer.tsx",
-      lineNumber: 327,
+      lineNumber: 318,
       columnNumber: 17
     }, this)
   ] }, void 0, true, {
     fileName: "public/mod/mudeck/js/esm/src/viewer.tsx",
-    lineNumber: 245,
+    lineNumber: 236,
     columnNumber: 9
   }, this);
 }

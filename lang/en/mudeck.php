@@ -60,8 +60,22 @@ $string['help_markdown'] = 'Slides are written in Markdown. A line holding nothi
     - **bold** and *italic* and `code`
     - [a link](https://example.org)
     - ![a picture](photo.jpg)
+    - maths: $x^2$ in a sentence, or $$ ... $$ on its own lines
 
     <!-- A comment that is not a directive is a speaker note. -->
+
+    ---
+
+    ## Code and diagrams
+
+    ```php
+    echo "coloured by language";
+    ```
+
+    ```mermaid
+    graph LR
+      A[Idea] --> B[Slides]
+    ```
 
     ---
 
@@ -71,7 +85,7 @@ $string['help_markdown'] = 'Slides are written in Markdown. A line holding nothi
 
     # A slide with a background
 
-Front matter at the very top sets the whole deck; a comment with an underscore, such as `_class` or `_paginate`, sets one slide only.
+Front matter at the very top sets the whole deck; a comment with an underscore, such as `_class`, `_backgroundColor` or `_color`, sets one slide only.
 
 Pictures are referred to by file name and uploaded under Media. Raw HTML and `<style>` blocks are dropped, so a slide cannot bring its own markup.';
 $string['help_media'] = 'Media the slides refer to by file name. Upload a file here, then use its name in the Markdown.

@@ -16,45 +16,40 @@
 /**
  * Speaker notes of the presentation running on another device.
  *
- * Reads the position the showing device reports, and shows the notes of that slide under
- * it, with the slides on either side small, so the speaker can see where they are and
- * what is coming.
+ * Polls the position the showing device reports and displays that slide's notes, with the
+ * neighbouring slides beside it.
  *
  * @module     mod_mudeck/notes
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 import {useEffect, useRef, useState} from 'react';
-import {filterSlides} from './filters';
 import {renderParts, type PartSource, type SlideOrigin} from './render';
 
-/** How often the showing device is asked where it is. */
+/** Poll interval for the showing device's position, in ms. */
 const POLLEVERY = 1000;
 
-/** How much of the width the slide on screen may take. */
+/** Largest share of the stage width for the current slide. */
 const MAINSHARE = 0.62;
 
-/** How large a neighbour may be beside it. */
+/** Largest neighbour width as a share of the current slide width. */
 const SIDESHARE = 0.5;
 
-/** A neighbour smaller than this shows nothing worth the room. */
+/** Neighbours narrower than this many pixels are hidden. */
 const LEASTSIDE = 120;
 
-/** Room around the slides, and between them. */
+/** Padding around the slides and gap between them, in pixels. */
 const EDGE = 24;
 const GAP = 16;
 
-/** What Marp lays a slide out as: 1280 by 720. */
+/** Aspect ratio of a Marp slide, 1280 by 720. */
 const SHAPE = 1280 / 720;
 
 /**
- * Minutes and seconds since the talk began.
+ * Format seconds as minutes and seconds, without rolling over past an hour.
  *
- * It keeps counting past an hour rather than rolling over: a speaker who is 63 minutes in
- * wants to be told exactly that.
- *
- * @param seconds how long it has been running
- * @returns the clock as it is read out loud
+ * @param seconds elapsed seconds
+ * @returns the formatted clock
  */
 function clock(seconds: number): string {
     const minutes = Math.floor(seconds / 60);
@@ -74,7 +69,7 @@ type Labels = {
     fullscreen: string;
 };
 
-/** What the showing device last reported. */
+/** Position last reported by the showing device. */
 type Position = {
     partid: number;
     parthash: string;
@@ -89,16 +84,16 @@ type NotesProps = {
     labels: Labels;
 };
 
-/** What the notes half of the page has to say at the moment. */
+/** Which message the notes panel shows. */
 type Says = 'gone' | 'waiting' | 'lost' | 'nonotes' | 'notes';
 
 /**
- * Which of the five things is true.
+ * Pick the message the notes panel shows.
  *
  * @param gone the session has ended
  * @param following a device has reported a position
  * @param running that position is a slide we hold
- * @param hasnotes and that slide has notes
+ * @param hasnotes that slide has notes
  * @returns what to show
  */
 function state(gone: boolean, following: boolean, running: boolean, hasnotes: boolean): Says {
@@ -115,10 +110,10 @@ function state(gone: boolean, following: boolean, running: boolean, hasnotes: bo
 }
 
 /**
- * The notes, or why there are none.
+ * The notes, or the reason there are none.
  *
- * @param props what to say, the notes themselves, the labels and the way back
- * @returns the notes half of the page
+ * @param props state, notes, labels and exit URL
+ * @returns the notes panel
  */
 function Said({state: said, notes, labels, exiturl}: {
     state: Says;
@@ -135,8 +130,7 @@ function Said({state: said, notes, labels, exiturl}: {
     if (said === 'waiting') {
         return <p className="text-muted">{labels.waiting}</p>;
     }
-    // Ended, or showing a deck that is no longer the one we hold: either way the way out
-    // is to connect again, which is a choice rather than something that happens by itself.
+    // Ended or stale: reconnecting is a deliberate choice, not automatic.
     return (
         <div className="alert alert-warning" role="status">
             <p>{said === 'gone' ? labels.gone : labels.stale}</p>
@@ -163,33 +157,40 @@ export default function Notes({parts, themecss, pollurl, exiturl, labels}: Notes
     });
     const [position, setPosition] = useState<Position | null>(null);
     const [gone, setGone] = useState(false);
-    // When the talk began, in this browser's own reckoning: every poll says how long it
-    // has been running, which resets this, so the clock cannot drift away from the server.
+    // Start time in this browser's clock; every poll resets it from the server's elapsed time.
     const [began, setBegan] = useState<number | null>(null);
     const [, tick] = useState(0);
 
-    // Render the whole deck once, then keep the slides as markup we can drop in one at a time.
+    // Render the deck once and keep each slide as markup.
     useEffect(() => {
-        const {html, css, notes, origins} = renderParts(parts ?? [], themecss ?? {});
-        const holder = document.createElement('div');
-        holder.innerHTML = html;
-        setDeck({
-            slides: Array.from(holder.querySelectorAll('section')).map((one) => one.outerHTML),
-            notes,
-            css,
-            origins,
-        });
+        let cancelled = false;
+        (async() => {
+            const {html, css, notes, origins} = await renderParts(parts ?? [], themecss ?? {});
+            if (cancelled) {
+                return;
+            }
+            const holder = document.createElement('div');
+            holder.innerHTML = html;
+            setDeck({
+                slides: Array.from(holder.querySelectorAll('section')).map((one) => one.outerHTML),
+                notes,
+                css,
+                origins,
+            });
+        })();
+        return () => {
+            cancelled = true;
+        };
     }, [parts, themecss]);
 
-    // Follow the showing device. A failed poll is ignored: the next one is a second away.
+    // Poll the showing device; a failed poll is ignored.
     useEffect(() => {
         let stopped = false;
-        const poll = async () => {
+        const poll = async() => {
             try {
                 const response = await fetch(pollurl, {headers: {Accept: 'application/json'}});
                 if (!response.ok) {
-                    // The session is gone - deleted, or ended with the browser that ran it.
-                    // Restarting a presentation makes a new one, which this page cannot guess.
+                    // The session is gone; a restarted presentation makes a new one this page cannot guess.
                     if (!stopped) {
                         setGone(true);
                     }
@@ -197,7 +198,6 @@ export default function Notes({parts, themecss, pollurl, exiturl, labels}: Notes
                 }
                 const reported = await response.json();
                 if (!stopped && reported?.ended) {
-                    // The speaker has left the presentation; there is nothing to follow.
                     setGone(true);
                     return;
                 }
@@ -213,7 +213,7 @@ export default function Notes({parts, themecss, pollurl, exiturl, labels}: Notes
                     });
                 }
             } catch {
-                // Keep polling - a presentation must not stop because a phone hiccuped.
+                // Keep polling on network errors.
             }
         };
         poll();
@@ -224,17 +224,13 @@ export default function Notes({parts, themecss, pollurl, exiturl, labels}: Notes
         };
     }, [pollurl]);
 
-    // The clock moves on its own second by second; the polls only correct it.
+    // The clock ticks locally; the polls only correct it.
     useEffect(() => {
         const timer = window.setInterval(() => tick((was) => was + 1), POLLEVERY);
         return () => window.clearInterval(timer);
     }, []);
 
-    // Find the reported slide in our own copy of the deck. The hash is what makes this
-    // honest: if the part was edited since the show started, our slides are not the ones
-    // on screen and the notes beside them would be a lie. Both devices are then holding
-    // an old deck, so the way out is to reload both - deliberately not automatic, nothing
-    // should reload itself under a speaker mid-sentence.
+    // A hash mismatch means the part was edited since the show started; reloading is left to the speaker.
     const index = position
         ? deck.origins.findIndex(
             (origin) => origin.partid === position.partid && origin.offset === position.slide
@@ -247,16 +243,13 @@ export default function Notes({parts, themecss, pollurl, exiturl, labels}: Notes
     const running = index >= 0 && !stale && !gone;
     const slide = index + 1;
     const notes = running ? deck.notes[index] : '';
-    // The three slides on the stage; the ends of the deck simply have one neighbour.
     const shown = running ? deck.slides[slide - 1] : '';
     const said = state(gone, !!position, running, !!notes);
     const sofar = began === null ? null : Math.max(0, Math.floor((Date.now() - began) / 1000));
     const before = running ? deck.slides[slide - 2] ?? '' : '';
     const after = running ? deck.slides[slide] ?? '' : '';
 
-    // Marp lays slides out at a fixed pixel size, so the three of them are measured into
-    // the room the stage has: the slide on screen as large as its height allows, and its
-    // neighbours in whatever is left over on either side.
+    // Marp slides have a fixed pixel size, so the three are scaled into the stage.
     useEffect(() => {
         const stage = stageref.current;
         if (!stage) {
@@ -266,8 +259,6 @@ export default function Notes({parts, themecss, pollurl, exiturl, labels}: Notes
             const box = stage.getBoundingClientRect();
             const room = Math.max(0, box.height - EDGE);
             const main = Math.max(0, Math.min(box.width * MAINSHARE, room * SHAPE));
-            // Neighbours are a luxury: they get what the middle does not need, and go
-            // altogether when that is not enough to see anything in.
             const spare = (box.width - main - GAP * 2) / 2;
             const side = spare < LEASTSIDE ? 0 : Math.min(spare, main * SIDESHARE);
 
@@ -295,21 +286,12 @@ export default function Notes({parts, themecss, pollurl, exiturl, labels}: Notes
         return () => watcher.disconnect();
     }, [deck, slide]);
 
-    // The slide beside the notes is built here too, so the site's filters have to be told
-    // about it - otherwise a formula on the slide would show as raw TeX.
-    useEffect(() => {
-        if (slideref.current && running) {
-            filterSlides(slideref.current);
-        }
-    }, [slide, running]);
-
     return (
         <div className="mudeck-notes">
             <style>{deck.css}</style>
 
             <div className="mudeck-notes-body">
                 <div className="mudeck-notes-stage" ref={stageref}>
-                    {/* What was, what is, what comes - the slides either side are only a reminder. */}
                     <div className="mudeck-notes-neighbour">
                         <div
                             ref={beforeref}

@@ -14,20 +14,18 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * The deck runtime that marp-core does not provide.
- *
- * Shows one slide at a time, scales it to the viewport, and accepts keyboard,
- * swipe and edge tap input. Plain DOM on purpose - the chrome around it is React.
+ * Deck runtime on top of marp-core output: shows one slide at a time, scales it to the
+ * viewport, and handles keyboard, swipe and edge tap input. Plain DOM; the chrome is React.
  *
  * @module     mod_mudeck/presenter
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-/** Slide size Marp lays out against, used until the real size can be measured. */
+/** Marp slide size, used until the real size can be measured. */
 const FALLBACKWIDTH = 1280;
 const FALLBACKHEIGHT = 720;
 
-/** How far a touch must travel to count as a swipe rather than a tap. */
+/** Minimum travel in pixels for a swipe rather than a tap. */
 const SWIPEDISTANCE = 50;
 
 /** Width of the tap zone on each edge, as a fraction of the deck. */
@@ -49,7 +47,7 @@ export type Presenter = {
 };
 
 /**
- * Is the element something the user meant to interact with, rather than the slide?
+ * Whether the target is an interactive control rather than the slide.
  *
  * @param target
  * @return bool
@@ -60,11 +58,9 @@ const isInteractive = (target: EventTarget | null): boolean => {
 };
 
 /**
- * Is the user typing into something?
+ * Whether the target is a text entry, the only kind of element that may swallow the arrow keys.
  *
- * Only text entry may swallow the arrow keys. A focused button must not, otherwise
- * pressing the fullscreen control leaves the deck unresponsive until something else
- * is clicked.
+ * A focused button must not, or pressing the fullscreen control would leave the deck unresponsive.
  *
  * @param target
  * @return bool
@@ -77,7 +73,7 @@ const isTextEntry = (target: EventTarget | null): boolean => {
 };
 
 /**
- * Is a button or link focused, so that space or enter belongs to it?
+ * Whether the target is a button or link that space and enter belong to.
  *
  * @param target
  * @return bool
@@ -120,7 +116,7 @@ export function mountPresenter(container: HTMLElement, onState: (state: Presente
         onState({current: index + 1, total: slides.length});
     };
 
-    // Marp lays slides out at a fixed pixel size, so scale that box into whatever room we have.
+    // Marp slides have a fixed pixel size, so scale that box into the container.
     const fit = () => {
         const slide = slides[index];
         const width = slide.offsetWidth || FALLBACKWIDTH;
@@ -142,7 +138,7 @@ export function mountPresenter(container: HTMLElement, onState: (state: Presente
         }
         switch (event.key) {
             case ' ':
-                // Space belongs to a focused button or link, it must activate that.
+                // Space activates a focused button or link.
                 if (isActivatable(event.target)) {
                     return;
                 }
@@ -172,8 +168,7 @@ export function mountPresenter(container: HTMLElement, onState: (state: Presente
         }
     };
 
-    // Pointer events cover mouse, touch and pen with one path: a horizontal drag moves
-    // a slide, a click or tap near either edge does the same.
+    // Pointer events cover mouse, touch and pen: a horizontal drag or an edge tap moves a slide.
     let startx = 0;
     let starty = 0;
     let dragging = false;
@@ -211,7 +206,7 @@ export function mountPresenter(container: HTMLElement, onState: (state: Presente
     const onResize = () => fit();
 
     showAndFit(0);
-    // Fit again once fonts and theme CSS have settled, the first measure can be too early.
+    // The first measure can be too early; fit again once fonts and theme CSS have settled.
     window.setTimeout(fit, 100);
     document.addEventListener('keydown', onKey);
     window.addEventListener('resize', onResize);

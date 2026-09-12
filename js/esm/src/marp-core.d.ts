@@ -14,15 +14,19 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * Types for the pre-bundled Marp renderer shipped in js/vendor.
+ * Types for the pre-bundled Marp renderer and plugins shipped in js/vendor.
  *
  * @module     mod_mudeck/marp-core
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 declare module '@mudeck/marp-core' {
+    /** What a plugin factory returns and marp.use() takes. */
+    export type MarpPlugin = () => unknown;
+
     export class Marp {
         constructor(options?: Record<string, unknown>);
+        use(plugin: unknown): this;
         render(markdown: string): {html: string; css: string; comments: string[][]};
         themeSet: {add(css: string): unknown};
     }
@@ -31,4 +35,22 @@ declare module '@mudeck/marp-core' {
         sanitize(dirty: string, config?: Record<string, unknown>): string;
         addHook(name: string, hook: (node: Element, data: {attrName: string; attrValue: string; keepAttr: boolean}) => void): void;
     };
+}
+
+declare module '@mudeck/marp-mathjax' {
+    import type {MarpPlugin} from '@mudeck/marp-core';
+    const plugin: MarpPlugin;
+    export default plugin;
+}
+
+declare module '@mudeck/marp-shiki' {
+    import type {MarpPlugin} from '@mudeck/marp-core';
+    const plugin: MarpPlugin;
+    export default plugin;
+}
+
+declare module '@mudeck/marp-mermaid' {
+    import type {MarpPlugin} from '@mudeck/marp-core';
+    const plugin: MarpPlugin;
+    export default plugin;
 }

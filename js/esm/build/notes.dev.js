@@ -4,15 +4,13 @@ import { jsxDEV } from "react/jsx-dev-runtime";
 /**
  * Speaker notes of the presentation running on another device.
  *
- * Reads the position the showing device reports, and shows the notes of that slide under
- * it, with the slides on either side small, so the speaker can see where they are and
- * what is coming.
+ * Polls the position the showing device reports and displays that slide's notes, with the
+ * neighbouring slides beside it.
  *
  * @module     mod_mudeck/notes
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 import { useEffect, useRef, useState } from "react";
-import { filterSlides } from "./filters";
 import { renderParts } from "./render";
 const POLLEVERY = 1e3;
 const MAINSHARE = 0.62;
@@ -43,38 +41,38 @@ function Said({ state: said, notes, labels, exiturl }) {
   if (said === "notes") {
     return /* @__PURE__ */ jsxDEV("pre", { className: "mudeck-notes-note", children: notes }, void 0, false, {
       fileName: "public/mod/mudeck/js/esm/src/notes.tsx",
-      lineNumber: 130,
+      lineNumber: 125,
       columnNumber: 16
     }, this);
   }
   if (said === "nonotes") {
     return /* @__PURE__ */ jsxDEV("p", { className: "text-muted", children: labels.nonotes }, void 0, false, {
       fileName: "public/mod/mudeck/js/esm/src/notes.tsx",
-      lineNumber: 133,
+      lineNumber: 128,
       columnNumber: 16
     }, this);
   }
   if (said === "waiting") {
     return /* @__PURE__ */ jsxDEV("p", { className: "text-muted", children: labels.waiting }, void 0, false, {
       fileName: "public/mod/mudeck/js/esm/src/notes.tsx",
-      lineNumber: 136,
+      lineNumber: 131,
       columnNumber: 16
     }, this);
   }
   return /* @__PURE__ */ jsxDEV("div", { className: "alert alert-warning", role: "status", children: [
     /* @__PURE__ */ jsxDEV("p", { children: said === "gone" ? labels.gone : labels.stale }, void 0, false, {
       fileName: "public/mod/mudeck/js/esm/src/notes.tsx",
-      lineNumber: 142,
+      lineNumber: 136,
       columnNumber: 13
     }, this),
     /* @__PURE__ */ jsxDEV("a", { href: exiturl, className: "btn btn-sm btn-secondary", children: labels.reconnect }, void 0, false, {
       fileName: "public/mod/mudeck/js/esm/src/notes.tsx",
-      lineNumber: 143,
+      lineNumber: 137,
       columnNumber: 13
     }, this)
   ] }, void 0, true, {
     fileName: "public/mod/mudeck/js/esm/src/notes.tsx",
-    lineNumber: 141,
+    lineNumber: 135,
     columnNumber: 9
   }, this);
 }
@@ -95,15 +93,24 @@ function Notes({ parts, themecss, pollurl, exiturl, labels }) {
   const [began, setBegan] = useState(null);
   const [, tick] = useState(0);
   useEffect(() => {
-    const { html, css, notes: notes2, origins } = renderParts(parts ?? [], themecss ?? {});
-    const holder = document.createElement("div");
-    holder.innerHTML = html;
-    setDeck({
-      slides: Array.from(holder.querySelectorAll("section")).map((one) => one.outerHTML),
-      notes: notes2,
-      css,
-      origins
-    });
+    let cancelled = false;
+    (async () => {
+      const { html, css, notes: notes2, origins } = await renderParts(parts ?? [], themecss ?? {});
+      if (cancelled) {
+        return;
+      }
+      const holder = document.createElement("div");
+      holder.innerHTML = html;
+      setDeck({
+        slides: Array.from(holder.querySelectorAll("section")).map((one) => one.outerHTML),
+        notes: notes2,
+        css,
+        origins
+      });
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, [parts, themecss]);
   useEffect(() => {
     let stopped = false;
@@ -192,15 +199,10 @@ function Notes({ parts, themecss, pollurl, exiturl, labels }) {
     watcher.observe(stage);
     return () => watcher.disconnect();
   }, [deck, slide]);
-  useEffect(() => {
-    if (slideref.current && running) {
-      filterSlides(slideref.current);
-    }
-  }, [slide, running]);
   return /* @__PURE__ */ jsxDEV("div", { className: "mudeck-notes", children: [
     /* @__PURE__ */ jsxDEV("style", { children: deck.css }, void 0, false, {
       fileName: "public/mod/mudeck/js/esm/src/notes.tsx",
-      lineNumber: 308,
+      lineNumber: 291,
       columnNumber: 13
     }, this),
     /* @__PURE__ */ jsxDEV("div", { className: "mudeck-notes-body", children: [
@@ -217,19 +219,19 @@ function Notes({ parts, themecss, pollurl, exiturl, labels }) {
           false,
           {
             fileName: "public/mod/mudeck/js/esm/src/notes.tsx",
-            lineNumber: 314,
+            lineNumber: 296,
             columnNumber: 25
           },
           this
         ) }, void 0, false, {
           fileName: "public/mod/mudeck/js/esm/src/notes.tsx",
-          lineNumber: 313,
+          lineNumber: 295,
           columnNumber: 21
         }, this),
         /* @__PURE__ */ jsxDEV("div", { className: "mudeck-notes-slide", children: [
           /* @__PURE__ */ jsxDEV("h3", { className: "mudeck-notes-heading visually-hidden", children: labels.current }, void 0, false, {
             fileName: "public/mod/mudeck/js/esm/src/notes.tsx",
-            lineNumber: 323,
+            lineNumber: 305,
             columnNumber: 25
           }, this),
           /* @__PURE__ */ jsxDEV(
@@ -244,14 +246,14 @@ function Notes({ parts, themecss, pollurl, exiturl, labels }) {
             false,
             {
               fileName: "public/mod/mudeck/js/esm/src/notes.tsx",
-              lineNumber: 325,
+              lineNumber: 307,
               columnNumber: 25
             },
             this
           )
         ] }, void 0, true, {
           fileName: "public/mod/mudeck/js/esm/src/notes.tsx",
-          lineNumber: 322,
+          lineNumber: 304,
           columnNumber: 21
         }, this),
         /* @__PURE__ */ jsxDEV("div", { className: "mudeck-notes-neighbour", children: /* @__PURE__ */ jsxDEV(
@@ -266,39 +268,39 @@ function Notes({ parts, themecss, pollurl, exiturl, labels }) {
           false,
           {
             fileName: "public/mod/mudeck/js/esm/src/notes.tsx",
-            lineNumber: 334,
+            lineNumber: 316,
             columnNumber: 25
           },
           this
         ) }, void 0, false, {
           fileName: "public/mod/mudeck/js/esm/src/notes.tsx",
-          lineNumber: 333,
+          lineNumber: 315,
           columnNumber: 21
         }, this)
       ] }, void 0, true, {
         fileName: "public/mod/mudeck/js/esm/src/notes.tsx",
-        lineNumber: 311,
+        lineNumber: 294,
         columnNumber: 17
       }, this),
       /* @__PURE__ */ jsxDEV("div", { className: "mudeck-notes-text", children: [
         /* @__PURE__ */ jsxDEV("h2", { className: "mudeck-notes-heading", children: labels.notes }, void 0, false, {
           fileName: "public/mod/mudeck/js/esm/src/notes.tsx",
-          lineNumber: 344,
+          lineNumber: 326,
           columnNumber: 21
         }, this),
         /* @__PURE__ */ jsxDEV(Said, { state: said, notes, labels, exiturl }, void 0, false, {
           fileName: "public/mod/mudeck/js/esm/src/notes.tsx",
-          lineNumber: 345,
+          lineNumber: 327,
           columnNumber: 21
         }, this)
       ] }, void 0, true, {
         fileName: "public/mod/mudeck/js/esm/src/notes.tsx",
-        lineNumber: 343,
+        lineNumber: 325,
         columnNumber: 17
       }, this)
     ] }, void 0, true, {
       fileName: "public/mod/mudeck/js/esm/src/notes.tsx",
-      lineNumber: 310,
+      lineNumber: 293,
       columnNumber: 13
     }, this),
     /* @__PURE__ */ jsxDEV("div", { className: "mudeck-chrome mudeck-notes-chrome", "data-region": "mudeck-notes-chrome", children: [
@@ -308,13 +310,13 @@ function Notes({ parts, themecss, pollurl, exiturl, labels }) {
           ": "
         ] }, void 0, true, {
           fileName: "public/mod/mudeck/js/esm/src/notes.tsx",
-          lineNumber: 352,
+          lineNumber: 334,
           columnNumber: 25
         }, this),
         clock(sofar)
       ] }, void 0, true, {
         fileName: "public/mod/mudeck/js/esm/src/notes.tsx",
-        lineNumber: 351,
+        lineNumber: 333,
         columnNumber: 21
       }, this),
       /* @__PURE__ */ jsxDEV(
@@ -332,12 +334,12 @@ function Notes({ parts, themecss, pollurl, exiturl, labels }) {
           children: [
             /* @__PURE__ */ jsxDEV("i", { className: "fa fa-expand", "aria-hidden": "true" }, void 0, false, {
               fileName: "public/mod/mudeck/js/esm/src/notes.tsx",
-              lineNumber: 367,
+              lineNumber: 349,
               columnNumber: 21
             }, this),
             /* @__PURE__ */ jsxDEV("span", { className: "visually-hidden", children: labels.fullscreen }, void 0, false, {
               fileName: "public/mod/mudeck/js/esm/src/notes.tsx",
-              lineNumber: 368,
+              lineNumber: 350,
               columnNumber: 21
             }, this)
           ]
@@ -346,7 +348,7 @@ function Notes({ parts, themecss, pollurl, exiturl, labels }) {
         true,
         {
           fileName: "public/mod/mudeck/js/esm/src/notes.tsx",
-          lineNumber: 356,
+          lineNumber: 338,
           columnNumber: 17
         },
         this
@@ -354,27 +356,27 @@ function Notes({ parts, themecss, pollurl, exiturl, labels }) {
       /* @__PURE__ */ jsxDEV("a", { href: exiturl, className: "btn btn-secondary mudeck-control", children: [
         /* @__PURE__ */ jsxDEV("i", { className: "fa fa-times", "aria-hidden": "true" }, void 0, false, {
           fileName: "public/mod/mudeck/js/esm/src/notes.tsx",
-          lineNumber: 372,
+          lineNumber: 354,
           columnNumber: 21
         }, this),
         /* @__PURE__ */ jsxDEV("span", { className: "visually-hidden", children: labels.exit }, void 0, false, {
           fileName: "public/mod/mudeck/js/esm/src/notes.tsx",
-          lineNumber: 373,
+          lineNumber: 355,
           columnNumber: 21
         }, this)
       ] }, void 0, true, {
         fileName: "public/mod/mudeck/js/esm/src/notes.tsx",
-        lineNumber: 371,
+        lineNumber: 353,
         columnNumber: 17
       }, this)
     ] }, void 0, true, {
       fileName: "public/mod/mudeck/js/esm/src/notes.tsx",
-      lineNumber: 349,
+      lineNumber: 331,
       columnNumber: 13
     }, this)
   ] }, void 0, true, {
     fileName: "public/mod/mudeck/js/esm/src/notes.tsx",
-    lineNumber: 307,
+    lineNumber: 290,
     columnNumber: 9
   }, this);
 }

@@ -1,16 +1,6 @@
 /**
- * Where each slide sits in the Markdown.
- *
- * Marp hands back slides with no idea which part of the text they came from, so the
- * editor works it out from the text itself. The rules are the ones
- * `mod_mudeck\local\part::count_slides()` applies on the server - keep the two in step:
- *
- *  - front matter at the top of the text is not a slide break;
- *  - nothing inside a fenced code block separates anything;
- *  - three dashes are a break only when the line above is blank or a list, heading or
- *    quote marker. Under a line of prose they underline it as a heading instead, which
- *    is the CommonMark rule that once had the welcome page counting six slides in a
- *    four-slide deck.
+ * Find where each slide sits in the Markdown. The rules match
+ * `mod_mudeck\local\part::count_slides()` on the server; keep the two in step.
  *
  * @module     mod_mudeck/source
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later

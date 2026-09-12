@@ -67,8 +67,22 @@ $string['help_markdown'] = 'Folien werden in Markdown geschrieben. Eine Zeile, d
     - **fett** und *kursiv* und `Code`
     - [ein Link](https://example.org)
     - ![ein Bild](foto.jpg)
+    - Mathematik: $x^2$ im Satz, oder $$ ... $$ auf eigenen Zeilen
 
     <!-- Ein Kommentar, der keine Direktive ist, ist eine Sprechernotiz. -->
+
+    ---
+
+    ## Code und Diagramme
+
+    ```php
+    echo "nach Sprache gefärbt";
+    ```
+
+    ```mermaid
+    graph LR
+      A[Idee] --> B[Folien]
+    ```
 
     ---
 
@@ -78,7 +92,7 @@ $string['help_markdown'] = 'Folien werden in Markdown geschrieben. Eine Zeile, d
 
     # Eine Folie mit Hintergrund
 
-Der Vorspann (Front Matter) ganz oben gilt für die gesamte Präsentation; ein Kommentar mit Unterstrich, etwa `_class` oder `_paginate`, gilt nur für eine einzelne Folie.
+Der Vorspann (Front Matter) ganz oben gilt für die gesamte Präsentation; ein Kommentar mit Unterstrich, etwa `_class`, `_backgroundColor` oder `_color`, gilt nur für eine einzelne Folie.
 
 Bilder werden über ihren Dateinamen angesprochen und unter Medien hochgeladen. Rohes HTML und `<style>`-Blöcke werden verworfen, eine Folie kann also kein eigenes Markup mitbringen.';
 $string['help_media'] = 'Medien, auf die die Folien über den Dateinamen verweisen. Laden Sie hier eine Datei hoch und verwenden Sie dann ihren Namen im Markdown.

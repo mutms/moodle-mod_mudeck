@@ -14,11 +14,7 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * A preview beside the slides being written.
- *
- * The Moodle form is left exactly as the server rendered it and stays the only copy of
- * the text: this draws the slides next to it and follows the writing cursor. If it never
- * mounts, the page is still the plain form it always was.
+ * Live slide preview beside the server-rendered edit form, whose textarea remains the only copy of the text.
  *
  * @module     mod_mudeck/editor
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -30,19 +26,19 @@ import {renderPart} from './render';
 import {caretPoint} from './caret';
 import {isBreak, opensBreak, slideEnd} from './source';
 
-/** Where the split is kept, so saving and carrying on does not throw the layout away. */
+/** Session storage key for the split position. */
 const SPLITKEY = 'mudeck-editor-split';
 
-/** The least room worth writing in, roughly a phone screen. */
+/** Minimum textarea height in pixels. */
 const LEASTHEIGHT = 200;
 
-/** How long a "saved" notification stays before it takes itself away. */
+/** Milliseconds a notification stays before it is removed. */
 const NOTICEFOR = 5000;
 
-/** How long the typing has to pause before the preview is redrawn. */
+/** Debounce delay in milliseconds before the preview is redrawn. */
 const REDRAWAFTER = 250;
 
-/** Invisible, harmless in every context, and easy to find again in the rendered slides. */
+/** Invisible marker inserted at the caret to find the current slide in the rendered output. */
 const MARKER = '⁠mudeckcaret⁠';
 
 type Labels = {
@@ -56,7 +52,7 @@ type Labels = {
     fullscreen: string;
 };
 
-/** Help as the server rendered it, ready to sit open beside the writing. */
+/** Server-rendered help HTML. */
 type Help = {
     markdown: string;
     media: string;
@@ -71,17 +67,14 @@ type EditorProps = {
     mediabase: string;
 };
 
-/** A reference that already points somewhere on its own. */
+/** Matches a target that is already absolute. */
 const ABSOLUTE = /^([a-z][a-z0-9+.-]*:|\/\/|\/|#)/i;
 
-/** Every image and link target in the Markdown. */
+/** Matches image and link targets in Markdown. */
 const REFERENCE = /(!?\[[^\]]*\]\(\s*)([^)\s]+)/g;
 
 /**
- * Point the file names at the files, the way the server does before a saved part is shown.
- *
- * While a part is being written its pictures live in the form's draft area - uploaded
- * moments ago and not saved anywhere yet - so the preview reads them from there.
+ * Rewrites relative media references to the form's draft file area.
  *
  * @param markdown the Markdown as written
  * @param base where the draft area is served from
@@ -99,27 +92,23 @@ function withMedia(markdown: string, base: string): string {
         ));
 }
 
-/** An image being described: "![" then the alt text being typed, no closing bracket yet. */
+/** Matches "![" followed by unfinished alt text. */
 const OPENALT = /!\[([^\]\n]*)$/;
 
-/** An image whose brackets are done but whose file name is missing: "![alt](" then ")". */
+/** Matches "![alt](" with no target yet. */
 const OPENIMAGE = /!\[([^\]\n]*)\]\($/;
 
-/** Where the cursor is in an unfinished image, and what has been said about it so far. */
+/** Caret position within an unfinished image and its alt text so far. */
 type Offer = {
     alt: string;
     mode: 'alt' | 'parens';
 };
 
 /**
- * Is the cursor somewhere an uploaded picture could be named?
- *
- * Two places: writing the alt text of a new image, where the list stands by until it is
- * wanted, and inside empty brackets, where the file name is the only thing missing.
- * Brackets with a name already in them are somebody editing, and are left alone.
+ * Detects whether the caret is inside an unfinished image, in its alt text or in empty parentheses.
  *
  * @param textarea the field being written in
- * @returns what is being written, or null when this is none of our business
+ * @returns what is being written, or null when the caret is not in an unfinished image
  */
 function offering(textarea: HTMLTextAreaElement): Offer | null {
     const caret = textarea.selectionStart ?? 0;
@@ -136,24 +125,17 @@ function offering(textarea: HTMLTextAreaElement): Offer | null {
     if (!alt) {
         return null;
     }
-    // An image that already names a file is one being edited, not one being written.
+    // An image that already names a file is being edited, not written.
     return /^[^\]\n]*\]\(/.test(textarea.value.slice(caret)) ? null : {alt: alt[1], mode: 'alt'};
 }
 
-/** Matches a heading, the one line that cannot be broken by adding something to its end. */
+/** Matches a Markdown heading line. */
 const HEADING = /^[ \t]{0,3}#{1,6}[ \t]/;
 
 /**
- * Put the marker at the end of the heading the cursor is under.
+ * Appends the marker to a heading of the slide containing the caret.
  *
- * A heading is the safe place: trailing text cannot break it, unlike a table row, a
- * comment, a link or a separator, and it always reaches the rendered slide.
- *
- * The search runs backwards to the slide's own break, then forwards to the next one -
- * so a cursor just after a separator, or above the first heading of the text, finds the
- * heading of the slide it is in rather than the one before. A slide with no heading at
- * all marks nothing and the preview stays where it was, which the next keystroke
- * corrects anyway.
+ * A heading is used because trailing text cannot break it and it always reaches the rendered slide.
  *
  * @param text the Markdown as written
  * @param caret where the writing cursor is
@@ -177,8 +159,7 @@ function withMarker(text: string, caret: number): string | null {
         return marked.join('\n');
     };
 
-    // A break here means the same thing it means to Marp: the shared test knows about
-    // code fences and about dashes that underline a line of prose instead of cutting it.
+    // The isBreak helper handles code fences and setext underlines the same way Marp does.
     const breaks = lines.map((line, at) => isBreak(line, at === 0 || opensBreak(lines[at - 1]), null));
 
     const from = Math.min(index, lines.length - 1);
@@ -202,7 +183,7 @@ function withMarker(text: string, caret: number): string | null {
 }
 
 /**
- * Put the cursor somewhere and make sure it can be seen.
+ * Moves the caret and scrolls it into the middle of the field.
  *
  * @param textarea the field being written in
  * @param from where the selection starts
@@ -211,15 +192,13 @@ function withMarker(text: string, caret: number): string | null {
 function showCaret(textarea: HTMLTextAreaElement, from: number, to: number): void {
     textarea.focus();
     textarea.setSelectionRange(from, to);
-    // Measured at the end, where the writing carries on, and put in the middle of the
-    // field rather than against its bottom edge.
     const point = caretPoint(textarea, to);
     const box = textarea.getBoundingClientRect();
     textarea.scrollTop += point.top - box.top - textarea.clientHeight / 2;
 }
 
 /**
- * Put text in as typing would, so undo, the preview and Moodle's own watchers all follow.
+ * Inserts text as typing would, so undo and input listeners keep working.
  *
  * @param textarea the field being written in
  * @param from where the change starts
@@ -230,8 +209,7 @@ function showCaret(textarea: HTMLTextAreaElement, from: number, to: number): voi
 function write(textarea: HTMLTextAreaElement, from: number, to: number, text: string, caret: number): void {
     textarea.focus();
     textarea.setSelectionRange(from, to);
-    // The old way of writing is the only one the browser records as an edit, so undo
-    // still works; when it is gone, the text is what matters and undo is a nicety.
+    // Only execCommand makes the browser record an undoable edit.
     if (!document.execCommand('insertText', false, text)) {
         textarea.setRangeText(text, from, to, 'end');
         textarea.dispatchEvent(new Event('input', {bubbles: true}));
@@ -256,27 +234,23 @@ export default function Editor({themecss, theme, labels, help, imagesurl, mediab
     const [current, setCurrent] = useState(0);
     const [full, setFull] = useState(false);
     const [menu, setMenu] = useState<{items: string[]; left: number; top: number} | null>(null);
-    // Nothing is chosen until an arrow key chooses it, so Enter is still a new line and
-    // typing is never interrupted by a list that thinks it knows better.
+    // Nothing is selected until an arrow key selects it, so Enter keeps inserting a new line.
     const [pick, setPick] = useState(-1);
     const dismissed = useRef(false);
-    // What has been uploaded, kept to hand: whether there is anything to offer has to be
-    // answerable on the spot, or a key press would have to wait for the network to say
-    // whether it belongs to the list or to the cursor.
+    // Cached so key handling never waits for the network.
     const files = useRef<string[]>([]);
 
-    /** Ask what pictures the form holds now. */
-    const load = useCallback(async () => {
+    /** Fetches the list of uploaded files. */
+    const load = useCallback(async() => {
         try {
             const answer = await fetch(imagesurl, {headers: {Accept: 'application/json'}});
             files.current = (await answer.json())?.files ?? [];
         } catch {
-            // Nothing to offer. Saying so would interrupt the writing for no good reason.
             files.current = [];
         }
     }, [imagesurl]);
 
-    /** Stand the list of uploaded pictures beside the cursor, or take it away. */
+    /** Shows the file menu beside the caret, or hides it. */
     const offer = useCallback((textarea: HTMLTextAreaElement, open: boolean) => {
         const spot = offering(textarea);
         if (!spot) {
@@ -291,7 +265,7 @@ export default function Editor({themecss, theme, labels, help, imagesurl, mediab
 
         const point = caretPoint(textarea, textarea.selectionStart ?? 0);
         const items = files.current;
-        // Opening starts with nothing chosen; already open, it only has to keep up.
+        // Reset the selection only when the menu opens.
         setMenu((was) => {
             if (!was) {
                 setPick(-1);
@@ -300,7 +274,7 @@ export default function Editor({themecss, theme, labels, help, imagesurl, mediab
         });
     }, []);
 
-    /** Finish the image with the chosen file - the only thing that ever writes anything. */
+    /** Completes the image with the chosen file name. */
     const choose = useCallback((name: string) => {
         const textarea = document.querySelector<HTMLTextAreaElement>('#id_content');
         const spot = textarea ? offering(textarea) : null;
@@ -310,27 +284,31 @@ export default function Editor({themecss, theme, labels, help, imagesurl, mediab
         const at = textarea.selectionStart ?? 0;
 
         if (spot.mode === 'parens') {
-            // The brackets are already there and empty; only the name is missing. An image
-            // nobody has described yet wants its alt text next, so the cursor goes back
-            // between the square brackets; one that has a description is finished with.
+            // With no alt text yet the caret goes back between the square brackets.
             const start = at - `![${spot.alt}](`.length;
             write(textarea, at, at, name, spot.alt === '' ? start + 2 : at + name.length + 1);
             setMenu(null);
             return;
         }
 
-        // Mid alt text: close it and add the file, leaving the cursor after the image -
-        // or back in the empty brackets, which is where it already is.
+        // Close the alt text and add the file; the caret stays in empty brackets or moves after the image.
         const text = `](${name})`;
         write(textarea, at, at, text, spot.alt === '' ? at : at + text.length);
         setMenu(null);
     }, []);
 
-    /** Draw the slides as they stand, and work out which one is being written. */
-    const redraw = useCallback((textarea: HTMLTextAreaElement) => {
+    /** Sequence number so a slow redraw cannot overwrite a newer one. */
+    const drawing = useRef(0);
+
+    /** Renders the slides and finds the one containing the caret. */
+    const redraw = useCallback(async(textarea: HTMLTextAreaElement) => {
         const text = textarea.value;
         const marked = withMarker(text, textarea.selectionStart ?? 0);
-        const {html, css: slidecss, notes} = renderPart(withMedia(marked ?? text, mediabase), theme, themecss ?? {});
+        const turn = ++drawing.current;
+        const {html, css: slidecss, notes} = await renderPart(withMedia(marked ?? text, mediabase), theme, themecss ?? {});
+        if (turn !== drawing.current) {
+            return;
+        }
 
         const holder = document.createElement('div');
         holder.innerHTML = html;
@@ -344,26 +322,19 @@ export default function Editor({themecss, theme, labels, help, imagesurl, mediab
             }
         });
         if (found < 0) {
-            // A marker written inside a speaker note never reaches the slide: Marp hands
-            // those back as comments instead, which say which slide they belong to.
+            // A marker inside a speaker note ends up in the notes, not the slide.
             found = notes.findIndex((note) => note.includes(MARKER));
         }
 
         setSlides(sections.map((section) => section.outerHTML));
         setCss(slidecss);
-        // An unfound marker means the cursor was somewhere without a slide of its own,
-        // and the next keystroke will say where it is - so stay where we are.
+        // No marker means no heading; keep the current slide.
         if (found >= 0) {
             setCurrent(found);
         }
     }, [theme, themecss, mediabase]);
 
-    // Saving without leaving answers the POST with the editor again, which would
-    // otherwise put the cursor back at the very start of the text. So the position rides
-    // along with the submission: read off the text area as the form goes, put back when
-    // the saved text comes home. A text area remembers its selection after losing focus,
-    // which is why one read at submit time is enough - the mouse press on the button
-    // cannot disturb it.
+    // Save and continue reloads the page, so the caret position travels with the form submission.
     useEffect(() => {
         const textarea = document.querySelector<HTMLTextAreaElement>('#id_content');
         const form = textarea?.closest('form');
@@ -384,9 +355,7 @@ export default function Editor({themecss, theme, labels, help, imagesurl, mediab
         return () => form.removeEventListener('submit', remember);
     }, []);
 
-    // Putting it back, before the preview is first drawn: the redraw below reads the
-    // cursor to decide which slide to highlight, and effects run in the order they are
-    // written, so by then the cursor is where the writer left it.
+    // Runs before the first redraw below, which reads the caret to pick the slide.
     useEffect(() => {
         const textarea = document.querySelector<HTMLTextAreaElement>('#id_content');
         const form = textarea?.closest('form');
@@ -404,8 +373,7 @@ export default function Editor({themecss, theme, labels, help, imagesurl, mediab
         return undefined;
     }, []);
 
-    // The writing area takes whatever the window has left below it, so a taller browser
-    // means more text on screen rather than more empty space under the buttons.
+    // The textarea takes whatever height the window has left below it.
     useEffect(() => {
         const textarea = document.querySelector<HTMLTextAreaElement>('#id_content');
         if (!textarea) {
@@ -413,18 +381,14 @@ export default function Editor({themecss, theme, labels, help, imagesurl, mediab
         }
         const editor = textarea.closest<HTMLElement>('.mudeck-editor');
         const fit = () => {
-            // How far the editor ends from the bottom of the window, in page coordinates so
-            // that a scrolled page does not read as room to grow into. Whatever that gap
-            // is, the writing area is the field that takes it - or gives it back - and the
-            // margins the form puts around its fields never have to be guessed at.
+            // Page coordinates, so a scrolled page does not read as spare room.
             const bottom = (editor ?? textarea).getBoundingClientRect().bottom + window.scrollY;
             const spare = window.innerHeight - bottom;
             const height = textarea.getBoundingClientRect().height + spare;
             textarea.style.height = `${Math.max(LEASTHEIGHT, height)}px`;
         };
         fit();
-        // Once more when the page has settled: web fonts and the file manager arrive late
-        // and both move the bottom of the form.
+        // Web fonts and the file manager arrive late and move the bottom of the form.
         const settled = window.requestAnimationFrame(fit);
         window.addEventListener('resize', fit);
         return () => {
@@ -433,7 +397,6 @@ export default function Editor({themecss, theme, labels, help, imagesurl, mediab
         };
     }, []);
 
-    // The form's own textarea is the editor; this only watches it.
     useEffect(() => {
         const textarea = document.querySelector<HTMLTextAreaElement>('#id_content');
         if (!textarea) {
@@ -455,10 +418,7 @@ export default function Editor({themecss, theme, labels, help, imagesurl, mediab
         };
     }, [redraw]);
 
-    // Writing an image means knowing what the pictures are called, which is the one thing
-    // the author cannot see from here. So the list of uploads stands beside the cursor
-    // while a new image is being written and waits: typing goes on untouched, the arrow
-    // keys walk the list, and only then does Enter write the file name in.
+    // The upload list follows the caret inside an unfinished image; arrow keys select, Enter writes.
     useEffect(() => {
         const textarea = document.querySelector<HTMLTextAreaElement>('#id_content');
         if (!textarea) {
@@ -469,8 +429,7 @@ export default function Editor({themecss, theme, labels, help, imagesurl, mediab
             const last = menu ? menu.items.length - 1 : -1;
             if (event.key === 'ArrowDown') {
                 if (!menu) {
-                    // Down belongs to the cursor everywhere except in an unfinished image
-                    // with something to offer, where it asks for the list.
+                    // ArrowDown opens the menu only inside an unfinished image with files to offer.
                     if (files.current.length && offering(textarea)) {
                         event.preventDefault();
                         offer(textarea, true);
@@ -483,8 +442,6 @@ export default function Editor({themecss, theme, labels, help, imagesurl, mediab
                 event.preventDefault();
                 setPick((was) => (was <= 0 ? last : was - 1));
             } else if (menu && pick >= 0 && (event.key === 'Enter' || event.key === 'Tab')) {
-                // Only a name that has been walked to is a name that was chosen; otherwise
-                // Enter is what it always was.
                 event.preventDefault();
                 choose(menu.items[pick]);
             } else if (menu && event.key === 'Escape') {
@@ -494,7 +451,6 @@ export default function Editor({themecss, theme, labels, help, imagesurl, mediab
             }
         };
 
-        // Nothing here writes anything: the list follows the cursor and waits.
         const follow = () => offer(textarea, false);
 
         const away = (event: Event) => {
@@ -519,28 +475,23 @@ export default function Editor({themecss, theme, labels, help, imagesurl, mediab
         };
     }, [menu, pick, offer, choose]);
 
-    // Walking the list with the keyboard has to keep the chosen name in sight.
     useEffect(() => {
         menuref.current
             ?.querySelector('[aria-selected="true"]')
             ?.scrollIntoView({block: 'nearest'});
     }, [pick, menu]);
 
-    // How wide the two columns are; the divider between them moves it. Kept for the tab
-    // only: Save and continue reloads the page, and coming back to a different layout
-    // than the one you set is worse than not remembering it at all.
+    // Session storage only: Save and continue reloads the page and must keep the layout.
     useEffect(() => {
         document.documentElement.style.setProperty('--mudeck-split', `${split}%`);
         try {
             window.sessionStorage.setItem(SPLITKEY, String(split));
         } catch {
-            // Not remembering it is not worth telling anybody about.
+            // Storage may be unavailable.
         }
     }, [split]);
 
-    // A slide is drawn at its full size and scaled into the strip, so the strip has to
-    // say how wide it is. A ResizeObserver catches every reason it can change: the window,
-    // the divider, and a pane coming back into view.
+    // Slides are scaled into the strip, so the strip must know its own width.
     useEffect(() => {
         const strip = stripref.current;
         if (!strip) {
@@ -559,10 +510,7 @@ export default function Editor({themecss, theme, labels, help, imagesurl, mediab
         return () => watcher.disconnect();
     }, [slides, tab]);
 
-    // A notification about a save has said its piece after a few seconds; leaving it there
-    // means the next save changes nothing on screen and looks like it did not happen.
-    // Moodle sometimes writes them in after the page has loaded, and sometimes replaces
-    // the whole container, so the page is watched rather than any one element.
+    // Moodle may insert or replace notifications after load, so the whole body is observed.
     useEffect(() => {
         let fade: number | undefined;
         let clear: number | undefined;
@@ -575,8 +523,7 @@ export default function Editor({themecss, theme, labels, help, imagesurl, mediab
                 showing = '';
                 return;
             }
-            // Only a new message starts the clock; the preview redraws constantly, and
-            // restarting on every change would keep the notification on screen forever.
+            // Only a new message restarts the timer, or constant redraws would keep it on screen.
             if (text === showing) {
                 return;
             }
@@ -603,8 +550,7 @@ export default function Editor({themecss, theme, labels, help, imagesurl, mediab
         };
     }, []);
 
-    // The file manager is Moodle's own, so it is moved here rather than rebuilt - and put
-    // back where it came from if this ever unmounts, so the form still submits it.
+    // Moodle's file manager is moved here and put back on unmount so the form still submits it.
     useEffect(() => {
         const holder = mediaref.current;
         const field = document.querySelector<HTMLElement>('#fitem_id_attachments');
@@ -616,10 +562,7 @@ export default function Editor({themecss, theme, labels, help, imagesurl, mediab
         const form = field.closest('form');
         holder.appendChild(field);
 
-        // Out of the form, its inputs would no longer be submitted and the uploads would
-        // be lost on save; the form attribute keeps them part of it wherever they sit.
-        // Read the id with getAttribute: this form has a field named "id", and a form
-        // exposes its own controls as properties, so form.id is that field.
+        // The form attribute keeps moved inputs submitted; getAttribute, since a field named "id" shadows form.id.
         const formid = form?.getAttribute('id');
         if (formid) {
             field.querySelectorAll('input, select, textarea').forEach((input) => {
@@ -636,9 +579,7 @@ export default function Editor({themecss, theme, labels, help, imagesurl, mediab
         };
     }, []);
 
-    // Writing a talk deserves the whole screen: no browser tabs, no bookmarks, no dock.
-    // The button only asks; the browser decides, and can leave fullscreen without asking
-    // us, so the state comes from the event rather than from the click.
+    // The browser can leave fullscreen on its own, so the state follows the event.
     useEffect(() => {
         const watch = () => setFull(document.fullscreenElement !== null);
         watch();
@@ -646,8 +587,7 @@ export default function Editor({themecss, theme, labels, help, imagesurl, mediab
         return () => document.removeEventListener('fullscreenchange', watch);
     }, []);
 
-    // The title is server rendered, above this component; the button belongs beside it,
-    // so it is rendered through the slot the template leaves there.
+    // The button is portalled into the slot beside the server-rendered title.
     const [tools, setTools] = useState<HTMLElement | null>(null);
     useEffect(() => {
         setTools(document.querySelector<HTMLElement>('[data-region=mudeck-editor-tools]'));
@@ -661,8 +601,7 @@ export default function Editor({themecss, theme, labels, help, imagesurl, mediab
         }
     };
 
-    // What has been uploaded is read once, and again whenever the file manager changes -
-    // a picture added a minute ago is offered, without a request behind every key press.
+    // Reloaded whenever the file manager changes.
     useEffect(() => {
         void load();
         const holder = mediaref.current;
@@ -682,8 +621,6 @@ export default function Editor({themecss, theme, labels, help, imagesurl, mediab
         };
     }, [load]);
 
-    // Follow the writing rather than making somebody scroll two things at once, and keep
-    // the slide in the middle: at the edge of the strip it is easy to lose.
     useEffect(() => {
         stripref.current
             ?.querySelector(`[data-slide="${current}"]`)
@@ -691,11 +628,7 @@ export default function Editor({themecss, theme, labels, help, imagesurl, mediab
     }, [current, slides]);
 
     /**
-     * Take the writing to the slide that was clicked.
-     *
-     * The end of it, on the empty line before the break, which is where the next bullet
-     * or paragraph goes. Finding that place in thirty slides of Markdown is the slowest
-     * thing an author does; this is the way back from the picture to the text.
+     * Moves the caret to the end of the clicked slide.
      *
      * @param index 0-based position in the strip
      */
@@ -706,11 +639,11 @@ export default function Editor({themecss, theme, labels, help, imagesurl, mediab
         }
         const at = slideEnd(textarea.value, index + 1);
         showCaret(textarea, at, at);
-        // Moving the cursor from code fires no event, so the preview is told directly.
+        // Moving the caret from code fires no event.
         redraw(textarea);
     };
 
-    /** Drag, or arrow keys, to give one side more room. */
+    /** Resizes the split by dragging the divider. */
     const drag = (event: React.PointerEvent<HTMLDivElement>) => {
         event.currentTarget.setPointerCapture(event.pointerId);
         const move = (moving: PointerEvent) => {
@@ -774,7 +707,7 @@ export default function Editor({themecss, theme, labels, help, imagesurl, mediab
                             role="option"
                             aria-selected={index === pick}
                             className={`mudeck-editor-menu-item${index === pick ? ' mudeck-editor-menu-current' : ''}`}
-                            /* Taking the focus off the writing would close the list under the click. */
+                            /* Keep focus in the textarea, or the menu would close before the click. */
                             onMouseDown={(event) => event.preventDefault()}
                             onClick={() => choose(name)}
                         >
@@ -816,9 +749,7 @@ export default function Editor({themecss, theme, labels, help, imagesurl, mediab
                             className={`mudeck-editor-slide${index === current ? ' mudeck-editor-slide-current' : ''}`}
                             aria-current={index === current}
                         >
-                            {/* Marp scopes its CSS to "div.marpit > section", so a lone slide keeps that
-                                parent - and a div cannot live inside a button, which is why the button
-                                lies over the slide rather than around it. */}
+                            {/* Marp scopes its CSS to "div.marpit > section"; a div cannot sit inside a button. */}
                             <div className="mudeck-editor-slide-box marpit" dangerouslySetInnerHTML={{__html: slide}} />
                             <button
                                 type="button"
@@ -839,7 +770,6 @@ export default function Editor({themecss, theme, labels, help, imagesurl, mediab
             </div>
 
             <div className="mudeck-editor-pane" hidden={tab !== 'media'}>
-                {/* The file manager itself lives here once it has been moved. */}
                 <div ref={mediaref} />
                 <p className="text-muted mudeck-editor-intro">{labels.mediaintro}</p>
             </div>

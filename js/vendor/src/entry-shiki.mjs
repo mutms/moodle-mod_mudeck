@@ -1,4 +1,3 @@
-<?php
 // This file is part of MuTMS suite of plugins for Moodle™ LMS.
 //
 // This program is free software: you can redistribute it and/or modify
@@ -14,22 +13,4 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-// phpcs:disable moodle.Files.BoilerplateComment.CommentEndedTooSoon
-
-/**
- * Markdown slide deck plugin version.
- *
- * @package    mod_mudeck
- * @copyright  2026 Petr Skoda
- * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
-defined('MOODLE_INTERNAL') || die();
-
-/** @var stdClass $plugin */
-$plugin->component = 'mod_mudeck';
-$plugin->version = 2026091200;
-$plugin->requires = 2026091100;
-$plugin->supported = [503, 503];
-$plugin->release = 'v5.3.0.00-dev';
-$plugin->maturity = MATURITY_ALPHA;
+export {default} from '@marp-team/marp-core/plugins/shiki';

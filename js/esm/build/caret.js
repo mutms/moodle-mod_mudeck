@@ -1,9 +1,5 @@
 /**
- * Where a text area is drawing its cursor.
- *
- * A text area keeps that to itself, so the only way to find out is to lay the same text
- * out again in an element that can be measured, and look at where the next character
- * would land.
+ * Locates the caret of a text area by laying its text out again in a measurable mirror element.
  *
  * @module     mod_mudeck/caret
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
