@@ -95,6 +95,23 @@ Feature: Markdown slide deck
     When I am on the "Conference" "mudeck activity editing" page
     Then the "Theme" select box should contain "Acme corporate"
 
+  @javascript
+  Scenario: An administrator deletes a site theme after confirming
+    Given the following "mod_mudeck > themes" exist:
+      | shortname | name |
+      | acme      | Acme |
+    When I log in as "admin"
+    And I navigate to "Plugins > Activity modules > Slide themes" in site administration
+    Then I should see "Acme"
+    When I click on "Delete" "link" in the "Acme" "table_row"
+    Then I should see "Delete the theme \"Acme\"?"
+    When I click on "Cancel" "button"
+    Then I should see "Acme"
+    When I click on "Delete" "link" in the "Acme" "table_row"
+    And I click on "Continue" "button"
+    Then I should see "The theme was deleted."
+    And I should not see "Acme"
+
   Scenario: Slide themes are not for teachers to manage
     When I log in as "teacher1"
     And I am on site homepage

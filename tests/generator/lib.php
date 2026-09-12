@@ -73,4 +73,30 @@ class mod_mudeck_generator extends \testing_module_generator {
 
         return $DB->get_record('mudeck_part', ['id' => $id], '*', MUST_EXIST);
     }
+
+    /**
+     * Create one of the site's own themes.
+     *
+     * @param stdClass|array $record must contain shortname, may contain name and css
+     * @return stdClass the theme record
+     */
+    public function create_theme(stdClass|array $record): stdClass {
+        global $DB;
+
+        $record = (object)(array)$record;
+
+        if (empty($record->shortname)) {
+            throw new \coding_exception('shortname is required');
+        }
+        if (!isset($record->name)) {
+            $record->name = ucfirst($record->shortname);
+        }
+        if (!isset($record->css)) {
+            $record->css = "section { color: #333; }\n";
+        }
+
+        $id = \mod_mudeck\local\theme::save($record);
+
+        return $DB->get_record('mudeck_theme', ['id' => $id], '*', MUST_EXIST);
+    }
 }

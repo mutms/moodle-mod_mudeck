@@ -38,37 +38,7 @@ require(__DIR__ . '/../../../config.php');
 /** @var stdClass $CFG */
 require_once($CFG->libdir . '/adminlib.php');
 
-$delete = optional_param('delete', 0, PARAM_INT);
-$confirm = optional_param('confirm', 0, PARAM_BOOL);
-
 admin_externalpage_setup('mudeckthemes');
-
-$currenturl = new \core\url('/mod/mudeck/management/themes.php');
-
-if ($delete) {
-    $existing = theme::get_site_theme($delete);
-    if (!$existing) {
-        redirect($currenturl);
-    }
-    if (!$confirm) {
-        echo $OUTPUT->header();
-        // How many presentations lose their look is the one fact worth knowing here.
-        $used = theme::count_uses($existing->shortname);
-        echo $OUTPUT->confirm(
-            get_string('theme_delete_confirm', 'mod_mudeck', (object)[
-                'name' => format_string($existing->name),
-                'used' => $used,
-            ]),
-            new \core\url($currenturl, ['delete' => $delete, 'confirm' => 1, 'sesskey' => sesskey()]),
-            $currenturl
-        );
-        echo $OUTPUT->footer();
-        return;
-    }
-    require_sesskey();
-    theme::delete($delete);
-    redirect($currenturl, get_string('theme_deleted', 'mod_mudeck'), null, \core\output\notification::NOTIFY_SUCCESS);
-}
 
 echo $OUTPUT->header();
 echo $OUTPUT->heading(get_string('theme_manage', 'mod_mudeck'));
@@ -80,7 +50,7 @@ foreach (theme::get_site_themes() as $sitetheme) {
         'shortname' => s($sitetheme->shortname),
         'used' => theme::count_uses($sitetheme->shortname),
         'editurl' => (new \core\url('/mod/mudeck/management/theme_edit.php', ['id' => $sitetheme->id]))->out(false),
-        'deleteurl' => (new \core\url($currenturl, ['delete' => $sitetheme->id]))->out(false),
+        'deleteurl' => (new \core\url('/mod/mudeck/management/theme_delete.php', ['id' => $sitetheme->id]))->out(false),
     ];
 }
 

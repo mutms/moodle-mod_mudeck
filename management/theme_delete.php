@@ -17,14 +17,15 @@
 // phpcs:disable moodle.Files.BoilerplateComment.CommentEndedTooSoon
 
 /**
- * Add or edit one of the site's own themes.
+ * Delete one of the site's own themes, after asking.
+ *
+ * Presentations using it are left alone: they fall back to the default look.
  *
  * @package    mod_mudeck
  * @copyright  2026 Petr Skoda
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-use mod_mudeck\local\form\theme_edit;
 use mod_mudeck\local\theme;
 
 /** @var moodle_page $PAGE */
@@ -35,44 +36,37 @@ require(__DIR__ . '/../../../config.php');
 /** @var stdClass $CFG */
 require_once($CFG->libdir . '/adminlib.php');
 
-$id = optional_param('id', 0, PARAM_INT);
+$id = required_param('id', PARAM_INT);
+$confirm = optional_param('confirm', 0, PARAM_BOOL);
 
 admin_externalpage_setup('mudeckthemes');
 // The page setup checks this too, but a write page says so itself.
 require_capability('mod/mudeck:managethemes', context_system::instance());
 
-$returnurl = new \core\url('/mod/mudeck/management/themes.php');
-$currenturl = new \core\url('/mod/mudeck/management/theme_edit.php', $id ? ['id' => $id] : []);
+$themesurl = new \core\url('/mod/mudeck/management/themes.php');
+$currenturl = new \core\url('/mod/mudeck/management/theme_delete.php', ['id' => $id]);
+
+$existing = theme::get_site_theme($id);
+if (!$existing) {
+    redirect($themesurl);
+}
+
+if ($confirm) {
+    require_sesskey();
+    theme::delete($id);
+    redirect($themesurl, get_string('theme_deleted', 'mod_mudeck'), null, \core\output\notification::NOTIFY_SUCCESS);
+}
+
 $PAGE->set_url($currenturl);
 
-$existing = $id ? theme::get_site_theme($id) : null;
-if ($id && !$existing) {
-    redirect($returnurl);
-}
-
-$form = new theme_edit($currenturl->out(false));
-if ($form->is_cancelled()) {
-    redirect($returnurl);
-}
-if ($data = $form->get_data()) {
-    theme::save((object)[
-        'id' => $data->id ?: null,
-        'shortname' => $data->shortname,
-        'name' => $data->name,
-        'css' => $data->css,
-    ]);
-    redirect($returnurl, get_string('theme_saved', 'mod_mudeck'), null, \core\output\notification::NOTIFY_SUCCESS);
-}
-
-$form->set_data([
-    'id' => $existing->id ?? 0,
-    'name' => $existing->name ?? '',
-    'shortname' => $existing->shortname ?? '',
-    // A theme that only changes a colour or two starts by importing one that exists.
-    'css' => $existing->css ?? get_string('theme_css_starter', 'mod_mudeck'),
-]);
-
 echo $OUTPUT->header();
-echo $OUTPUT->heading(get_string($existing ? 'theme_edit' : 'theme_add', 'mod_mudeck'));
-$form->display();
+// How many presentations lose their look is the one fact worth knowing here.
+echo $OUTPUT->confirm(
+    get_string('theme_delete_confirm', 'mod_mudeck', (object)[
+        'name' => format_string($existing->name),
+        'used' => theme::count_uses($existing->shortname),
+    ]),
+    new \core\url($currenturl, ['confirm' => 1, 'sesskey' => sesskey()]),
+    $themesurl
+);
 echo $OUTPUT->footer();

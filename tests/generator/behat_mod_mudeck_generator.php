@@ -33,6 +33,11 @@ class behat_mod_mudeck_generator extends behat_generator_base {
                 'required' => ['mudeck'],
                 'switchids' => ['mudeck' => 'mudeckid'],
             ],
+            'themes' => [
+                'singular' => 'theme',
+                'datagenerator' => 'theme',
+                'required' => ['shortname'],
+            ],
         ];
     }
 
