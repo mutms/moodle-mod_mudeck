@@ -75,6 +75,7 @@ $PAGE->set_url($currenturl);
 $PAGE->set_title($mudeck->name);
 $PAGE->set_secondary_active_tab('mudecksessions');
 $PAGE->add_body_class('limitedwidth');
+$PAGE->set_show_navigation_footer(false);
 mudeck_name_presentation_tab($PAGE);
 $PAGE->activityheader->set_hidecompletion(true);
 $PAGE->activityheader->set_description('');

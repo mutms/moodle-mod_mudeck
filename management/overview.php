@@ -56,6 +56,7 @@ $PAGE->set_url($currenturl);
 $PAGE->set_title($mudeck->name);
 $PAGE->set_secondary_active_tab('mudeckoverview');
 $PAGE->add_body_class('limitedwidth');
+$PAGE->set_show_navigation_footer(false);
 mudeck_name_presentation_tab($PAGE);
 // The description and the completion tick belong on the welcome page, not over every
 // management screen.
