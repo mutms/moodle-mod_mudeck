@@ -78,6 +78,13 @@ section h3 {
     font-weight: 600;
 }
 
+/* A heading never breaks inside a word; a long one runs into the photo margin instead. */
+section h1,
+section h2,
+section h3 {
+    overflow-wrap: normal;
+}
+
 section ul,
 section ol {
     margin: 0.2em 0;
