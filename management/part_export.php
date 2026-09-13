@@ -47,6 +47,7 @@ $mudeck = $DB->get_record('mudeck', ['id' => $cm->instance], '*', MUST_EXIST);
 $context = context_module::instance($cm->id);
 
 require_login($course, false, $cm);
+require_capability('mod/mudeck:view', $context);
 // Exporting a part is part of editing it. Handing out the whole presentation to
 // people who may not edit is a different feature and is not this one.
 require_capability('mod/mudeck:edit', $context);

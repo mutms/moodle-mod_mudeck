@@ -76,6 +76,26 @@ final class presentation_reached_end_test extends route_testcase {
         $this->assertEquals(COMPLETION_COMPLETE, $completion->get_data($cm, false, $this->student->id)->completionstate);
     }
 
+    public function test_without_view_the_report_is_refused(): void {
+        global $DB;
+
+        // View comes from the authenticated user role, so that is where it is taken away.
+        $roleid = $DB->get_field('role', 'id', ['shortname' => 'user'], MUST_EXIST);
+        assign_capability('mod/mudeck:view', CAP_PREVENT, $roleid, \core\context\course::instance($this->course->id)->id, true);
+        accesslib_clear_all_caches_for_unit_testing();
+        $this->setUser($this->student);
+        $this->add_class_routes_to_route_loader(presentation_reached_end::class);
+
+        $response = $this->process_api_request(
+            'POST',
+            "/presentation/{$this->mudeck->cmid}/reached-end",
+            body: Utils::streamFor(json_encode(['sesskey' => sesskey()])),
+        );
+
+        $this->assertGreaterThanOrEqual(400, $response->getStatusCode());
+        $this->assertFalse($DB->record_exists('mudeck_completed', ['mudeckid' => $this->mudeck->id]));
+    }
+
     public function test_a_report_without_a_sesskey_is_refused(): void {
         global $DB;
 

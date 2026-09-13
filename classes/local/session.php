@@ -183,6 +183,7 @@ final class session {
         $cm = get_coursemodule_from_instance('mudeck', $mudeck->id, $mudeck->course, false, MUST_EXIST);
         $context = \context_module::instance($cm->id);
 
+        require_capability('mod/mudeck:view', $context);
         require_capability('mod/mudeck:syncdevices', $context);
         require_capability('mod/mudeck:fullaccess', $context);
         if (!$mudeck->allowdevicesync) {

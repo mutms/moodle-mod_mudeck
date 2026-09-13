@@ -56,6 +56,26 @@ final class part_test extends route_testcase {
         }
     }
 
+    public function test_without_view_even_an_editor_is_refused(): void {
+        global $DB;
+
+        // View comes from the authenticated user role, so that is where it is taken away;
+        // the teacher role keeps the capability to edit.
+        $roleid = $DB->get_field('role', 'id', ['shortname' => 'user'], MUST_EXIST);
+        assign_capability('mod/mudeck:view', CAP_PREVENT, $roleid, \core\context\course::instance($this->mudeck->course)->id, true);
+        accesslib_clear_all_caches_for_unit_testing();
+        $this->add_class_routes_to_route_loader(part_route::class);
+
+        $response = $this->process_api_request(
+            'DELETE',
+            "/part/{$this->partids[1]}",
+            body: Utils::streamFor(json_encode(['sesskey' => sesskey()])),
+        );
+
+        $this->assertGreaterThanOrEqual(400, $response->getStatusCode());
+        $this->assertTrue($DB->record_exists('mudeck_part', ['id' => $this->partids[1]]));
+    }
+
     public function test_a_part_can_be_deleted(): void {
         global $DB;
 

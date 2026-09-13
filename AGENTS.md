@@ -31,6 +31,9 @@ yet; it arrives through tool_mulib after it is proven elsewhere. Do not start it
 
 ## Code rules that are not visible from the structure
 
+- Every course-level page and route checks `require_capability('mod/mudeck:view', $context)`
+  first, right after the login call, and its own capability second. Theme pages are
+  system-level and exempt.
 - Write pages repeat their `require_capability()` even when `admin_externalpage_setup()`
   already checked it. Privileged pages use `require_login($course, false, $cm)`; only
   pages guests may see use `require_course_login()`.

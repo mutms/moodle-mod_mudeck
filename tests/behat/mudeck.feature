@@ -153,6 +153,22 @@ Feature: Markdown slide deck
     Then I should see "Start presentation"
     And "Overview" "link" should not exist
 
+  Scenario: Without the capability to view, nothing of the presentation is reachable
+    Given the following "mod_mudeck > parts" exist:
+      | mudeck     | name    | content  |
+      | Conference | Opening | # Hello  |
+    And the following "permission overrides" exist:
+      | capability      | permission | role | contextlevel | reference |
+      | mod/mudeck:view | Prevent    | user | Course       | C1        |
+    # Core treats the view capability as the door to the activity: the page redirects to the course.
+    When I am on the "Conference" "mudeck activity" page logged in as "student1"
+    Then I should see "Activity not available"
+    And I should not see "Start presentation"
+    # The teacher may still edit, but view is the gate for everything.
+    When I am on the "Conference" "mod_mudeck > overview" page logged in as "teacher1"
+    Then I should see "Activity not available"
+    And I should not see "Add part"
+
   Scenario: The present button is disabled without the capability to present
     Given the following "mod_mudeck > parts" exist:
       | mudeck     | name    | content  |

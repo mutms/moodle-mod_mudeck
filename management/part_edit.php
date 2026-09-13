@@ -53,6 +53,7 @@ $mudeck = $DB->get_record('mudeck', ['id' => $cm->instance], '*', MUST_EXIST);
 $context = context_module::instance($cm->id);
 
 require_login($course, false, $cm);
+require_capability('mod/mudeck:view', $context);
 require_capability('mod/mudeck:edit', $context);
 
 // Back to the welcome page when that is where this started and the presentation is

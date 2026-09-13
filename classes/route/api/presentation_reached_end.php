@@ -77,6 +77,7 @@ class presentation_reached_end {
         if (!can_access_course($course) || !$cm->uservisible) {
             throw new \core\exception\require_login_exception('Course or activity not accessible.');
         }
+        require_capability('mod/mudeck:view', $cm->context);
         require_capability('mod/mudeck:present', $cm->context);
 
         $mudeck = $DB->get_record('mudeck', ['id' => $cm->instance], '*', MUST_EXIST);

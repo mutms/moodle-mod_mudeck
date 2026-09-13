@@ -41,7 +41,8 @@ $capabilities = [
         ],
     ],
 
-    /* See that the presentation exists and read its description on the welcome page. */
+    /* See that the presentation exists and read its description on the welcome page. The base
+       gate: every page and route of the activity checks this first, then its own capability. */
     'mod/mudeck:view' => [
         'captype' => 'read',
         'contextlevel' => CONTEXT_MODULE,

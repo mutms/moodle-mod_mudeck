@@ -49,6 +49,7 @@ $mudeck = $DB->get_record('mudeck', ['id' => $cm->instance], '*', MUST_EXIST);
 $context = context_module::instance($cm->id);
 
 require_course_login($course, true, $cm);
+require_capability('mod/mudeck:view', $context);
 require_capability('mod/mudeck:present', $context);
 
 $viewurl = new url('/mod/mudeck/view.php', ['id' => $cm->id]);

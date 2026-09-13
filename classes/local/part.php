@@ -135,6 +135,7 @@ final class part {
         $cm = get_coursemodule_from_instance('mudeck', $mudeck->id, $mudeck->course, false, MUST_EXIST);
         $context = \context_module::instance($cm->id);
 
+        require_capability('mod/mudeck:view', $context);
         require_capability('mod/mudeck:edit', $context);
 
         return [$part, $mudeck, $context];

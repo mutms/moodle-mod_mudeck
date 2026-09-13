@@ -48,6 +48,7 @@ $mudeck = $DB->get_record('mudeck', ['id' => $cm->instance], '*', MUST_EXIST);
 $context = context_module::instance($cm->id);
 
 require_login($course, false, $cm);
+require_capability('mod/mudeck:view', $context);
 require_capability('mod/mudeck:syncdevices', $context);
 require_capability('mod/mudeck:fullaccess', $context);
 

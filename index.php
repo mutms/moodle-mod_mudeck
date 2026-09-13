@@ -53,7 +53,10 @@ $PAGE->navbar->add($strname);
 
 echo $OUTPUT->header();
 
-$mudecks = get_all_instances_in_course('mudeck', $course);
+$mudecks = array_filter(
+    get_all_instances_in_course('mudeck', $course),
+    fn($mudeck) => has_capability('mod/mudeck:view', \core\context\module::instance($mudeck->coursemodule))
+);
 if (!$mudecks) {
     notice(get_string('thereareno', 'moodle', $strname), new url('/course/view.php', ['id' => $course->id]));
 }
