@@ -21,33 +21,25 @@
 
     Context variables required for this template:
     * hasslides - true when there is something to present
-    * presenturl - URL that starts the presentation
-    * canpresent - true when the current user may present
-    * cannotpresent - true when there are slides but the current user may not present; the button is shown disabled
-    * printurl - URL of the printable handout, slides without notes
+    * presenturl - URL that starts the presentation; null without slides
+    * canpresent - true when the current user may present; without it the start button is shown disabled
+    * printurl - URL of the printable handout, slides without notes; null without slides or without permission to present
     * posterjson - JSON encoded first slide for the poster: markdown, theme, themecss; null without slides
-    * canedit - true when there are no slides and the current user may write them
-    * caneditone - true when the presentation has exactly one part and may be edited
-    * caneditmany - true when it has several parts and may be edited; the overview is the way in
-    * editurl - URL that opens that one part in the editor
-    * addurl - URL that opens the editor for a new part
-    * overviewurl - URL of the overview, where one of several parts is chosen
-    * importurl - URL of the import page, for slides written elsewhere
+    * editurl - URL that opens the only part in the editor; null unless there is one part and the user may edit
+    * addurl - URL that opens the editor for a new part; null unless there are no parts and the user may edit
+    * overviewurl - URL of the overview, where one of several parts is chosen; null unless the user may edit
+    * importurl - URL of the import page, for slides written elsewhere; null unless the user may edit
 
     Example context (json):
     {
         "hasslides": true,
         "presenturl": "#",
         "canpresent": true,
-        "cannotpresent": false,
         "printurl": "#",
         "posterjson": "null",
-        "canedit": false,
-        "caneditone": true,
-        "caneditmany": false,
         "editurl": "#",
-        "addurl": "#",
-        "overviewurl": "#",
+        "addurl": null,
+        "overviewurl": null,
         "importurl": "#"
     }
 }}
@@ -70,36 +62,38 @@
                 {{/react}}
             </div>
             <div class="card-body d-flex justify-content-center position-relative">
-                {{#canpresent}}
-                    <a href="{{presenturl}}" class="btn btn-primary btn-lg mudeck-welcome-present">
-                        {{#str}}present, mod_mudeck{{/str}}
-                    </a>
-                {{/canpresent}}
-                {{#cannotpresent}}
-                    <a class="btn btn-primary btn-lg disabled mudeck-welcome-present" role="button" aria-disabled="true" tabindex="-1">
-                        {{#str}}present, mod_mudeck{{/str}}
-                    </a>
-                {{/cannotpresent}}
+                {{#presenturl}}
+                    {{#canpresent}}
+                        <a href="{{presenturl}}" class="btn btn-primary btn-lg mudeck-welcome-present">
+                            {{#str}}present, mod_mudeck{{/str}}
+                        </a>
+                    {{/canpresent}}
+                    {{^canpresent}}
+                        <a class="btn btn-primary btn-lg disabled mudeck-welcome-present" role="button" aria-disabled="true" tabindex="-1">
+                            {{#str}}present, mod_mudeck{{/str}}
+                        </a>
+                    {{/canpresent}}
+                {{/presenturl}}
                 {{! Tools at the right edge of the same row. }}
                 <div class="position-absolute top-50 end-0 translate-middle-y me-3 d-flex gap-1">
-                    {{#caneditone}}
+                    {{#editurl}}
                         <a href="{{editurl}}" class="btn btn-outline-secondary btn-sm" title="{{#str}}part_edit, mod_mudeck{{/str}}">
                             {{#pix}}t/edit, core{{/pix}}
                             <span class="visually-hidden">{{#str}}part_edit, mod_mudeck{{/str}}</span>
                         </a>
-                    {{/caneditone}}
-                    {{#caneditmany}}
+                    {{/editurl}}
+                    {{#overviewurl}}
                         <a href="{{overviewurl}}" class="btn btn-outline-secondary btn-sm" title="{{#str}}tab_overview, mod_mudeck{{/str}}">
                             {{#pix}}i/section, core{{/pix}}
                             <span class="visually-hidden">{{#str}}tab_overview, mod_mudeck{{/str}}</span>
                         </a>
-                    {{/caneditmany}}
-                    {{#canpresent}}
+                    {{/overviewurl}}
+                    {{#printurl}}
                         <a href="{{printurl}}" class="btn btn-outline-secondary btn-sm" title="{{#str}}print_slides_help, mod_mudeck{{/str}}">
                             {{#pix}}t/print, core{{/pix}}
                             <span class="visually-hidden">{{#str}}print_slides, mod_mudeck{{/str}}</span>
                         </a>
-                    {{/canpresent}}
+                    {{/printurl}}
                 </div>
             </div>
         </div>
@@ -107,15 +101,28 @@
 
     {{^hasslides}}
         <div class="mudeck-welcome-actions">
-            {{#canedit}}
+            {{#addurl}}
                 <a href="{{addurl}}" class="btn btn-primary btn-lg">
                     {{#str}}part_add, mod_mudeck{{/str}}
                 </a>
+            {{/addurl}}
+            {{! Parts exist but none has a slide yet. }}
+            {{#editurl}}
+                <a href="{{editurl}}" class="btn btn-primary btn-lg">
+                    {{#str}}part_edit, mod_mudeck{{/str}}
+                </a>
+            {{/editurl}}
+            {{#overviewurl}}
+                <a href="{{overviewurl}}" class="btn btn-primary btn-lg">
+                    {{#str}}tab_overview, mod_mudeck{{/str}}
+                </a>
+            {{/overviewurl}}
+            {{#importurl}}
                 {{! A deck written in another editor arrives whole, which is the quicker start. }}
                 <a href="{{importurl}}" class="btn btn-secondary btn-lg">
                     {{#str}}import, mod_mudeck{{/str}}
                 </a>
-            {{/canedit}}
+            {{/importurl}}
         </div>
     {{/hasslides}}
 </div>

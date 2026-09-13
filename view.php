@@ -60,12 +60,15 @@ $PAGE->set_title($mudeck->name);
 $PAGE->add_body_class('limitedwidth');
 mudeck_name_presentation_tab($PAGE);
 
-$parts = \mod_mudeck\local\part::get_playable($mudeck->id);
-$hasslides = (bool)$parts;
-// The first part, notes stripped, is enough to draw the first slide as the poster.
+$playableparts = \mod_mudeck\local\part::get_playable($mudeck->id);
+$allparts = \mod_mudeck\local\part::get_all($mudeck->id);
+
+// The first visible part, notes stripped, is enough to draw the first slide as the poster.
+$hasslides = false;
 $poster = null;
-if ($hasslides) {
-    $firstpart = reset($parts);
+if ($playableparts) {
+    $hasslides = true;
+    $firstpart = reset($playableparts);
     $poster = [
         // Only the first slide travels: a viewer may not read the rest of the part.
         'markdown' => \mod_mudeck\local\media::rewrite(
@@ -77,35 +80,57 @@ if ($hasslides) {
         'themecss' => \mod_mudeck\local\theme::get_custom_css(new url('/mod/mudeck')),
     ];
 }
-$canedit = has_capability('mod/mudeck:edit', $context);
-// A presentation of one part has one obvious thing to edit, so it can be offered from
-// here. With several, which one to open is a question, and the overview answers it.
-$all = \mod_mudeck\local\part::get_all($mudeck->id);
-$onepart = count($all) === 1 ? reset($all) : null;
-// Both come back here when done.
-$addurl = new url('/mod/mudeck/management/part_edit.php', ['cmid' => $cm->id, 'returnto' => 'view']);
-$editurl = new url('/mod/mudeck/management/part_edit.php', ['cmid' => $cm->id, 'partid' => $onepart?->id, 'returnto' => 'view']);
+
+$canpresent = has_capability('mod/mudeck:present', $context);
+$presenturl = null;
+$printurl = null;
+$editurl = null;
+$addurl = null;
+$overviewurl = null;
+$importurl = null;
+
+if ($hasslides) {
+    $presenturl = new url('/mod/mudeck/present.php', ['id' => $cm->id]);
+    $presenturl = $presenturl->out(false);
+}
+if ($hasslides && $canpresent) {
+    $printurl = new url('/mod/mudeck/print.php', ['id' => $cm->id]);
+    $printurl = $printurl->out(false);
+}
+
+if (has_capability('mod/mudeck:edit', $context)) {
+    // A presentation of one part has one obvious thing to edit, so it can be offered from
+    // here. With several, which one to open is a question, and the overview answers it.
+    if (count($allparts) === 1) {
+        $onepart = reset($allparts);
+        $params = ['cmid' => $cm->id, 'partid' => $onepart->id, 'returnto' => 'view'];
+        $editurl = new url('/mod/mudeck/management/part_edit.php', $params);
+        $editurl = $editurl->out(false);
+    } else if (!$allparts) {
+        $addurl = new url('/mod/mudeck/management/part_edit.php', ['cmid' => $cm->id, 'returnto' => 'view']);
+        $addurl = $addurl->out(false);
+    } else {
+        $overviewurl = new url('/mod/mudeck/management/overview.php', ['cmid' => $cm->id]);
+        $overviewurl = $overviewurl->out(false);
+    }
+    $importurl = new url('/mod/mudeck/management/part_import.php', ['cmid' => $cm->id]);
+    $importurl = $importurl->out(false);
+}
+
 \mod_mudeck\event\course_module_viewed::create_from_mudeck($mudeck, $context)->trigger();
 
 echo $OUTPUT->header();
 
 echo $OUTPUT->render_from_template('mod_mudeck/view', [
     'hasslides' => $hasslides,
-    'presenturl' => (new url('/mod/mudeck/present.php', ['id' => $cm->id]))->out(false),
-    'canpresent' => $hasslides && has_capability('mod/mudeck:present', $context),
-    'cannotpresent' => $hasslides && !has_capability('mod/mudeck:present', $context),
+    'presenturl' => $presenturl,
+    'canpresent' => $canpresent,
     'posterjson' => json_encode($poster),
-    'printurl' => (new url('/mod/mudeck/print.php', ['id' => $cm->id]))->out(false),
-    // An empty presentation is a dead end for anybody who cannot write slides, and one
-    // click from being a presentation for anybody who can.
-    'canedit' => !$hasslides && $canedit,
-    'caneditone' => $hasslides && $canedit && $onepart !== null,
-    // Several parts: the overview is where the one to edit is chosen.
-    'caneditmany' => $hasslides && $canedit && $onepart === null,
-    'editurl' => $onepart ? $editurl->out(false) : '',
-    'addurl' => $addurl->out(false),
-    'overviewurl' => (new url('/mod/mudeck/management/overview.php', ['cmid' => $cm->id]))->out(false),
-    'importurl' => (new url('/mod/mudeck/management/part_import.php', ['cmid' => $cm->id]))->out(false),
+    'printurl' => $printurl,
+    'editurl' => $editurl,
+    'addurl' => $addurl,
+    'overviewurl' => $overviewurl,
+    'importurl' => $importurl,
 ]);
 
 echo $OUTPUT->footer();
