@@ -31,9 +31,13 @@ yet; it arrives through tool_mulib after it is proven elsewhere. Do not start it
 
 ## Code rules that are not visible from the structure
 
-- Every course-level page and route checks `require_capability('mod/mudeck:view', $context)`
-  first, right after the login call, and its own capability second. Theme pages are
-  system-level and exempt.
+- `require_login($course, false, $cm)` is the gate to an activity: core folds the
+  `mod/mudeck:view` capability into the module's visibility, together with enrolment,
+  hidden activities and availability. Pages and routes call it with the module and
+  then check their own capability; `index.php` filters instances by the view
+  capability itself because it has no module login.
+- Local helpers fetch records and return them; they make no access decisions. The
+  login and capability lines sit in the page or route, in the open.
 - Write pages repeat their `require_capability()` even when `admin_externalpage_setup()`
   already checked it. Privileged pages use `require_login($course, false, $cm)`; only
   pages guests may see use `require_course_login()`.

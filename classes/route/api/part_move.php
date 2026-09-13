@@ -27,7 +27,7 @@ use core\router\schema\parameters\path_parameter;
 use core\router\schema\request_body;
 use core\router\schema\response\content\payload_response_type;
 use core\router\schema\response\payload_response;
-use mod_mudeck\local\part;
+use mod_mudeck\local\part as local_part;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
@@ -75,13 +75,17 @@ class part_move {
     ): payload_response {
         \core\router\util::require_sesskey($request);
 
-        [$part, $mudeck] = part::require_editable($partid);
+        ['part' => $part, 'mudeck' => $mudeck, 'cm' => $cm, 'context' => $context, 'course' => $course]
+            = local_part::fetch_records($partid);
+
+        require_login($course, false, $cm); // Includes the 'mod/mudeck:view' check.
+        require_capability('mod/mudeck:edit', $context);
 
         $body = (array)$request->getParsedBody();
-        part::move_to($part, (int)($body['position'] ?? 0));
+        local_part::move_to($part, (int)($body['position'] ?? 0));
 
         return new payload_response(
-            payload: ['order' => part::get_order($mudeck->id)],
+            payload: ['order' => local_part::get_order($mudeck->id)],
             request: $request,
             response: $response,
         );

@@ -74,7 +74,12 @@ class part {
     ): payload_response {
         \core\router\util::require_sesskey($request);
 
-        [$part, $mudeck, $context] = local_part::require_editable($partid);
+        ['part' => $part, 'mudeck' => $mudeck, 'cm' => $cm, 'context' => $context, 'course' => $course]
+            = local_part::fetch_records($partid);
+
+        require_login($course, false, $cm); // Includes the 'mod/mudeck:view' check.
+        require_capability('mod/mudeck:edit', $context);
+
         local_part::delete($part, $context);
 
         return new payload_response(

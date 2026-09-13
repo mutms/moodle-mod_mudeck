@@ -50,8 +50,7 @@ $course = $DB->get_record('course', ['id' => $cm->course], '*', MUST_EXIST);
 $mudeck = $DB->get_record('mudeck', ['id' => $cm->instance], '*', MUST_EXIST);
 $context = context_module::instance($cm->id);
 
-require_login($course, false, $cm);
-require_capability('mod/mudeck:view', $context);
+require_login($course, false, $cm); // Includes the 'mod/mudeck:view' check.
 require_capability('mod/mudeck:edit', $context);
 
 $viewurl = $returnto === 'view' && count(part::get_all($mudeck->id)) === 1

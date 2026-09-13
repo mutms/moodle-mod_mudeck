@@ -74,10 +74,7 @@ class presentation_reached_end {
         \core\router\util::require_sesskey($request);
 
         [$course, $cm] = get_course_and_cm_from_cmid($cmid, 'mudeck');
-        if (!can_access_course($course) || !$cm->uservisible) {
-            throw new \core\exception\require_login_exception('Course or activity not accessible.');
-        }
-        require_capability('mod/mudeck:view', $cm->context);
+        require_login($course, false, $cm); // Includes the 'mod/mudeck:view' check.
         require_capability('mod/mudeck:present', $cm->context);
 
         $mudeck = $DB->get_record('mudeck', ['id' => $cm->instance], '*', MUST_EXIST);

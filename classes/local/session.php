@@ -162,35 +162,28 @@ final class session {
     }
 
     /**
-     * The session, if it is the given user's and device sync is still allowed.
+     * The records a session hangs off: the session, its presentation, course module, context and course.
      *
-     * Synced notes are a full access feature, so both ends check the same capability -
-     * a device that may not see the notes has no business following the slides either.
+     * Fetching only; the caller decides who may do what. A session that is not the user's own
+     * does not exist as far as they are concerned.
      *
      * @param int $sessionid
      * @param int $userid
-     * @return stdClass
+     * @return array{session: stdClass, mudeck: stdClass, cm: stdClass, context: \context_module, course: stdClass}
      */
-    public static function require_own(int $sessionid, int $userid): stdClass {
+    public static function fetch_records(int $sessionid, int $userid): array {
         global $DB;
 
         $session = self::get_own_one($sessionid, $userid);
         if (!$session) {
             throw new \core\exception\moodle_exception('invalidrecord', 'error');
         }
-
         $mudeck = $DB->get_record('mudeck', ['id' => $session->mudeckid], '*', MUST_EXIST);
         $cm = get_coursemodule_from_instance('mudeck', $mudeck->id, $mudeck->course, false, MUST_EXIST);
+        $course = $DB->get_record('course', ['id' => $mudeck->course], '*', MUST_EXIST);
         $context = \context_module::instance($cm->id);
 
-        require_capability('mod/mudeck:view', $context);
-        require_capability('mod/mudeck:syncdevices', $context);
-        require_capability('mod/mudeck:fullaccess', $context);
-        if (!$mudeck->allowdevicesync) {
-            throw new \core\exception\moodle_exception('nopermissions', 'error', '', 'device sync');
-        }
-
-        return $session;
+        return ['session' => $session, 'mudeck' => $mudeck, 'cm' => $cm, 'context' => $context, 'course' => $course];
     }
 
     /**

@@ -41,8 +41,8 @@ $capabilities = [
         ],
     ],
 
-    /* See that the presentation exists and read its description on the welcome page. The base
-       gate: every page and route of the activity checks this first, then its own capability. */
+    /* See that the presentation exists and read its description on the welcome page. Core folds
+       this into the module's visibility, so require_login() with the module enforces it. */
     'mod/mudeck:view' => [
         'captype' => 'read',
         'contextlevel' => CONTEXT_MODULE,

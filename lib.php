@@ -160,7 +160,7 @@ function mudeck_supports($feature) {
 function mudeck_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload, array $options = []) {
     global $DB;
 
-    require_course_login($course, true, $cm);
+    require_course_login($course, true, $cm); // Includes the 'mod/mudeck:view' check.
 
     if (!$context instanceof context_module) {
         return false;
@@ -169,9 +169,6 @@ function mudeck_pluginfile($course, $cm, $context, $filearea, $args, $forcedownl
         return false;
     }
     // The pictures belong to the slides, so seeing the slides in any form is what it takes.
-    if (!has_capability('mod/mudeck:view', $context)) {
-        return false;
-    }
     if (!has_any_capability(['mod/mudeck:present', 'mod/mudeck:fullaccess', 'mod/mudeck:edit'], $context)) {
         return false;
     }
@@ -258,9 +255,6 @@ function mudeck_extend_settings_navigation(settings_navigation $settings, naviga
         return;
     }
     $context = context_module::instance($cm->id);
-    if (!has_capability('mod/mudeck:view', $context)) {
-        return;
-    }
 
     if (has_capability('mod/mudeck:edit', $context)) {
         $mudecknode->add(

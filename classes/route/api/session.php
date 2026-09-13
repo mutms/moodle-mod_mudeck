@@ -66,7 +66,15 @@ class session {
     ): payload_response {
         global $USER;
 
-        $session = local_session::require_own($sessionid, $USER->id);
+        ['session' => $session, 'mudeck' => $mudeck, 'cm' => $cm, 'context' => $context, 'course' => $course]
+            = local_session::fetch_records($sessionid, $USER->id);
+
+        require_login($course, false, $cm); // Includes the 'mod/mudeck:view' check.
+        require_capability('mod/mudeck:syncdevices', $context);
+        require_capability('mod/mudeck:fullaccess', $context);
+        if (!$mudeck->allowdevicesync) {
+            throw new \core\exception\moodle_exception('nopermissions', 'error', '', 'device sync');
+        }
 
         return new payload_response(
             payload: [
@@ -126,7 +134,15 @@ class session {
         \core\router\util::require_sesskey($request);
 
         $body = (array)$request->getParsedBody();
-        $session = local_session::require_own($sessionid, $USER->id);
+        ['session' => $session, 'mudeck' => $mudeck, 'cm' => $cm, 'context' => $context, 'course' => $course]
+            = local_session::fetch_records($sessionid, $USER->id);
+
+        require_login($course, false, $cm); // Includes the 'mod/mudeck:view' check.
+        require_capability('mod/mudeck:syncdevices', $context);
+        require_capability('mod/mudeck:fullaccess', $context);
+        if (!$mudeck->allowdevicesync) {
+            throw new \core\exception\moodle_exception('nopermissions', 'error', '', 'device sync');
+        }
 
         local_session::move(
             $session,

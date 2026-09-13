@@ -122,23 +122,23 @@ final class part {
     }
 
     /**
-     * A part, its presentation and its context - if the current user may edit it.
+     * The records a part hangs off: the part, its presentation, course module, context and course.
+     *
+     * Fetching only; the caller decides who may do what.
      *
      * @param int $partid
-     * @return array{stdClass, stdClass, \context_module}
+     * @return array{part: stdClass, mudeck: stdClass, cm: stdClass, context: \context_module, course: stdClass}
      */
-    public static function require_editable(int $partid): array {
+    public static function fetch_records(int $partid): array {
         global $DB;
 
         $part = $DB->get_record('mudeck_part', ['id' => $partid], '*', MUST_EXIST);
         $mudeck = $DB->get_record('mudeck', ['id' => $part->mudeckid], '*', MUST_EXIST);
         $cm = get_coursemodule_from_instance('mudeck', $mudeck->id, $mudeck->course, false, MUST_EXIST);
+        $course = $DB->get_record('course', ['id' => $mudeck->course], '*', MUST_EXIST);
         $context = \context_module::instance($cm->id);
 
-        require_capability('mod/mudeck:view', $context);
-        require_capability('mod/mudeck:edit', $context);
-
-        return [$part, $mudeck, $context];
+        return ['part' => $part, 'mudeck' => $mudeck, 'cm' => $cm, 'context' => $context, 'course' => $course];
     }
 
     /**

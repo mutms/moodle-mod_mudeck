@@ -46,10 +46,8 @@ $course = $DB->get_record('course', ['id' => $cm->course], '*', MUST_EXIST);
 $mudeck = $DB->get_record('mudeck', ['id' => $cm->instance], '*', MUST_EXIST);
 $context = context_module::instance($cm->id);
 
-require_login($course, false, $cm);
-require_capability('mod/mudeck:view', $context);
-// Exporting a part is part of editing it.
-require_capability('mod/mudeck:edit', $context);
+require_login($course, false, $cm); // Includes the 'mod/mudeck:view' check.
+require_capability('mod/mudeck:edit', $context); // Export is considered to be editing.
 
 $thepart = $DB->get_record('mudeck_part', ['id' => $partid, 'mudeckid' => $mudeck->id], '*', MUST_EXIST);
 if (!part::has_content($thepart)) {

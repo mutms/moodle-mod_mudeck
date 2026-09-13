@@ -73,7 +73,17 @@ class session_end {
 
         \core\router\util::require_sesskey($request);
 
-        session::end(session::require_own($sessionid, $USER->id));
+        ['session' => $session, 'mudeck' => $mudeck, 'cm' => $cm, 'context' => $context, 'course' => $course]
+            = session::fetch_records($sessionid, $USER->id);
+
+        require_login($course, false, $cm); // Includes the 'mod/mudeck:view' check.
+        require_capability('mod/mudeck:syncdevices', $context);
+        require_capability('mod/mudeck:fullaccess', $context);
+        if (!$mudeck->allowdevicesync) {
+            throw new \core\exception\moodle_exception('nopermissions', 'error', '', 'device sync');
+        }
+
+        session::end($session);
 
         return new payload_response(
             payload: ['success' => true],

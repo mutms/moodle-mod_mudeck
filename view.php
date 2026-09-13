@@ -52,8 +52,7 @@ if ($id) {
 }
 $context = context_module::instance($cm->id);
 
-require_course_login($course, true, $cm);
-require_capability('mod/mudeck:view', $context);
+require_course_login($course, true, $cm); // Includes the 'mod/mudeck:view' check.
 
 $PAGE->set_context($context);
 $PAGE->set_url(new url('/mod/mudeck/view.php', ['id' => $cm->id]));
