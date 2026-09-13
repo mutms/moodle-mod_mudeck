@@ -53,7 +53,7 @@ $context = context_module::instance($cm->id);
 require_login($course, false, $cm); // Includes the 'mod/mudeck:view' check.
 require_capability('mod/mudeck:edit', $context);
 
-$viewurl = $returnto === 'view' && count(part::get_all($mudeck->id)) === 1
+$viewurl = $returnto === 'view'
     ? new url('/mod/mudeck/view.php', ['id' => $cm->id])
     : new url('/mod/mudeck/management/overview.php', ['cmid' => $cm->id]);
 $currenturl = new url('/mod/mudeck/management/part_edit.php', ['cmid' => $cm->id, 'partid' => $partid]);

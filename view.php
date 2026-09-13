@@ -82,6 +82,9 @@ $canedit = has_capability('mod/mudeck:edit', $context);
 // here. With several, which one to open is a question, and the overview answers it.
 $all = \mod_mudeck\local\part::get_all($mudeck->id);
 $onepart = count($all) === 1 ? reset($all) : null;
+// Both come back here when done.
+$addurl = new url('/mod/mudeck/management/part_edit.php', ['cmid' => $cm->id, 'returnto' => 'view']);
+$editurl = new url('/mod/mudeck/management/part_edit.php', ['cmid' => $cm->id, 'partid' => $onepart?->id, 'returnto' => 'view']);
 \mod_mudeck\event\course_module_viewed::create_from_mudeck($mudeck, $context)->trigger();
 
 echo $OUTPUT->header();
@@ -99,14 +102,8 @@ echo $OUTPUT->render_from_template('mod_mudeck/view', [
     'caneditone' => $hasslides && $canedit && $onepart !== null,
     // Several parts: the overview is where the one to edit is chosen.
     'caneditmany' => $hasslides && $canedit && $onepart === null,
-    'editurl' => $onepart
-        ? (new url('/mod/mudeck/management/part_edit.php', [
-            'cmid' => $cm->id,
-            'partid' => $onepart->id,
-            // Came from here, so go back here when the writing is done.
-            'returnto' => 'view',
-        ]))->out(false)
-        : '',
+    'editurl' => $onepart ? $editurl->out(false) : '',
+    'addurl' => $addurl->out(false),
     'overviewurl' => (new url('/mod/mudeck/management/overview.php', ['cmid' => $cm->id]))->out(false),
     'importurl' => (new url('/mod/mudeck/management/part_import.php', ['cmid' => $cm->id]))->out(false),
 ]);

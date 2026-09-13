@@ -135,10 +135,17 @@ Feature: Markdown slide deck
       | mudeck   | Empty | C1     | mudeck2  |
     When I am on the "Empty" "mudeck activity" page logged in as "teacher1"
     Then I should see "This presentation has no slides yet."
-    And "Add part" "link" should exist
     And "Import" "link" should exist
+    # Add part opens the editor straight away and comes back here.
+    When I follow "Add part"
+    And I set the field "Deck part" to "Opening"
+    And I set the field "Markdown" to "# First slide"
+    And I press "Save and close"
+    Then I should see "Slides saved."
+    And I should see "Start presentation"
+    And I should not see "This presentation has no slides yet."
     # And the same on the overview, where the parts would be listed.
-    When I am on the "Empty" "mod_mudeck > overview" page
+    When I am on the "Conference" "mod_mudeck > overview" page
     Then I should see "This presentation has no slides yet."
     # A student can do nothing about it, so they are not invited to try.
     When I am on the "Empty" "mudeck activity" page logged in as "student1"

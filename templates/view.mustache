@@ -30,7 +30,8 @@
     * caneditone - true when the presentation has exactly one part and may be edited
     * caneditmany - true when it has several parts and may be edited; the overview is the way in
     * editurl - URL that opens that one part in the editor
-    * overviewurl - URL of the overview, where parts are added
+    * addurl - URL that opens the editor for a new part
+    * overviewurl - URL of the overview, where one of several parts is chosen
     * importurl - URL of the import page, for slides written elsewhere
 
     Example context (json):
@@ -45,6 +46,7 @@
         "caneditone": true,
         "caneditmany": false,
         "editurl": "#",
+        "addurl": "#",
         "overviewurl": "#",
         "importurl": "#"
     }
@@ -106,7 +108,7 @@
     {{^hasslides}}
         <div class="mudeck-welcome-actions">
             {{#canedit}}
-                <a href="{{overviewurl}}" class="btn btn-primary btn-lg">
+                <a href="{{addurl}}" class="btn btn-primary btn-lg">
                     {{#str}}part_add, mod_mudeck{{/str}}
                 </a>
                 {{! A deck written in another editor arrives whole, which is the quicker start. }}
