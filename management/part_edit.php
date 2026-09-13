@@ -43,8 +43,6 @@ require_once($CFG->libdir . '/formslib.php');
 
 $cmid = required_param('cmid', PARAM_INT);
 $partid = optional_param('partid', 0, PARAM_INT);
-// Where the writing started, so it can end there. A word rather than a URL: nothing
-// arriving in a parameter should be able to say where this page sends somebody next.
 $returnto = optional_param('returnto', '', PARAM_ALPHA);
 
 $cm = get_coursemodule_from_id('mudeck', $cmid, 0, false, MUST_EXIST);
@@ -56,9 +54,6 @@ require_login($course, false, $cm);
 require_capability('mod/mudeck:view', $context);
 require_capability('mod/mudeck:edit', $context);
 
-// Back to the welcome page when that is where this started and the presentation is
-// still the single part it was. Once there are several, the overview is the place that
-// can show what happened to them.
 $viewurl = $returnto === 'view' && count(part::get_all($mudeck->id)) === 1
     ? new url('/mod/mudeck/view.php', ['id' => $cm->id])
     : new url('/mod/mudeck/management/overview.php', ['cmid' => $cm->id]);
@@ -71,12 +66,9 @@ $PAGE->set_context($context);
 $PAGE->set_url($currenturl);
 $PAGE->set_title($mudeck->name);
 
-// Nothing around the editor: with unsaved text on screen, the linear navigation at
-// the bottom of a course page is a trap rather than a convenience.
 $PAGE->set_pagelayout('embedded');
 $PAGE->set_show_navigation_footer(false);
 $PAGE->activityheader->disable();
-// Lets the stylesheet keep notifications out from under the preview column.
 $PAGE->add_body_class('mudeck-editor-page');
 
 $existing = null;
@@ -108,9 +100,7 @@ if ($data = $form->get_data()) {
         redirect($viewurl, get_string('part_saved', 'mod_mudeck'), null, \core\output\notification::NOTIFY_SUCCESS);
     }
 
-    // Saving without leaving answers the POST with the editor itself. No redirect, so
-    // reloading is the browser's own "send the form again?" question, which is a better
-    // thing to answer than losing what is on screen.
+    // Just save, do not redirt.
     \core\notification::success(get_string('part_saved', 'mod_mudeck'));
     $existing = $DB->get_record('mudeck_part', ['id' => $partid], '*', MUST_EXIST);
     // A part created just now has an id, and everything from here on belongs to it.
@@ -131,8 +121,6 @@ file_prepare_draft_area(
 
 $form->set_data([
     'id' => $existing->id ?? 0,
-    // A name is required, so a new part arrives with one that is at least true: where it
-    // is going to sit in the presentation.
     'name' => $existing->name ?? get_string('part_new', 'mod_mudeck', count(part::get_all($mudeck->id)) + 1),
     'content' => $existing->content ?? get_string('part_starter', 'mod_mudeck'),
     'attachments' => $draftitemid,
