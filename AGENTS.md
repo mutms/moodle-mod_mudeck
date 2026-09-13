@@ -56,6 +56,10 @@ in `sanitize.ts` before touching either, and extend allowlists with a pattern, n
 by dropping a check. Site themes are trusted CSS and need `mod/mudeck:managethemes`,
 which no role holds by default.
 
+Nothing is ever written to the database or the file store without a real logged-in
+user: guests and visitors may read (`require_course_login`), never create, update or
+upload. Do not add a write path for anonymous users, however small the ticket.
+
 ## Commands
 
 Run from `/srv/projects/moodle53` unless noted. The short commands (`phpunit`,
