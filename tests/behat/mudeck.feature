@@ -349,6 +349,20 @@ Feature: Markdown slide deck
     And I should see "set Desirable"
     And ".mudeck-slides [data-marp-mermaid]" "css_element" should not exist
 
+  @javascript
+  Scenario: Escape brings the controls back during a presentation
+    Given the following "mod_mudeck > parts" exist:
+      | mudeck     | name    | content          |
+      | Conference | Opening | # One\n\n---\n\n# Two |
+    When I am on the "Conference" "mudeck activity" page logged in as "teacher1"
+    And I follow "Start presentation"
+    Then I should see "One"
+    # The controls hide on their own a few seconds after the deck opens.
+    And I wait "4" seconds
+    And ".mudeck-deck.mudeck-chrome-hidden" "css_element" should exist
+    When I press the escape key
+    Then ".mudeck-deck.mudeck-chrome-hidden" "css_element" should not exist
+
   @javascript @_file_upload
   Scenario: A teacher imports slides as a plain Markdown file
     Given I am on the "Conference" "mod_mudeck > overview" page logged in as "teacher1"

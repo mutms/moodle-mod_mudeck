@@ -181,7 +181,7 @@ export default function Viewer({parts, themecss, exiturl, labels, sync, reachede
         hidetimer.current = window.setTimeout(() => setChromevisible(false), after);
     }, []);
 
-    // Shown once when the deck opens; after that keys never summon the controls, only the pointer does.
+    // Shown once when the deck opens; after that only the pointer and Escape summon the controls.
     const panelopen = overviewopen || notesopen;
     useEffect(() => {
         if (panelopen) {
@@ -192,6 +192,23 @@ export default function Viewer({parts, themecss, exiturl, labels, sync, reachede
         }
         show(INTROFOR);
         return () => window.clearTimeout(hidetimer.current);
+    }, [show, panelopen]);
+
+    // Escape closes an open panel, otherwise it summons the controls the way opening the deck does.
+    useEffect(() => {
+        const onKey = (event: KeyboardEvent) => {
+            if (event.key !== 'Escape') {
+                return;
+            }
+            if (panelopen) {
+                setOverviewopen(false);
+                setNotesopen(false);
+            } else {
+                show(INTROFOR);
+            }
+        };
+        document.addEventListener('keydown', onKey);
+        return () => document.removeEventListener('keydown', onKey);
     }, [show, panelopen]);
 
     // Only the bottom zone summons the controls; elsewhere the pointer is over the slides.
