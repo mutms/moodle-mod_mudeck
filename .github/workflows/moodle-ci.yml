@@ -51,18 +51,18 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - php: '8.3'
-            moodle-branch: 'main'
-            db: mysqli
-            dbversion: 8.4
           - php: '8.4'
-            moodle-branch: 'main'
-            db: mariadb
-            dbversion: 11.4
-          - php: '8.4'
-            moodle-branch: 'main'
+            moodle-branch: 'MOODLE_503_DEV'
             db: pgsql
-            dbversion: 18
+            dbversion: 16
+          - php: '8.4'
+            moodle-branch: 'MOODLE_503_DEV'
+            db: mariadb
+            dbversion: 10.11
+          - php: '8.3'
+            moodle-branch: 'MOODLE_503_DEV'
+            db: mysql
+            dbversion: 8.4
 
     steps:
       - name: Check out repository code
