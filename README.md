@@ -1,5 +1,7 @@
 # Slide deck for Moodle™ LMS
 
+![Moodle Plugin CI](https://github.com/mutms/moodle-mod_mudeck/actions/workflows/moodle-ci.yml/badge.svg) [![camp](https://camp-registry.org/badge/mod_mudeck.svg)](https://camp-registry.org/plugin/mod_mudeck.html)
+
 Make slide presentations right inside your Moodle course. No PowerPoint, no uploads,
 no special software. You type your slides as plain text, pick a theme, and press
 **Start presentation**.
