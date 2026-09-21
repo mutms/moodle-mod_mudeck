@@ -108,9 +108,9 @@ by [DOMPurify](https://github.com/cure53/DOMPurify) (MPL 2.0).
 
 ## AI disclosure
 
-parts of this project was written with the help of Claude (Anthropic). A human
+Parts of this plugin were written with the help of Claude (Anthropic). A human
 maintainer reviewed, corrected and accepted everything before it was committed.
-The design decisions and the final code are the maintainers' own.
+The design decisions and the final code are the maintainer's own.
 
 ## License
 
