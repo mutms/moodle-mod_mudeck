@@ -14,7 +14,9 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * Live slide preview beside the server-rendered edit form, whose textarea remains the only copy of the text.
+ * Live slide preview beside the part form, whose textarea remains the only copy of the text.
+ *
+ * Mounted by the partcontainer form element, which hands over the form fields it lays out.
  *
  * @module     mod_mudeck/editor
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -44,27 +46,23 @@ const MARKER = '⁠mudeckcaret⁠';
 type Labels = {
     preview: string;
     slide: string;
-    markdownhelp: string;
-    mediahelp: string;
     media: string;
-    mediaintro: string;
-    help: string;
     fullscreen: string;
 };
 
-/** Server-rendered help HTML. */
-type Help = {
-    markdown: string;
-    media: string;
-};
-
-type EditorProps = {
+export type EditorProps = {
     themecss?: Record<string, string>;
     theme: string;
     labels: Labels;
-    help: Help;
     imagesurl: string;
     mediabase: string;
+    /** The Markdown field. */
+    textarea: HTMLTextAreaElement;
+    /** Hidden fields carrying the caret through save and continue. */
+    caretstart: HTMLInputElement | null;
+    caretend: HTMLInputElement | null;
+    /** Pane holding the file manager, watched for uploads. */
+    mediapane: HTMLElement | null;
 };
 
 /** Matches a target that is already absolute. */
@@ -217,9 +215,10 @@ function write(textarea: HTMLTextAreaElement, from: number, to: number, text: st
     textarea.setSelectionRange(caret, caret);
 }
 
-export default function Editor({themecss, theme, labels, help, imagesurl, mediabase}: EditorProps) {
+export default function Editor(
+    {themecss, theme, labels, imagesurl, mediabase, textarea, caretstart, caretend, mediapane}: EditorProps
+) {
     const stripref = useRef<HTMLOListElement>(null);
-    const mediaref = useRef<HTMLDivElement>(null);
     const menuref = useRef<HTMLUListElement>(null);
     const [split, setSplit] = useState(() => {
         try {
@@ -228,7 +227,6 @@ export default function Editor({themecss, theme, labels, help, imagesurl, mediab
             return 40;
         }
     });
-    const [tab, setTab] = useState<'preview' | 'media' | 'help'>('preview');
     const [slides, setSlides] = useState<string[]>([]);
     const [css, setCss] = useState('');
     const [current, setCurrent] = useState(0);
@@ -276,9 +274,8 @@ export default function Editor({themecss, theme, labels, help, imagesurl, mediab
 
     /** Completes the image with the chosen file name. */
     const choose = useCallback((name: string) => {
-        const textarea = document.querySelector<HTMLTextAreaElement>('#id_content');
-        const spot = textarea ? offering(textarea) : null;
-        if (!textarea || !spot) {
+        const spot = offering(textarea);
+        if (!spot) {
             return;
         }
         const at = textarea.selectionStart ?? 0;
@@ -295,7 +292,7 @@ export default function Editor({themecss, theme, labels, help, imagesurl, mediab
         const text = `](${name})`;
         write(textarea, at, at, text, spot.alt === '' ? at : at + text.length);
         setMenu(null);
-    }, []);
+    }, [textarea]);
 
     /** Sequence number so a slow redraw cannot overwrite a newer one. */
     const drawing = useRef(0);
@@ -344,34 +341,24 @@ export default function Editor({themecss, theme, labels, help, imagesurl, mediab
 
     // Save and continue reloads the page, so the caret position travels with the form submission.
     useEffect(() => {
-        const textarea = document.querySelector<HTMLTextAreaElement>('#id_content');
-        const form = textarea?.closest('form');
-        if (!textarea || !form) {
+        const form = textarea.form;
+        if (!form) {
             return undefined;
         }
-        // A form exposes its own fields as properties, so they are asked for by name.
-        const start = form.elements.namedItem('caretstart') as HTMLInputElement | null;
-        const end = form.elements.namedItem('caretend') as HTMLInputElement | null;
-
         const remember = () => {
-            if (start && end) {
-                start.value = String(textarea.selectionStart ?? 0);
-                end.value = String(textarea.selectionEnd ?? 0);
+            if (caretstart && caretend) {
+                caretstart.value = String(textarea.selectionStart ?? 0);
+                caretend.value = String(textarea.selectionEnd ?? 0);
             }
         };
         form.addEventListener('submit', remember);
         return () => form.removeEventListener('submit', remember);
-    }, []);
+    }, [textarea, caretstart, caretend]);
 
     // Runs before the first redraw below, which reads the caret to pick the slide.
     useEffect(() => {
-        const textarea = document.querySelector<HTMLTextAreaElement>('#id_content');
-        const form = textarea?.closest('form');
-        if (!textarea || !form) {
-            return undefined;
-        }
-        const from = Number((form.elements.namedItem('caretstart') as HTMLInputElement | null)?.value ?? 0);
-        const to = Number((form.elements.namedItem('caretend') as HTMLInputElement | null)?.value ?? 0);
+        const from = Number(caretstart?.value ?? 0);
+        const to = Number(caretend?.value ?? 0);
         if (!to) {
             // A freshly opened editor has nothing to restore, and must not steal focus.
             return undefined;
@@ -379,14 +366,10 @@ export default function Editor({themecss, theme, labels, help, imagesurl, mediab
 
         showCaret(textarea, from, to);
         return undefined;
-    }, []);
+    }, [textarea, caretstart, caretend]);
 
     // The textarea takes whatever height the window has left below it.
     useEffect(() => {
-        const textarea = document.querySelector<HTMLTextAreaElement>('#id_content');
-        if (!textarea) {
-            return undefined;
-        }
         const editor = textarea.closest<HTMLElement>('.mudeck-editor');
         const fit = () => {
             // Page coordinates, so a scrolled page does not read as spare room.
@@ -403,14 +386,9 @@ export default function Editor({themecss, theme, labels, help, imagesurl, mediab
             window.cancelAnimationFrame(settled);
             window.removeEventListener('resize', fit);
         };
-    }, []);
+    }, [textarea]);
 
     useEffect(() => {
-        const textarea = document.querySelector<HTMLTextAreaElement>('#id_content');
-        if (!textarea) {
-            return undefined;
-        }
-
         let timer: number | undefined;
         const later = () => {
             window.clearTimeout(timer);
@@ -424,15 +402,10 @@ export default function Editor({themecss, theme, labels, help, imagesurl, mediab
             events.forEach((name) => textarea.removeEventListener(name, later));
             window.clearTimeout(timer);
         };
-    }, [redraw]);
+    }, [redraw, textarea]);
 
     // The upload list follows the caret inside an unfinished image; arrow keys select, Enter writes.
     useEffect(() => {
-        const textarea = document.querySelector<HTMLTextAreaElement>('#id_content');
-        if (!textarea) {
-            return undefined;
-        }
-
         const onkey = (event: KeyboardEvent) => {
             const last = menu ? menu.items.length - 1 : -1;
             if (event.key === 'ArrowDown') {
@@ -481,7 +454,7 @@ export default function Editor({themecss, theme, labels, help, imagesurl, mediab
             window.removeEventListener('resize', close);
             document.removeEventListener('pointerdown', away);
         };
-    }, [menu, pick, offer, choose]);
+    }, [menu, pick, offer, choose, textarea]);
 
     useEffect(() => {
         menuref.current
@@ -516,7 +489,7 @@ export default function Editor({themecss, theme, labels, help, imagesurl, mediab
         const watcher = new ResizeObserver(fit);
         watcher.observe(strip);
         return () => watcher.disconnect();
-    }, [slides, tab]);
+    }, [slides]);
 
     // Moodle may insert or replace notifications after load, so the whole body is observed.
     useEffect(() => {
@@ -558,35 +531,6 @@ export default function Editor({themecss, theme, labels, help, imagesurl, mediab
         };
     }, []);
 
-    // Moodle's file manager is moved here and put back on unmount so the form still submits it.
-    useEffect(() => {
-        const holder = mediaref.current;
-        const field = document.querySelector<HTMLElement>('#fitem_id_attachments');
-        if (!holder || !field) {
-            return undefined;
-        }
-        const home = field.parentElement;
-        const next = field.nextElementSibling;
-        const form = field.closest('form');
-        holder.appendChild(field);
-
-        // The form attribute keeps moved inputs submitted; getAttribute, since a field named "id" shadows form.id.
-        const formid = form?.getAttribute('id');
-        if (formid) {
-            field.querySelectorAll('input, select, textarea').forEach((input) => {
-                input.setAttribute('form', formid);
-            });
-        }
-
-        return () => {
-            if (next) {
-                home?.insertBefore(field, next);
-            } else {
-                home?.appendChild(field);
-            }
-        };
-    }, []);
-
     // The browser can leave fullscreen on its own, so the state follows the event.
     useEffect(() => {
         const watch = () => setFull(document.fullscreenElement !== null);
@@ -612,7 +556,7 @@ export default function Editor({themecss, theme, labels, help, imagesurl, mediab
     // Reloaded whenever the file manager changes.
     useEffect(() => {
         void load();
-        const holder = mediaref.current;
+        const holder = mediapane;
         if (!holder) {
             return undefined;
         }
@@ -627,7 +571,7 @@ export default function Editor({themecss, theme, labels, help, imagesurl, mediab
             watcher.disconnect();
             window.clearTimeout(timer);
         };
-    }, [load]);
+    }, [load, mediapane]);
 
     useEffect(() => {
         stripref.current
@@ -641,10 +585,6 @@ export default function Editor({themecss, theme, labels, help, imagesurl, mediab
      * @param index 0-based position in the strip
      */
     const goToSlide = (index: number) => {
-        const textarea = document.querySelector<HTMLTextAreaElement>('#id_content');
-        if (!textarea) {
-            return;
-        }
         const at = slideEnd(textarea.value, index + 1);
         showCaret(textarea, at, at);
         // Moving the caret from code fires no event.
@@ -725,70 +665,34 @@ export default function Editor({themecss, theme, labels, help, imagesurl, mediab
                 </ul>
             )}
 
-        <div className="mudeck-editor-preview" data-region="mudeck-editor-preview">
             <style>{css}</style>
 
-            <ul className="nav nav-underline mudeck-editor-tabs" role="tablist">
-                {([
-                    ['preview', labels.preview],
-                    ['media', labels.media],
-                    ['help', labels.help],
-                ] as const).map(([name, label]) => (
-                    <li className="nav-item" key={name} role="presentation">
+            <ol className="mudeck-editor-strip" ref={stripref}>
+                {slides.map((slide, index) => (
+                    <li
+                        key={index}
+                        data-slide={index}
+                        className={`mudeck-editor-slide${index === current ? ' mudeck-editor-slide-current' : ''}`}
+                        aria-current={index === current}
+                    >
+                        {/* Marp scopes its CSS to "div.marpit > section"; a div cannot sit inside a button. */}
+                        <div className="mudeck-editor-slide-box marpit" dangerouslySetInnerHTML={{__html: slide}} />
                         <button
                             type="button"
-                            role="tab"
-                            aria-selected={tab === name}
-                            className={`nav-link${tab === name ? ' active' : ''}`}
-                            onClick={() => setTab(name)}
+                            className="mudeck-editor-slide-jump"
+                            title={labels.slide.replace('{$a}', String(index + 1))}
+                            onClick={() => goToSlide(index)}
                         >
-                            {label}
-                        </button>
-                    </li>
-                ))}
-            </ul>
-
-            <div className="mudeck-editor-pane" hidden={tab !== 'preview'}>
-                <ol className="mudeck-editor-strip" ref={stripref}>
-                    {slides.map((slide, index) => (
-                        <li
-                            key={index}
-                            data-slide={index}
-                            className={`mudeck-editor-slide${index === current ? ' mudeck-editor-slide-current' : ''}`}
-                            aria-current={index === current}
-                        >
-                            {/* Marp scopes its CSS to "div.marpit > section"; a div cannot sit inside a button. */}
-                            <div className="mudeck-editor-slide-box marpit" dangerouslySetInnerHTML={{__html: slide}} />
-                            <button
-                                type="button"
-                                className="mudeck-editor-slide-jump"
-                                title={labels.slide.replace('{$a}', String(index + 1))}
-                                onClick={() => goToSlide(index)}
-                            >
-                                <span className="visually-hidden">
-                                    {labels.slide.replace('{$a}', String(index + 1))}
-                                </span>
-                            </button>
-                            <span className="mudeck-editor-number">
+                            <span className="visually-hidden">
                                 {labels.slide.replace('{$a}', String(index + 1))}
                             </span>
-                        </li>
-                    ))}
-                </ol>
-            </div>
-
-            <div className="mudeck-editor-pane" hidden={tab !== 'media'}>
-                <div ref={mediaref} />
-                <p className="text-muted mudeck-editor-intro">{labels.mediaintro}</p>
-            </div>
-
-            <div className="mudeck-editor-pane" hidden={tab !== 'help'}>
-                <h2 className="mudeck-editor-heading">{labels.markdownhelp}</h2>
-                <div dangerouslySetInnerHTML={{__html: help?.markdown ?? ''}} />
-                <h2 className="mudeck-editor-heading">{labels.mediahelp}</h2>
-                <div dangerouslySetInnerHTML={{__html: help?.media ?? ''}} />
-            </div>
-        </div>
+                        </button>
+                        <span className="mudeck-editor-number">
+                            {labels.slide.replace('{$a}', String(index + 1))}
+                        </span>
+                    </li>
+                ))}
+            </ol>
         </>
     );
 }

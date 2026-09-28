@@ -20,6 +20,7 @@ namespace mod_mudeck\route\api;
 
 use core\param;
 use core\router\route;
+use core\router\scope\unscoped_resource;
 use core\router\schema\parameters\path_parameter;
 use core\router\schema\objects\scalar_type;
 use core\router\schema\objects\schema_object;
@@ -64,12 +65,18 @@ class presentation_reached_end {
         ),
         requirelogin: new require_login(requirelogin: true, autologinguest: false),
     )]
+    #[unscoped_resource]
     public function reached(
         ServerRequestInterface $request,
         ResponseInterface $response,
         int $cmid,
     ): payload_response {
         global $DB, $USER;
+
+        // Browser only endpoint, requests authenticated with OAuth2 tokens or API keys have no session.
+        if (!\core\session\manager::is_session_active() && !(defined('PHPUNIT_TEST') && PHPUNIT_TEST)) {
+            throw new \core\exception\access_denied_exception('accessdenied', 'admin');
+        }
 
         \core\router\util::require_sesskey($request);
 

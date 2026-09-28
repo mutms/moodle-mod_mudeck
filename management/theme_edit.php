@@ -53,13 +53,19 @@ if ($id && !$existing) {
     redirect($returnurl);
 }
 
-$form = new theme_edit($currenturl->out(false));
+$currentdata = [
+    'name' => $existing->name ?? '',
+    'shortname' => $existing->shortname ?? '',
+    // A theme that only changes a colour or two starts by importing one that exists.
+    'css' => $existing->css ?? get_string('theme_css_starter', 'mod_mudeck'),
+];
+$form = new theme_edit($currenturl, $currentdata, ['id' => $existing->id ?? 0]);
 if ($form->is_cancelled()) {
     redirect($returnurl);
 }
 if ($data = $form->get_data()) {
     theme::save((object)[
-        'id' => $data->id ?: null,
+        'id' => $existing->id ?? null,
         'shortname' => $data->shortname,
         'name' => $data->name,
         'css' => $data->css,
@@ -67,15 +73,7 @@ if ($data = $form->get_data()) {
     redirect($returnurl, get_string('theme_saved', 'mod_mudeck'), null, \core\output\notification::NOTIFY_SUCCESS);
 }
 
-$form->set_data([
-    'id' => $existing->id ?? 0,
-    'name' => $existing->name ?? '',
-    'shortname' => $existing->shortname ?? '',
-    // A theme that only changes a colour or two starts by importing one that exists.
-    'css' => $existing->css ?? get_string('theme_css_starter', 'mod_mudeck'),
-]);
-
 echo $OUTPUT->header();
 echo $OUTPUT->heading(get_string($existing ? 'theme_edit' : 'theme_add', 'mod_mudeck'));
-$form->display();
+echo $form->render($OUTPUT);
 echo $OUTPUT->footer();

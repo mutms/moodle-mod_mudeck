@@ -27,63 +27,56 @@
 namespace mod_mudeck\local\form;
 
 use mod_mudeck\local\theme;
+use tool_mulib\muform\element\buttons;
+use tool_mulib\muform\element\cancel;
+use tool_mulib\muform\element\submit;
+use tool_mulib\muform\element\text;
+use tool_mulib\muform\element\textarea;
+use tool_mulib\muform\form;
 
 /**
  * Add or edit one of the site's own Marp themes.
  */
-final class theme_edit extends \moodleform {
+final class theme_edit extends form {
     #[\Override]
-    protected function definition() {
-        $mform = $this->_form;
+    protected function definition(): void {
+        $name = new text('name', get_string('theme_name', 'mod_mudeck'), ['maxlength' => 255]);
+        $name->set_required(true);
+        $name->add_help_button('theme_name', 'mod_mudeck');
+        $this->add($name);
 
-        $mform->addElement('hidden', 'id');
-        $mform->setType('id', PARAM_INT);
+        $shortname = new text('shortname', get_string('theme_shortname', 'mod_mudeck'), ['width' => 'medium']);
+        $shortname->set_required(true);
+        $shortname->add_help_button('theme_shortname', 'mod_mudeck');
+        $this->add($shortname);
 
-        $mform->addElement('text', 'name', get_string('theme_name', 'mod_mudeck'), ['size' => '48']);
-        $mform->setType('name', PARAM_TEXT);
-        $mform->addRule('name', null, 'required', null, 'client');
-        $mform->addRule('name', get_string('maximumchars', '', 255), 'maxlength', 255, 'client');
-        $mform->addHelpButton('name', 'theme_name', 'mod_mudeck');
+        $css = new textarea('css', get_string('theme_css', 'mod_mudeck'), ['type' => 'rawtext', 'rows' => 25]);
+        $css->set_required(true);
+        $css->add_help_button('theme_css', 'mod_mudeck');
+        $this->add($css);
 
-        $mform->addElement('text', 'shortname', get_string('theme_shortname', 'mod_mudeck'), ['size' => '24']);
-        $mform->setType('shortname', PARAM_SAFEDIR);
-        $mform->addRule('shortname', null, 'required', null, 'client');
-        $mform->addHelpButton('shortname', 'theme_shortname', 'mod_mudeck');
-
-        $mform->addElement(
-            'textarea',
-            'css',
-            get_string('theme_css', 'mod_mudeck'),
-            ['rows' => 25, 'cols' => 80, 'spellcheck' => 'false']
-        );
-        $mform->setType('css', PARAM_RAW);
-        $mform->addRule('css', null, 'required', null, 'client');
-        $mform->addHelpButton('css', 'theme_css', 'mod_mudeck');
-
-        $this->add_action_buttons();
+        $this->add(new buttons('buttons'));
+        $this->add(new submit(), 'buttons');
+        $this->add(new cancel(), 'buttons');
     }
 
     #[\Override]
-    public function validation($data, $files) {
+    protected function validation(array $data, array &$allerrors): void {
         global $DB;
-
-        $errors = parent::validation($data, $files);
 
         $shortname = clean_param($data['shortname'], PARAM_SAFEDIR);
         if ($shortname === '' || $shortname !== $data['shortname']) {
             // PARAM_SAFEDIR is what Marp and the theme directive can carry: letters,
             // digits, underscore and dash, nothing else.
-            $errors['shortname'] = get_string('theme_shortname_invalid', 'mod_mudeck');
+            $allerrors['shortname'][] = get_string('theme_shortname_invalid', 'mod_mudeck');
         } else if (in_array($shortname, theme::get_reserved_names(), true)) {
             // Shadowing a shipped theme would leave nobody able to say which one they meant.
-            $errors['shortname'] = get_string('theme_shortname_reserved', 'mod_mudeck');
+            $allerrors['shortname'][] = get_string('theme_shortname_reserved', 'mod_mudeck');
         } else {
             $clash = $DB->get_record(theme::TABLE, ['shortname' => $shortname], 'id');
-            if ($clash && (int)$clash->id !== (int)($data['id'] ?? 0)) {
-                $errors['shortname'] = get_string('theme_shortname_taken', 'mod_mudeck');
+            if ($clash && (int)$clash->id !== (int)($this->get_extra_data()['id'] ?? 0)) {
+                $allerrors['shortname'][] = get_string('theme_shortname_taken', 'mod_mudeck');
             }
         }
-
-        return $errors;
     }
 }

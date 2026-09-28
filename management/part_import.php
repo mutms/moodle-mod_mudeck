@@ -35,11 +35,9 @@ use mod_mudeck\local\part;
 /** @var moodle_database $DB */
 /** @var moodle_page $PAGE */
 /** @var \core\output\core_renderer $OUTPUT */
-/** @var stdClass $USER */
 // phpcs:enable moodle.Commenting.InlineComment.TypeHintingMatch
 
 require(__DIR__ . '/../../../config.php');
-require_once($CFG->libdir . '/formslib.php');
 
 $cmid = required_param('cmid', PARAM_INT);
 
@@ -63,30 +61,13 @@ mudeck_name_presentation_tab($PAGE);
 $PAGE->activityheader->set_hidecompletion(true);
 $PAGE->activityheader->set_description('');
 
-$form = new part_import($currenturl->out(false));
+$form = new part_import($currenturl, []);
 if ($form->is_cancelled()) {
     redirect($viewurl);
 }
-
-// The upload needs a draft area of its own before the file manager can put anything in it.
-$draftitemid = file_get_submitted_draft_itemid('archive');
-file_prepare_draft_area($draftitemid, null, null, null, null, ['maxfiles' => 1, 'subdirs' => 0]);
-$form->set_data(['archive' => $draftitemid]);
-if ($data = $form->get_data()) {
-    $uploaded = null;
-    foreach (
-        get_file_storage()->get_area_files(
-            context_user::instance($USER->id)->id,
-            'user',
-            'draft',
-            $data->archive,
-            'itemid',
-            false
-        ) as $file
-    ) {
-        $uploaded = $file;
-        break;
-    }
+if ($form->get_data()) {
+    $files = $form->get_element('archive')->get_files();
+    $uploaded = reset($files);
     if (!$uploaded) {
         redirect($currenturl, get_string('import_nothing', 'mod_mudeck'), null, \core\output\notification::NOTIFY_WARNING);
     }
@@ -120,5 +101,5 @@ if ($data = $form->get_data()) {
 
 echo $OUTPUT->header();
 echo $OUTPUT->heading(get_string('import', 'mod_mudeck'));
-$form->display();
+echo $form->render($OUTPUT);
 echo $OUTPUT->footer();

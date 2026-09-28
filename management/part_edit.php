@@ -27,8 +27,8 @@
 use core\url;
 use mod_mudeck\local\media;
 use mod_mudeck\local\part;
-use mod_mudeck\local\theme;
 use mod_mudeck\local\form\part_edit;
+use tool_mulib\muform\util\file_area;
 
 // phpcs:disable moodle.Commenting.InlineComment.TypeHintingMatch
 /** @var stdClass $CFG */
@@ -39,11 +39,12 @@ use mod_mudeck\local\form\part_edit;
 
 require(__DIR__ . '/../../../config.php');
 
-require_once($CFG->libdir . '/formslib.php');
-
 $cmid = required_param('cmid', PARAM_INT);
 $partid = optional_param('partid', 0, PARAM_INT);
 $returnto = optional_param('returnto', '', PARAM_ALPHA);
+// Caret position restored after save and continue.
+$caretstart = optional_param('caretstart', 0, PARAM_INT);
+$caretend = optional_param('caretend', 0, PARAM_INT);
 
 $cm = get_coursemodule_from_id('mudeck', $cmid, 0, false, MUST_EXIST);
 $course = $DB->get_record('course', ['id' => $cm->course], '*', MUST_EXIST);
@@ -74,9 +75,16 @@ $existing = null;
 if ($partid) {
     $existing = $DB->get_record('mudeck_part', ['id' => $partid, 'mudeckid' => $mudeck->id], '*', MUST_EXIST);
 }
-$options = media::get_filemanager_options();
 
-$form = new part_edit($currenturl->out(false));
+$currentdata = [
+    'name' => $existing->name ?? get_string('part_new', 'mod_mudeck', count(part::get_all($mudeck->id)) + 1),
+    'content' => $existing->content ?? get_string('part_starter', 'mod_mudeck'),
+    'attachments' => new file_area($context, 'mod_mudeck', media::FILEAREA, $existing->id ?? null),
+    'caretstart' => $caretstart,
+    'caretend' => $caretend,
+];
+$form = new part_edit($currenturl, $currentdata, ['mudeck' => $mudeck]);
+
 if ($form->is_cancelled()) {
     redirect($viewurl);
 }
@@ -87,81 +95,21 @@ if ($data = $form->get_data()) {
     // A brand new part has to exist before its files can be attached to it,
     // because the file area is keyed by the part id.
     $partid = part::save($mudeck, $existing, $data->name, $content);
-    file_save_draft_area_files(
-        $data->attachments,
-        $context->id,
-        'mod_mudeck',
-        media::FILEAREA,
-        $partid,
-        $options
-    );
-    if (empty($data->saveandcontinue)) {
+    $form->get_element('attachments')->export_to_file_area(new file_area($context, 'mod_mudeck', media::FILEAREA, $partid));
+    if (!$form->get_element('saveandcontinue')->get_value()) {
         redirect($viewurl, get_string('part_saved', 'mod_mudeck'), null, \core\output\notification::NOTIFY_SUCCESS);
     }
-
-    // Just save, do not redirt.
-    \core\notification::success(get_string('part_saved', 'mod_mudeck'));
-    $existing = $DB->get_record('mudeck_part', ['id' => $partid], '*', MUST_EXIST);
-    // A part created just now has an id, and everything from here on belongs to it.
+    // Continue editing the saved part, a created part has an id from now on.
     $currenturl->param('partid', $partid);
-    $PAGE->set_url($currenturl);
-    $form = new part_edit($currenturl->out(false));
+    $currenturl->param('caretstart', $data->caretstart);
+    $currenturl->param('caretend', $data->caretend);
+    redirect($currenturl, get_string('part_saved', 'mod_mudeck'), null, \core\output\notification::NOTIFY_SUCCESS);
 }
-
-$draftitemid = file_get_submitted_draft_itemid('attachments');
-file_prepare_draft_area(
-    $draftitemid,
-    $context->id,
-    'mod_mudeck',
-    media::FILEAREA,
-    $existing->id ?? null,
-    $options
-);
-
-$form->set_data([
-    'id' => $existing->id ?? 0,
-    'name' => $existing->name ?? get_string('part_new', 'mod_mudeck', count(part::get_all($mudeck->id)) + 1),
-    'content' => $existing->content ?? get_string('part_starter', 'mod_mudeck'),
-    'attachments' => $draftitemid,
-    'caretstart' => 0,
-    'caretend' => 0,
-]);
 
 echo $OUTPUT->header();
 
-// The form is rendered as usual and stays the only copy of the text; the editor arranges
-// the page around it and draws the preview beside it.
-ob_start();
-$form->display();
-$formhtml = ob_get_clean();
-
 echo $OUTPUT->render_from_template('mod_mudeck/editor', [
-    'form' => $formhtml,
-    'themecssjson' => json_encode(theme::get_custom_css(new url('/mod/mudeck'))),
-    'themejson' => json_encode(theme::resolve($mudeck->theme)),
-    // The pictures worth offering are the ones in the form, uploads included, which is
-    // the draft area rather than the part.
-    'imagesurljson' => json_encode(
-        url::routed_path("/api/rest/v2/mod_mudeck/part/edit/{$draftitemid}/images")->out(false)
-    ),
-    // The preview reads the pictures from the same place, so an upload shows in the
-    // slides before the part has been saved anywhere.
-    'mediabasejson' => json_encode(url::make_draftfile_url($draftitemid, '/', '')->out(false)),
-    'labelsjson' => json_encode([
-        'preview' => get_string('editor_preview', 'mod_mudeck'),
-        'slide' => get_string('editor_slide', 'mod_mudeck', '{$a}'),
-        'markdownhelp' => get_string('part_content', 'mod_mudeck'),
-        'mediahelp' => get_string('part_media', 'mod_mudeck'),
-        'media' => get_string('part_media', 'mod_mudeck'),
-        'mediaintro' => get_string('media_intro', 'mod_mudeck'),
-        'help' => get_string('editor_help', 'mod_mudeck'),
-        'fullscreen' => get_string('slide_fullscreen', 'mod_mudeck'),
-    ]),
-    // Help that stays open and can be copied from, which a popover cannot do.
-    'helpjson' => json_encode([
-        'markdown' => markdown_to_html(get_string('help_markdown', 'mod_mudeck')),
-        'media' => markdown_to_html(get_string('help_media', 'mod_mudeck')),
-    ]),
+    'formhtml' => $form->render($OUTPUT),
 ]);
 
 echo $OUTPUT->footer();

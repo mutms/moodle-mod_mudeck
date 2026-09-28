@@ -13,7 +13,8 @@
   "license": "GPL-3.0-or-later",
   "require": {
     "moodle/composer-installer": "*",
-    "moodle/moodle": "5.3.*"
+    "moodle/moodle": "5.3.*",
+    "mutms/moodle-tool_mulib": "*"
   },
   "support": {
     "issues": "https://github.com/mutms/moodle-mod_mudeck/issues",

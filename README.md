@@ -96,7 +96,7 @@ from your computer.
 
 ## Requirements
 
-Moodle 5.3 or later. No other plugins.
+Moodle 5.3 or later and the MuTMS shared library `tool_mulib`.
 
 ## Credits
 

@@ -21,6 +21,7 @@ namespace mod_mudeck\route\api;
 use core\param;
 use core\router\require_login;
 use core\router\route;
+use core\router\scope\unscoped_resource;
 use core\router\schema\objects\scalar_type;
 use core\router\schema\objects\schema_object;
 use core\router\schema\parameters\path_parameter;
@@ -68,11 +69,17 @@ class part_move {
         ),
         requirelogin: new require_login(requirelogin: true, autologinguest: false),
     )]
+    #[unscoped_resource]
     public function move(
         ServerRequestInterface $request,
         ResponseInterface $response,
         int $partid,
     ): payload_response {
+        // Browser only endpoint, requests authenticated with OAuth2 tokens or API keys have no session.
+        if (!\core\session\manager::is_session_active() && !(defined('PHPUNIT_TEST') && PHPUNIT_TEST)) {
+            throw new \core\exception\access_denied_exception('accessdenied', 'admin');
+        }
+
         \core\router\util::require_sesskey($request);
 
         ['part' => $part, 'mudeck' => $mudeck, 'cm' => $cm, 'context' => $context, 'course' => $course]

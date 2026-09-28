@@ -580,8 +580,8 @@ html[data-mudeck-transition="slide"][data-mudeck-direction="back"]::view-transit
 .mudeck-editor {
     padding: 0 1rem 1rem;
 
-    /* Make room only once the preview has mounted. */
-    &:has(.mudeck-editor-preview) .mudeck-editor-form {
+    /* Room for the preview fixed on the right. */
+    .mudeck-editor-form {
         width: calc(100% - var(--mudeck-split, 40%) - 2rem);
     }
 
@@ -590,8 +590,8 @@ html[data-mudeck-transition="slide"][data-mudeck-direction="back"]::view-transit
         display: none;
     }
 
-    /* Sticky form buttons. */
-    #fgroup_id_buttonar {
+    /* Sticky form buttons, cancel on the far side. */
+    .mudeck-editor-form [data-muform-name="buttons"] {
         position: sticky;
         bottom: 0;
         z-index: 3;
@@ -599,14 +599,18 @@ html[data-mudeck-transition="slide"][data-mudeck-direction="back"]::view-transit
         padding: 0.75rem 0;
         background: var(--bs-body-bg, #fff);
         border-top: 1px solid var(--bs-border-color, #dee2e6);
+
+        [data-muform-role="cancel"] {
+            margin-inline-start: auto;
+        }
     }
 
-    #id_name {
+    [data-muform-name="name"] input {
         max-width: 28rem;
     }
 
     /* editor.js sets the height; white background like the file manager. */
-    #id_content {
+    [data-muform-name="content"] textarea {
         min-height: 12rem;
         font-family: var(--bs-font-monospace, monospace);
         background-color: light-dark(#fff, var(--bs-body-bg, #1d2125));
@@ -814,7 +818,7 @@ html[data-mudeck-transition="slide"][data-mudeck-direction="back"]::view-transit
     }
 
     /* The tab is the heading; hide the form label visually only. */
-    #fitem_id_attachments > .col-md-3 {
+    [data-muform-name="attachments"] > .col-md-3 {
         position: absolute;
         width: 1px;
         height: 1px;
@@ -827,7 +831,7 @@ html[data-mudeck-transition="slide"][data-mudeck-direction="back"]::view-transit
         min-height: 22rem;
     }
 
-    #fitem_id_attachments > .col-md-9 {
+    [data-muform-name="attachments"] > .col-md-9 {
         flex: 1 1 auto;
         width: auto;
         max-width: none;

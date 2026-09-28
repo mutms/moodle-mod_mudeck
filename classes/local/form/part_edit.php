@@ -26,77 +26,56 @@
 
 namespace mod_mudeck\local\form;
 
+use core\param;
 use mod_mudeck\local\media;
+use mod_mudeck\muform\element\partcontainer;
+use tool_mulib\muform\element\buttons;
+use tool_mulib\muform\element\cancel;
+use tool_mulib\muform\element\filemanager;
+use tool_mulib\muform\element\hidden;
+use tool_mulib\muform\element\submit;
+use tool_mulib\muform\element\text;
+use tool_mulib\muform\element\textarea;
+use tool_mulib\muform\form;
 
 /**
  * Edit the Markdown of one part with preview of the right.
  */
-final class part_edit extends \moodleform {
+final class part_edit extends form {
     #[\Override]
-    protected function definition() {
-        $mform = $this->_form;
+    protected function definition(): void {
+        $mudeck = $this->get_extra_data()['mudeck'];
 
-        $mform->addElement('hidden', 'id');
-        $mform->setType('id', PARAM_INT);
+        $this->add(new partcontainer('part', $mudeck));
 
         // Position of cursor before save, so that it can be restored
         // when continuing editing after save.
-        $mform->addElement('hidden', 'caretstart');
-        $mform->setType('caretstart', PARAM_INT);
-        $mform->addElement('hidden', 'caretend');
-        $mform->setType('caretend', PARAM_INT);
+        $this->add(new hidden('caretstart', param::INT), 'part');
+        $this->add(new hidden('caretend', param::INT), 'part');
 
-        $mform->addElement('text', 'name', get_string('part_name', 'mod_mudeck'), ['size' => '48', 'maxlength' => '255']);
-        $mform->setType('name', PARAM_TEXT);
-        $mform->addRule('name', null, 'required', null, 'client');
-        $mform->addRule('name', get_string('maximumchars', '', 255), 'maxlength', 255, 'client');
+        $name = new text('name', get_string('part_name', 'mod_mudeck'), ['maxlength' => 255]);
+        $name->set_required(true);
+        $this->add($name, 'part');
 
-        $mform->addElement(
-            'textarea',
-            'content',
-            get_string('part_content', 'mod_mudeck'),
-            ['rows' => 25, 'cols' => 80, 'spellcheck' => 'true']
-        );
-        $mform->setType('content', PARAM_RAW);
-        $mform->addHelpButton('content', 'part_content', 'mod_mudeck');
+        $content = new textarea('content', get_string('part_content', 'mod_mudeck'), ['type' => 'rawtext', 'rows' => 25]);
+        $content->add_help_button('part_content', 'mod_mudeck');
+        $this->add($content, 'part');
 
-        $mform->addElement(
-            'filemanager',
-            'attachments',
-            get_string('part_media', 'mod_mudeck'),
-            null,
-            media::get_filemanager_options()
-        );
+        $options = media::get_filemanager_options();
+        $attachments = new filemanager('attachments', get_string('part_media', 'mod_mudeck'), $options['maxfiles'], null, true);
+        $this->add($attachments, 'part');
 
-        $buttons = [
-            $mform->createElement(
-                'submit',
-                'saveandclose',
-                get_string('part_save_close', 'mod_mudeck'),
-                null,
-                false
-            ),
-            $mform->createElement(
-                'submit',
-                'saveandcontinue',
-                get_string('part_save_continue', 'mod_mudeck')
-            ),
-            // Empty on purpose: this just makes the button groups separate.
-            $mform->createElement('static', 'buttongap', '', '<span class="flex-fill"></span>'),
-            $mform->createElement('cancel'),
-        ];
-        $mform->addGroup($buttons, 'buttonar', '', ' ', false);
+        $this->add(new buttons('buttons'), 'part');
+        $this->add(new submit('saveandclose', get_string('part_save_close', 'mod_mudeck')), 'buttons');
+        $this->add(new submit('saveandcontinue', get_string('part_save_continue', 'mod_mudeck')), 'buttons');
+        $this->add(new cancel(), 'buttons');
     }
 
     #[\Override]
-    public function validation($data, $files) {
-        $errors = parent::validation($data, $files);
-
+    protected function validation(array $data, array &$allerrors): void {
         $missing = media::find_missing_draft($data['content'], (int)$data['attachments']);
         if ($missing) {
-            $errors['attachments'] = get_string('part_media_missing', 'mod_mudeck', implode(', ', $missing));
+            $allerrors['attachments'][] = get_string('part_media_missing', 'mod_mudeck', implode(', ', $missing));
         }
-
-        return $errors;
     }
 }

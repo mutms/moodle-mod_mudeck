@@ -1,0 +1,79 @@
+{{!
+    This file is part of MuTMS suite of plugins for Moodle™ LMS.
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+}}
+{{!
+    @template mod_mudeck/muform/element/partcontainer
+
+    Part editor layout: form fields on the left, slide preview, media and help on the right.
+
+    Context variables required for this template:
+    * name - element name
+    * type - element type, short class name
+    * component - component defining the element
+    * id - html id
+    * configjson - JSON encoded preview settings, read by the element module
+    * helpmarkdownhtml - rendered Markdown help
+    * helpmediahtml - rendered media help
+    * elements_byname - rendered children indexed by name: caretstart, caretend, name, content, buttons, attachments
+
+    Example context (json):
+    {
+        "name": "part", "type": "partcontainer", "component": "mod_mudeck", "id": "id_part",
+        "configjson": "{}",
+        "helpmarkdownhtml": "<p>Markdown</p>",
+        "helpmediahtml": "<p>Media</p>",
+        "elements_byname": {"name": {"name": "name", "html": "<div>...</div>"} }
+    }
+}}
+<div id="fitem_{{id}}" class="mudeck-editor-part" data-muform-element="{{type}}" data-muform-component="{{component}}" data-muform-name="{{name}}" data-mudeck-editor="{{configjson}}">
+    <div class="mudeck-editor-form">
+        {{#elements_byname.caretstart}}{{{html}}}{{/elements_byname.caretstart}}
+        {{#elements_byname.caretend}}{{{html}}}{{/elements_byname.caretend}}
+        {{#elements_byname.name}}{{{html}}}{{/elements_byname.name}}
+        {{#elements_byname.content}}{{{html}}}{{/elements_byname.content}}
+        {{#elements_byname.buttons}}{{{html}}}{{/elements_byname.buttons}}
+    </div>
+
+    <div class="mudeck-editor-preview" data-region="mudeck-editor-preview">
+        <ul class="nav nav-underline mudeck-editor-tabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button type="button" role="tab" class="nav-link active" aria-selected="true" data-mudeck-tab="preview">{{#str}}editor_preview, mod_mudeck{{/str}}</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button type="button" role="tab" class="nav-link" aria-selected="false" data-mudeck-tab="media">{{#str}}part_media, mod_mudeck{{/str}}</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button type="button" role="tab" class="nav-link" aria-selected="false" data-mudeck-tab="help">{{#str}}editor_help, mod_mudeck{{/str}}</button>
+            </li>
+        </ul>
+
+        <div class="mudeck-editor-pane" role="tabpanel" data-mudeck-pane="preview">
+            <div data-region="mudeck-editor-slides"></div>
+        </div>
+
+        <div class="mudeck-editor-pane" role="tabpanel" data-mudeck-pane="media" hidden>
+            {{#elements_byname.attachments}}{{{html}}}{{/elements_byname.attachments}}
+            <p class="text-muted mudeck-editor-intro">{{#str}}media_intro, mod_mudeck{{/str}}</p>
+        </div>
+
+        <div class="mudeck-editor-pane" role="tabpanel" data-mudeck-pane="help" hidden>
+            <h2 class="mudeck-editor-heading">{{#str}}part_content, mod_mudeck{{/str}}</h2>
+            {{{helpmarkdownhtml}}}
+            <h2 class="mudeck-editor-heading">{{#str}}part_media, mod_mudeck{{/str}}</h2>
+            {{{helpmediahtml}}}
+        </div>
+    </div>
+</div>

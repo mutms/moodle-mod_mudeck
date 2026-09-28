@@ -2,7 +2,9 @@ var __defProp = Object.defineProperty;
 var __name = (target, value) => __defProp(target, "name", { value, configurable: true });
 import { Fragment, jsxDEV } from "react/jsx-dev-runtime";
 /**
- * Live slide preview beside the server-rendered edit form, whose textarea remains the only copy of the text.
+ * Live slide preview beside the part form, whose textarea remains the only copy of the text.
+ *
+ * Mounted by the partcontainer form element, which hands over the form fields it lays out.
  *
  * @module     mod_mudeck/editor
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -102,9 +104,8 @@ function write(textarea, from, to, text, caret) {
   textarea.setSelectionRange(caret, caret);
 }
 __name(write, "write");
-function Editor({ themecss, theme, labels, help, imagesurl, mediabase }) {
+function Editor({ themecss, theme, labels, imagesurl, mediabase, textarea, caretstart, caretend, mediapane }) {
   const stripref = useRef(null);
-  const mediaref = useRef(null);
   const menuref = useRef(null);
   const [split, setSplit] = useState(() => {
     try {
@@ -113,7 +114,6 @@ function Editor({ themecss, theme, labels, help, imagesurl, mediabase }) {
       return 40;
     }
   });
-  const [tab, setTab] = useState("preview");
   const [slides, setSlides] = useState([]);
   const [css, setCss] = useState("");
   const [current, setCurrent] = useState(0);
@@ -130,8 +130,8 @@ function Editor({ themecss, theme, labels, help, imagesurl, mediabase }) {
       files.current = [];
     }
   }, [imagesurl]);
-  const offer = useCallback((textarea, open) => {
-    const spot = offering(textarea);
+  const offer = useCallback((textarea2, open) => {
+    const spot = offering(textarea2);
     if (!spot) {
       dismissed.current = false;
       setMenu(null);
@@ -141,7 +141,7 @@ function Editor({ themecss, theme, labels, help, imagesurl, mediabase }) {
       return;
     }
     dismissed.current = false;
-    const point = caretPoint(textarea, textarea.selectionStart ?? 0);
+    const point = caretPoint(textarea2, textarea2.selectionStart ?? 0);
     const items = files.current;
     setMenu((was) => {
       if (!was) {
@@ -151,9 +151,8 @@ function Editor({ themecss, theme, labels, help, imagesurl, mediabase }) {
     });
   }, []);
   const choose = useCallback((name) => {
-    const textarea = document.querySelector("#id_content");
-    const spot = textarea ? offering(textarea) : null;
-    if (!textarea || !spot) {
+    const spot = offering(textarea);
+    if (!spot) {
       return;
     }
     const at = textarea.selectionStart ?? 0;
@@ -166,11 +165,11 @@ function Editor({ themecss, theme, labels, help, imagesurl, mediabase }) {
     const text = `](${name})`;
     write(textarea, at, at, text, spot.alt === "" ? at : at + text.length);
     setMenu(null);
-  }, []);
+  }, [textarea]);
   const drawing = useRef(0);
-  const redraw = useCallback(async (textarea) => {
-    const text = textarea.value;
-    const marked = withMarker(text, textarea.selectionStart ?? 0);
+  const redraw = useCallback(async (textarea2) => {
+    const text = textarea2.value;
+    const marked = withMarker(text, textarea2.selectionStart ?? 0);
     const turn = ++drawing.current;
     let result;
     try {
@@ -203,41 +202,29 @@ function Editor({ themecss, theme, labels, help, imagesurl, mediabase }) {
     }
   }, [theme, themecss, mediabase]);
   useEffect(() => {
-    const textarea = document.querySelector("#id_content");
-    const form = textarea?.closest("form");
-    if (!textarea || !form) {
+    const form = textarea.form;
+    if (!form) {
       return void 0;
     }
-    const start = form.elements.namedItem("caretstart");
-    const end = form.elements.namedItem("caretend");
     const remember = /* @__PURE__ */ __name(() => {
-      if (start && end) {
-        start.value = String(textarea.selectionStart ?? 0);
-        end.value = String(textarea.selectionEnd ?? 0);
+      if (caretstart && caretend) {
+        caretstart.value = String(textarea.selectionStart ?? 0);
+        caretend.value = String(textarea.selectionEnd ?? 0);
       }
     }, "remember");
     form.addEventListener("submit", remember);
     return () => form.removeEventListener("submit", remember);
-  }, []);
+  }, [textarea, caretstart, caretend]);
   useEffect(() => {
-    const textarea = document.querySelector("#id_content");
-    const form = textarea?.closest("form");
-    if (!textarea || !form) {
-      return void 0;
-    }
-    const from = Number(form.elements.namedItem("caretstart")?.value ?? 0);
-    const to = Number(form.elements.namedItem("caretend")?.value ?? 0);
+    const from = Number(caretstart?.value ?? 0);
+    const to = Number(caretend?.value ?? 0);
     if (!to) {
       return void 0;
     }
     showCaret(textarea, from, to);
     return void 0;
-  }, []);
+  }, [textarea, caretstart, caretend]);
   useEffect(() => {
-    const textarea = document.querySelector("#id_content");
-    if (!textarea) {
-      return void 0;
-    }
     const editor = textarea.closest(".mudeck-editor");
     const fit = /* @__PURE__ */ __name(() => {
       const bottom = (editor ?? textarea).getBoundingClientRect().bottom + window.scrollY;
@@ -252,12 +239,8 @@ function Editor({ themecss, theme, labels, help, imagesurl, mediabase }) {
       window.cancelAnimationFrame(settled);
       window.removeEventListener("resize", fit);
     };
-  }, []);
+  }, [textarea]);
   useEffect(() => {
-    const textarea = document.querySelector("#id_content");
-    if (!textarea) {
-      return void 0;
-    }
     let timer;
     const later = /* @__PURE__ */ __name(() => {
       window.clearTimeout(timer);
@@ -270,12 +253,8 @@ function Editor({ themecss, theme, labels, help, imagesurl, mediabase }) {
       events.forEach((name) => textarea.removeEventListener(name, later));
       window.clearTimeout(timer);
     };
-  }, [redraw]);
+  }, [redraw, textarea]);
   useEffect(() => {
-    const textarea = document.querySelector("#id_content");
-    if (!textarea) {
-      return void 0;
-    }
     const onkey = /* @__PURE__ */ __name((event) => {
       const last = menu ? menu.items.length - 1 : -1;
       if (event.key === "ArrowDown") {
@@ -320,7 +299,7 @@ function Editor({ themecss, theme, labels, help, imagesurl, mediabase }) {
       window.removeEventListener("resize", close);
       document.removeEventListener("pointerdown", away);
     };
-  }, [menu, pick, offer, choose]);
+  }, [menu, pick, offer, choose, textarea]);
   useEffect(() => {
     menuref.current?.querySelector('[aria-selected="true"]')?.scrollIntoView({ block: "nearest" });
   }, [pick, menu]);
@@ -346,7 +325,7 @@ function Editor({ themecss, theme, labels, help, imagesurl, mediabase }) {
     const watcher = new ResizeObserver(fit);
     watcher.observe(strip);
     return () => watcher.disconnect();
-  }, [slides, tab]);
+  }, [slides]);
   useEffect(() => {
     let fade;
     let clear;
@@ -383,30 +362,6 @@ function Editor({ themecss, theme, labels, help, imagesurl, mediabase }) {
     };
   }, []);
   useEffect(() => {
-    const holder = mediaref.current;
-    const field = document.querySelector("#fitem_id_attachments");
-    if (!holder || !field) {
-      return void 0;
-    }
-    const home = field.parentElement;
-    const next = field.nextElementSibling;
-    const form = field.closest("form");
-    holder.appendChild(field);
-    const formid = form?.getAttribute("id");
-    if (formid) {
-      field.querySelectorAll("input, select, textarea").forEach((input) => {
-        input.setAttribute("form", formid);
-      });
-    }
-    return () => {
-      if (next) {
-        home?.insertBefore(field, next);
-      } else {
-        home?.appendChild(field);
-      }
-    };
-  }, []);
-  useEffect(() => {
     const watch = /* @__PURE__ */ __name(() => setFull(document.fullscreenElement !== null), "watch");
     watch();
     document.addEventListener("fullscreenchange", watch);
@@ -425,7 +380,7 @@ function Editor({ themecss, theme, labels, help, imagesurl, mediabase }) {
   }, "toggleFull");
   useEffect(() => {
     void load();
-    const holder = mediaref.current;
+    const holder = mediapane;
     if (!holder) {
       return void 0;
     }
@@ -440,15 +395,11 @@ function Editor({ themecss, theme, labels, help, imagesurl, mediabase }) {
       watcher.disconnect();
       window.clearTimeout(timer);
     };
-  }, [load]);
+  }, [load, mediapane]);
   useEffect(() => {
     stripref.current?.querySelector(`[data-slide="${current}"]`)?.scrollIntoView({ block: "center", behavior: "smooth" });
   }, [current, slides]);
   const goToSlide = /* @__PURE__ */ __name((index) => {
-    const textarea = document.querySelector("#id_content");
-    if (!textarea) {
-      return;
-    }
     const at = slideEnd(textarea.value, index + 1);
     showCaret(textarea, at, at);
     redraw(textarea);
@@ -477,12 +428,12 @@ function Editor({ themecss, theme, labels, help, imagesurl, mediabase }) {
       children: [
         /* @__PURE__ */ jsxDEV("i", { className: `fa fa-${full ? "compress" : "expand"}`, "aria-hidden": "true" }, void 0, false, {
           fileName: "public/mod/mudeck/js/esm/src/editor.tsx",
-          lineNumber: 677,
+          lineNumber: 617,
           columnNumber: 13
         }, this),
         /* @__PURE__ */ jsxDEV("span", { className: "visually-hidden", children: labels.fullscreen }, void 0, false, {
           fileName: "public/mod/mudeck/js/esm/src/editor.tsx",
-          lineNumber: 678,
+          lineNumber: 618,
           columnNumber: 13
         }, this)
       ]
@@ -491,7 +442,7 @@ function Editor({ themecss, theme, labels, help, imagesurl, mediabase }) {
     true,
     {
       fileName: "public/mod/mudeck/js/esm/src/editor.tsx",
-      lineNumber: 670,
+      lineNumber: 610,
       columnNumber: 9
     },
     this
@@ -520,7 +471,7 @@ function Editor({ themecss, theme, labels, help, imagesurl, mediabase }) {
       false,
       {
         fileName: "public/mod/mudeck/js/esm/src/editor.tsx",
-        lineNumber: 686,
+        lineNumber: 626,
         columnNumber: 13
       },
       this
@@ -548,7 +499,7 @@ function Editor({ themecss, theme, labels, help, imagesurl, mediabase }) {
           false,
           {
             fileName: "public/mod/mudeck/js/esm/src/editor.tsx",
-            lineNumber: 713,
+            lineNumber: 653,
             columnNumber: 25
           },
           this
@@ -558,156 +509,73 @@ function Editor({ themecss, theme, labels, help, imagesurl, mediabase }) {
       false,
       {
         fileName: "public/mod/mudeck/js/esm/src/editor.tsx",
-        lineNumber: 704,
+        lineNumber: 644,
         columnNumber: 17
       },
       this
     ),
-    /* @__PURE__ */ jsxDEV("div", { className: "mudeck-editor-preview", "data-region": "mudeck-editor-preview", children: [
-      /* @__PURE__ */ jsxDEV("style", { children: css }, void 0, false, {
-        fileName: "public/mod/mudeck/js/esm/src/editor.tsx",
-        lineNumber: 729,
-        columnNumber: 13
-      }, this),
-      /* @__PURE__ */ jsxDEV("ul", { className: "nav nav-underline mudeck-editor-tabs", role: "tablist", children: [
-        ["preview", labels.preview],
-        ["media", labels.media],
-        ["help", labels.help]
-      ].map(([name, label]) => /* @__PURE__ */ jsxDEV("li", { className: "nav-item", role: "presentation", children: /* @__PURE__ */ jsxDEV(
-        "button",
-        {
-          type: "button",
-          role: "tab",
-          "aria-selected": tab === name,
-          className: `nav-link${tab === name ? " active" : ""}`,
-          onClick: () => setTab(name),
-          children: label
-        },
-        void 0,
-        false,
-        {
-          fileName: "public/mod/mudeck/js/esm/src/editor.tsx",
-          lineNumber: 738,
-          columnNumber: 25
-        },
-        this
-      ) }, name, false, {
-        fileName: "public/mod/mudeck/js/esm/src/editor.tsx",
-        lineNumber: 737,
-        columnNumber: 21
-      }, this)) }, void 0, false, {
-        fileName: "public/mod/mudeck/js/esm/src/editor.tsx",
-        lineNumber: 731,
-        columnNumber: 13
-      }, this),
-      /* @__PURE__ */ jsxDEV("div", { className: "mudeck-editor-pane", hidden: tab !== "preview", children: /* @__PURE__ */ jsxDEV("ol", { className: "mudeck-editor-strip", ref: stripref, children: slides.map((slide, index) => /* @__PURE__ */ jsxDEV(
-        "li",
-        {
-          "data-slide": index,
-          className: `mudeck-editor-slide${index === current ? " mudeck-editor-slide-current" : ""}`,
-          "aria-current": index === current,
-          children: [
-            /* @__PURE__ */ jsxDEV("div", { className: "mudeck-editor-slide-box marpit", dangerouslySetInnerHTML: { __html: slide } }, void 0, false, {
-              fileName: "public/mod/mudeck/js/esm/src/editor.tsx",
-              lineNumber: 761,
-              columnNumber: 29
-            }, this),
-            /* @__PURE__ */ jsxDEV(
-              "button",
-              {
-                type: "button",
-                className: "mudeck-editor-slide-jump",
-                title: labels.slide.replace("{$a}", String(index + 1)),
-                onClick: () => goToSlide(index),
-                children: /* @__PURE__ */ jsxDEV("span", { className: "visually-hidden", children: labels.slide.replace("{$a}", String(index + 1)) }, void 0, false, {
-                  fileName: "public/mod/mudeck/js/esm/src/editor.tsx",
-                  lineNumber: 768,
-                  columnNumber: 33
-                }, this)
-              },
-              void 0,
-              false,
-              {
-                fileName: "public/mod/mudeck/js/esm/src/editor.tsx",
-                lineNumber: 762,
-                columnNumber: 29
-              },
-              this
-            ),
-            /* @__PURE__ */ jsxDEV("span", { className: "mudeck-editor-number", children: labels.slide.replace("{$a}", String(index + 1)) }, void 0, false, {
-              fileName: "public/mod/mudeck/js/esm/src/editor.tsx",
-              lineNumber: 772,
-              columnNumber: 29
-            }, this)
-          ]
-        },
-        index,
-        true,
-        {
-          fileName: "public/mod/mudeck/js/esm/src/editor.tsx",
-          lineNumber: 754,
-          columnNumber: 25
-        },
-        this
-      )) }, void 0, false, {
-        fileName: "public/mod/mudeck/js/esm/src/editor.tsx",
-        lineNumber: 752,
-        columnNumber: 17
-      }, this) }, void 0, false, {
-        fileName: "public/mod/mudeck/js/esm/src/editor.tsx",
-        lineNumber: 751,
-        columnNumber: 13
-      }, this),
-      /* @__PURE__ */ jsxDEV("div", { className: "mudeck-editor-pane", hidden: tab !== "media", children: [
-        /* @__PURE__ */ jsxDEV("div", { ref: mediaref }, void 0, false, {
-          fileName: "public/mod/mudeck/js/esm/src/editor.tsx",
-          lineNumber: 781,
-          columnNumber: 17
-        }, this),
-        /* @__PURE__ */ jsxDEV("p", { className: "text-muted mudeck-editor-intro", children: labels.mediaintro }, void 0, false, {
-          fileName: "public/mod/mudeck/js/esm/src/editor.tsx",
-          lineNumber: 782,
-          columnNumber: 17
-        }, this)
-      ] }, void 0, true, {
-        fileName: "public/mod/mudeck/js/esm/src/editor.tsx",
-        lineNumber: 780,
-        columnNumber: 13
-      }, this),
-      /* @__PURE__ */ jsxDEV("div", { className: "mudeck-editor-pane", hidden: tab !== "help", children: [
-        /* @__PURE__ */ jsxDEV("h2", { className: "mudeck-editor-heading", children: labels.markdownhelp }, void 0, false, {
-          fileName: "public/mod/mudeck/js/esm/src/editor.tsx",
-          lineNumber: 786,
-          columnNumber: 17
-        }, this),
-        /* @__PURE__ */ jsxDEV("div", { dangerouslySetInnerHTML: { __html: help?.markdown ?? "" } }, void 0, false, {
-          fileName: "public/mod/mudeck/js/esm/src/editor.tsx",
-          lineNumber: 787,
-          columnNumber: 17
-        }, this),
-        /* @__PURE__ */ jsxDEV("h2", { className: "mudeck-editor-heading", children: labels.mediahelp }, void 0, false, {
-          fileName: "public/mod/mudeck/js/esm/src/editor.tsx",
-          lineNumber: 788,
-          columnNumber: 17
-        }, this),
-        /* @__PURE__ */ jsxDEV("div", { dangerouslySetInnerHTML: { __html: help?.media ?? "" } }, void 0, false, {
-          fileName: "public/mod/mudeck/js/esm/src/editor.tsx",
-          lineNumber: 789,
-          columnNumber: 17
-        }, this)
-      ] }, void 0, true, {
-        fileName: "public/mod/mudeck/js/esm/src/editor.tsx",
-        lineNumber: 785,
-        columnNumber: 13
-      }, this)
-    ] }, void 0, true, {
+    /* @__PURE__ */ jsxDEV("style", { children: css }, void 0, false, {
       fileName: "public/mod/mudeck/js/esm/src/editor.tsx",
-      lineNumber: 728,
-      columnNumber: 9
+      lineNumber: 668,
+      columnNumber: 13
+    }, this),
+    /* @__PURE__ */ jsxDEV("ol", { className: "mudeck-editor-strip", ref: stripref, children: slides.map((slide, index) => /* @__PURE__ */ jsxDEV(
+      "li",
+      {
+        "data-slide": index,
+        className: `mudeck-editor-slide${index === current ? " mudeck-editor-slide-current" : ""}`,
+        "aria-current": index === current,
+        children: [
+          /* @__PURE__ */ jsxDEV("div", { className: "mudeck-editor-slide-box marpit", dangerouslySetInnerHTML: { __html: slide } }, void 0, false, {
+            fileName: "public/mod/mudeck/js/esm/src/editor.tsx",
+            lineNumber: 679,
+            columnNumber: 25
+          }, this),
+          /* @__PURE__ */ jsxDEV(
+            "button",
+            {
+              type: "button",
+              className: "mudeck-editor-slide-jump",
+              title: labels.slide.replace("{$a}", String(index + 1)),
+              onClick: () => goToSlide(index),
+              children: /* @__PURE__ */ jsxDEV("span", { className: "visually-hidden", children: labels.slide.replace("{$a}", String(index + 1)) }, void 0, false, {
+                fileName: "public/mod/mudeck/js/esm/src/editor.tsx",
+                lineNumber: 686,
+                columnNumber: 29
+              }, this)
+            },
+            void 0,
+            false,
+            {
+              fileName: "public/mod/mudeck/js/esm/src/editor.tsx",
+              lineNumber: 680,
+              columnNumber: 25
+            },
+            this
+          ),
+          /* @__PURE__ */ jsxDEV("span", { className: "mudeck-editor-number", children: labels.slide.replace("{$a}", String(index + 1)) }, void 0, false, {
+            fileName: "public/mod/mudeck/js/esm/src/editor.tsx",
+            lineNumber: 690,
+            columnNumber: 25
+          }, this)
+        ]
+      },
+      index,
+      true,
+      {
+        fileName: "public/mod/mudeck/js/esm/src/editor.tsx",
+        lineNumber: 672,
+        columnNumber: 21
+      },
+      this
+    )) }, void 0, false, {
+      fileName: "public/mod/mudeck/js/esm/src/editor.tsx",
+      lineNumber: 670,
+      columnNumber: 13
     }, this)
   ] }, void 0, true, {
     fileName: "public/mod/mudeck/js/esm/src/editor.tsx",
-    lineNumber: 683,
+    lineNumber: 623,
     columnNumber: 9
   }, this);
 }

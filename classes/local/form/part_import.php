@@ -26,26 +26,29 @@
 
 namespace mod_mudeck\local\form;
 
+use tool_mulib\muform\element\buttons;
+use tool_mulib\muform\element\cancel;
+use tool_mulib\muform\element\filemanager;
+use tool_mulib\muform\element\inforawhtml;
+use tool_mulib\muform\element\submit;
+use tool_mulib\muform\form;
+
 /**
  * Upload the slides, as Markdown or as a zip with their pictures.
  */
-final class part_import extends \moodleform {
+final class part_import extends form {
     #[\Override]
-    protected function definition() {
-        $mform = $this->_form;
+    protected function definition(): void {
+        $this->add(new inforawhtml('description', '', get_string('import_intro', 'mod_mudeck')));
 
-        $mform->addElement('static', 'description', '', get_string('import_intro', 'mod_mudeck'));
+        // No accepted types: Moodle has no file type for Markdown, and restricting the
+        // picker to an extension it does not know makes it refuse the upload outright.
+        $archive = new filemanager('archive', get_string('import_file', 'mod_mudeck'), 1);
+        $archive->set_required(true);
+        $this->add($archive);
 
-        $mform->addElement(
-            'filemanager',
-            'archive',
-            get_string('import_file', 'mod_mudeck'),
-            null,
-            // No accepted_types: Moodle has no file type for Markdown, and restricting the
-            // picker to an extension it does not know makes it refuse the upload outright.
-            ['maxfiles' => 1, 'subdirs' => 0]
-        );
-
-        $this->add_action_buttons(true, get_string('import_submit', 'mod_mudeck'));
+        $this->add(new buttons('buttons'));
+        $this->add(new submit('submit', get_string('import_submit', 'mod_mudeck')), 'buttons');
+        $this->add(new cancel(), 'buttons');
     }
 }

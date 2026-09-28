@@ -17,26 +17,14 @@
 {{!
     @template mod_mudeck/editor
 
-    The part editor: the Moodle form with the slides drawn beside it.
+    The part editor page: the title and the form, which lays out the fields, the slides and the media.
 
     Context variables required for this template:
-    * form - the rendered Moodle form, which stays the only copy of the text
-    * themecssjson - JSON encoded CSS of the plugin themes, keyed by name
-    * themejson - JSON encoded theme name of the presentation
-    * imagesurljson - JSON encoded REST url listing the pictures in the form
-    * mediabasejson - JSON encoded url the form's draft files are served from
-    * labelsjson - JSON encoded labels for the preview
-    * helpjson - JSON encoded help texts, already rendered, keyed markdown and media
+    * formhtml - the rendered part form
 
     Example context (json):
     {
-        "form": "<form></form>",
-        "themecssjson": "{}",
-        "themejson": "\"default\"",
-        "imagesurljson": "\"/api/rest/v2/mod_mudeck/part/edit/0/images\"",
-        "mediabasejson": "\"/draftfile.php/5/user/draft/0/\"",
-        "labelsjson": "{}",
-        "helpjson": "{}"
+        "formhtml": "<form></form>"
     }
 }}
 <div class="mudeck-editor">
@@ -47,23 +35,5 @@
         <span class="mudeck-editor-tools" data-region="mudeck-editor-tools"></span>
     </h2>
 
-    <div class="mudeck-editor-form">
-        {{{form}}}
-    </div>
-
-    {{#react}}
-{
-    "component": "@moodle/lms/mod_mudeck/editor",
-    "props": {
-        "themecss": {{{themecssjson}}},
-        "theme": {{{themejson}}},
-        "imagesurl": {{{imagesurljson}}},
-        "mediabase": {{{mediabasejson}}},
-        "labels": {{{labelsjson}}},
-        "help": {{{helpjson}}}
-    },
-    "id": "mudeck-editor",
-    "class": "mudeck-editor-mount"
-}
-    {{/react}}
+    {{{formhtml}}}
 </div>

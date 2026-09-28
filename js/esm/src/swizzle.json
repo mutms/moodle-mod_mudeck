@@ -3,6 +3,10 @@
     "eject": "risky",
     "wrap": "risky"
   },
+  "muform/element/partcontainer": {
+    "eject": "risky",
+    "wrap": "risky"
+  },
   "notes": {
     "eject": "risky",
     "wrap": "risky"

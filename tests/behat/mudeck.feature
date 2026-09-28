@@ -26,8 +26,9 @@ Feature: Markdown slide deck
     And I should not see "Start presentation"
     When I follow "Overview"
     And I follow "Add part"
-    And I set the field "Deck part" to "Opening"
-    And I set the field "Markdown" to "# First slide"
+    And I set the following muform fields:
+      | Deck part | Opening       |
+      | Markdown  | # First slide |
     And I press "Save and close"
     Then I should see "Opening"
     When I am on the "Conference" "mudeck activity" page
@@ -36,12 +37,14 @@ Feature: Markdown slide deck
   Scenario: A teacher manages the parts of a presentation
     Given I am on the "Conference" "mod_mudeck > overview" page logged in as "teacher1"
     When I follow "Add part"
-    And I set the field "Deck part" to "One"
-    And I set the field "Markdown" to "# One"
+    And I set the following muform fields:
+      | Deck part | One   |
+      | Markdown  | # One |
     And I press "Save and close"
     And I follow "Add part"
-    And I set the field "Deck part" to "Two"
-    And I set the field "Markdown" to "# Two"
+    And I set the following muform fields:
+      | Deck part | Two   |
+      | Markdown  | # Two |
     And I press "Save and close"
     Then I should see "One"
     And I should see "Two"
@@ -52,11 +55,13 @@ Feature: Markdown slide deck
   Scenario: Saving without leaving keeps working on the same new part
     Given I am on the "Conference" "mod_mudeck > overview" page logged in as "teacher1"
     When I follow "Add part"
-    And I set the field "Deck part" to "Once"
-    And I set the field "Markdown" to "# Once"
+    And I set the following muform fields:
+      | Deck part | Once   |
+      | Markdown  | # Once |
     And I press "Save and continue"
     Then I should see "Slides saved."
-    When I set the field "Deck part" to "Renamed"
+    When I set the following muform fields:
+      | Deck part | Renamed |
     And I press "Save and close"
     Then I should see "Renamed"
     # The second save has to land in the part the first one made, not in a new one.
@@ -96,7 +101,7 @@ Feature: Markdown slide deck
     Given I log in as "admin"
     And I navigate to "Plugins > Activity modules > Slide themes" in site administration
     And I follow "Add a theme"
-    And I set the following fields to these values:
+    And I set the following muform fields:
       | Name       | Acme corporate           |
       | Short name | acme                     |
       | CSS        | section { color: red; }  |
@@ -138,8 +143,9 @@ Feature: Markdown slide deck
     And "Import" "link" should exist
     # Add part opens the editor straight away and comes back here.
     When I follow "Add part"
-    And I set the field "Deck part" to "Opening"
-    And I set the field "Markdown" to "# First slide"
+    And I set the following muform fields:
+      | Deck part | Opening       |
+      | Markdown  | # First slide |
     And I press "Save and close"
     Then I should see "Slides saved."
     And I should see "Start presentation"
@@ -367,7 +373,7 @@ Feature: Markdown slide deck
   Scenario: A teacher imports slides as a plain Markdown file
     Given I am on the "Conference" "mod_mudeck > overview" page logged in as "teacher1"
     When I follow "Import"
-    And I upload "mod/mudeck/tests/fixtures/imported-deck.md" file to "Markdown or zip" filemanager
+    And I upload "mod/mudeck/tests/fixtures/imported-deck.md" file to "Markdown or zip" muform filemanager
     And I press the escape key
     And I press "Import slides"
     Then I should see "imported-deck"
@@ -424,3 +430,49 @@ Feature: Markdown slide deck
     Then I should see "First slide" in the "[data-region=mudeck-editor-preview]" "css_element"
     And I should see "Slide 2" in the "[data-region=mudeck-editor-preview]" "css_element"
     And "Save and continue" "button" should exist
+
+  Scenario: A site theme short name must be valid and free
+    Given the following "mod_mudeck > themes" exist:
+      | name | shortname | css                     |
+      | Acme | acme      | section { color: red; } |
+    And I log in as "admin"
+    And I navigate to "Plugins > Activity modules > Slide themes" in site administration
+    And I follow "Add a theme"
+    When I set the following muform fields:
+      | Name       | Other |
+      | Short name | gaia  |
+    And I press "Save changes"
+    Then I should see "A theme that comes with the plugin already uses this short name."
+    When I set the following muform fields:
+      | Short name | acme |
+    And I press "Save changes"
+    Then I should see "Another theme already uses this short name."
+    When I set the following muform fields:
+      | Short name | other theme |
+    And I press "Save changes"
+    Then I should see "Use letters, digits, dash and underscore only."
+    When I set the following muform fields:
+      | Short name | other |
+    And I press "Save changes"
+    Then I should see "Other"
+
+  @javascript @_file_upload
+  Scenario: Media uploaded in the editor stay with the part after save and continue
+    Given the following "mod_mudeck > parts" exist:
+      | mudeck     | name    | content       |
+      | Conference | Opening | # First slide |
+    When I am on the "Conference" "mod_mudeck > overview" page logged in as "teacher1"
+    And I follow "Edit slides"
+    Then "[data-muform-name=attachments]" "css_element" should not be visible
+    When I click on "Help" "button" in the "[data-region=mudeck-editor-preview]" "css_element"
+    Then I should see "three dashes" in the "[data-region=mudeck-editor-preview]" "css_element"
+    When I click on "Media" "button" in the "[data-region=mudeck-editor-preview]" "css_element"
+    And I upload "lib/tests/fixtures/gd-logo.png" file to "attachments" muform filemanager
+    And I set the following muform fields:
+      | Markdown | # First slide\n\n![Logo](gd-logo.png) |
+    And I press "Save and continue"
+    Then I should see "Slides saved."
+    And the following muform fields match:
+      | Markdown | # First slide\n\n![Logo](gd-logo.png) |
+    When I click on "Media" "button" in the "[data-region=mudeck-editor-preview]" "css_element"
+    Then I should see "gd-logo.png" in the "[data-muform-name=attachments]" "css_element"
