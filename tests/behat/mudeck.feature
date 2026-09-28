@@ -1,4 +1,4 @@
-@mod @mod_mudeck
+@mod @mod_mudeck @MuTMS
 Feature: Markdown slide deck
   In order to present in Moodle
   As a teacher

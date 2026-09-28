@@ -27,6 +27,7 @@ use mod_mudeck\local\part;
 /**
  * Import test - slides arriving as a Markdown file or as a zip.
  *
+ * @group      MuTMS
  * @package    mod_mudeck
  * @copyright  2026 Petr Skoda
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later

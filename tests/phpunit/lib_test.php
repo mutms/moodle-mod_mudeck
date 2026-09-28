@@ -23,6 +23,7 @@ namespace mod_mudeck\phpunit;
 /**
  * Plugin core API test.
  *
+ * @group      MuTMS
  * @package    mod_mudeck
  * @copyright  2026 Petr Skoda
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later

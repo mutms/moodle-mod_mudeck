@@ -25,6 +25,7 @@ use mod_mudeck\local\part;
 /**
  * Backup and restore test.
  *
+ * @group      MuTMS
  * @package    mod_mudeck
  * @copyright  2026 Petr Skoda
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later

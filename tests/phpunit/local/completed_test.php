@@ -23,6 +23,7 @@ use mod_mudeck\completion\custom_completion;
 /**
  * Completion by reaching the last slide.
  *
+ * @group      MuTMS
  * @package    mod_mudeck
  * @copyright  2026 Petr Skoda
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later

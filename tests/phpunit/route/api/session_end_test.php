@@ -29,6 +29,7 @@ use mod_mudeck\route\api\session_end;
 /**
  * Session end REST route test.
  *
+ * @group      MuTMS
  * @package    mod_mudeck
  * @copyright  2026 Petr Skoda
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later

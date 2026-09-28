@@ -26,6 +26,7 @@ use mod_mudeck\route\api\part_edit_images;
 /**
  * Pictures offered while editing a part.
  *
+ * @group      MuTMS
  * @package    mod_mudeck
  * @copyright  2026 Petr Skoda
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later

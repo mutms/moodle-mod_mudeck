@@ -28,6 +28,7 @@ use mod_mudeck\route\api\session as session_route;
 /**
  * Device sync session REST resource test - reporting and reading a position.
  *
+ * @group      MuTMS
  * @package    mod_mudeck
  * @copyright  2026 Petr Skoda
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
