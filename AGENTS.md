@@ -69,7 +69,8 @@ environment, found in `/opt/mpd/assets/vm/project_types/moodle/bin`. Each is a t
 wrapper: `phpunit` runs `php vendor/bin/phpunit` from the Moodle root, `phpunit-util`
 runs `public/admin/tool/phpunit/cli/util.php`, `behat-init` runs
 `public/admin/tool/behat/cli/init.php`, and so on. In another environment, run the
-underlying Moodle commands instead; the helper name tells you which one.
+underlying Moodle commands instead; the helper name tells you which one. In an mpd VM read
+`/opt/mpd/docs/moodle-agents.md` first: all the helpers by task, and what `mpd reset` destroys.
 
 | Task                   | Command                                   | Note                                                                                                            |
 |------------------------|-------------------------------------------|-----------------------------------------------------------------------------------------------------------------|
