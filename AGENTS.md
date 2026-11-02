@@ -45,7 +45,8 @@ yet; it arrives through tool_mulib after it is proven elsewhere. Do not start it
   `/api/rest/v2/...`, or it breaks on servers without the rewrite.
 - Comments are short and factual: one line inline, one or two sentences in a docblock,
   JSDoc `@param`/`@returns` kept. No history, no alternatives, no em dashes.
-- Strings live in `lang/en`, `lang/cs` and `lang/de`; add all three.
+- Strings live in `lang/en`, `lang/cs` and `lang/de`; add all three. Translations follow
+  `admin/tool/mulib/docs/translations.md`.
 
 ## Security boundary
 
