@@ -24,17 +24,18 @@ use core\tests\router\route_testcase;
 use GuzzleHttp\Psr7\Utils;
 use mod_mudeck\local\session;
 use mod_mudeck\route\api\session as session_route;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Device sync session REST resource test - reporting and reading a position.
  *
- * @group      MuTMS
  * @package    mod_mudeck
  * @copyright  2026 Petr Skoda
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- *
- * @covers \mod_mudeck\route\api\session
  */
+#[CoversClass(\mod_mudeck\route\api\session::class)]
+#[Group('MuTMS')]
 final class session_test extends route_testcase {
     /** @var \stdClass the presentation under test */
     private \stdClass $mudeck;

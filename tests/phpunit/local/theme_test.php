@@ -20,17 +20,18 @@
 namespace mod_mudeck\phpunit\local;
 
 use mod_mudeck\local\theme;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Theme registry test.
  *
- * @group      MuTMS
  * @package    mod_mudeck
  * @copyright  2026 Petr Skoda
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- *
- * @covers \mod_mudeck\local\theme
  */
+#[CoversClass(\mod_mudeck\local\theme::class)]
+#[Group('MuTMS')]
 final class theme_test extends \advanced_testcase {
     public function test_get_menu(): void {
         $menu = theme::get_menu();

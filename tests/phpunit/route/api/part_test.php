@@ -24,17 +24,18 @@ use core\tests\router\route_testcase;
 use GuzzleHttp\Psr7\Utils;
 use mod_mudeck\local\part;
 use mod_mudeck\route\api\part as part_route;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Part REST resource test - deleting a part.
  *
- * @group      MuTMS
  * @package    mod_mudeck
  * @copyright  2026 Petr Skoda
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- *
- * @covers \mod_mudeck\route\api\part
  */
+#[CoversClass(\mod_mudeck\route\api\part::class)]
+#[Group('MuTMS')]
 final class part_test extends route_testcase {
     /** @var \stdClass the presentation under test */
     private \stdClass $mudeck;

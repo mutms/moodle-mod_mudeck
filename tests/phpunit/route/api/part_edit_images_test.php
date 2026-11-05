@@ -22,17 +22,18 @@ namespace mod_mudeck\phpunit\route\api;
 
 use core\tests\router\route_testcase;
 use mod_mudeck\route\api\part_edit_images;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Pictures offered while editing a part.
  *
- * @group      MuTMS
  * @package    mod_mudeck
  * @copyright  2026 Petr Skoda
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- *
- * @covers \mod_mudeck\route\api\part_edit_images
  */
+#[CoversClass(\mod_mudeck\route\api\part_edit_images::class)]
+#[Group('MuTMS')]
 final class part_edit_images_test extends route_testcase {
     public function setUp(): void {
         parent::setUp();

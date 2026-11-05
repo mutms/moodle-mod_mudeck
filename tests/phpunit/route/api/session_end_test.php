@@ -25,17 +25,18 @@ use GuzzleHttp\Psr7\Utils;
 use mod_mudeck\local\session;
 use mod_mudeck\route\api\session as session_route;
 use mod_mudeck\route\api\session_end;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Session end REST route test.
  *
- * @group      MuTMS
  * @package    mod_mudeck
  * @copyright  2026 Petr Skoda
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- *
- * @covers \mod_mudeck\route\api\session_end
  */
+#[CoversClass(\mod_mudeck\route\api\session_end::class)]
+#[Group('MuTMS')]
 final class session_end_test extends route_testcase {
     /** @var \stdClass the presentation under test */
     private \stdClass $mudeck;

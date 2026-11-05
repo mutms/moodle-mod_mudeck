@@ -21,17 +21,18 @@
 namespace mod_mudeck\phpunit\local;
 
 use mod_mudeck\local\notes;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Presenter notes test.
  *
- * @group      MuTMS
  * @package    mod_mudeck
  * @copyright  2026 Petr Skoda
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- *
- * @covers \mod_mudeck\local\notes
  */
+#[CoversClass(\mod_mudeck\local\notes::class)]
+#[Group('MuTMS')]
 final class notes_test extends \advanced_testcase {
     public function test_strip_removes_notes(): void {
         $markdown = "# Title\n\n<!-- Remember the equation here. -->\n\nBody\n";

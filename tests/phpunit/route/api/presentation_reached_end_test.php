@@ -22,17 +22,18 @@ namespace mod_mudeck\phpunit\route\api;
 use core\tests\router\route_testcase;
 use GuzzleHttp\Psr7\Utils;
 use mod_mudeck\route\api\presentation_reached_end;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Reaching the last slide, reported by the viewer.
  *
- * @group      MuTMS
  * @package    mod_mudeck
  * @copyright  2026 Petr Skoda
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- *
- * @covers \mod_mudeck\route\api\presentation_reached_end
  */
+#[CoversClass(\mod_mudeck\route\api\presentation_reached_end::class)]
+#[Group('MuTMS')]
 final class presentation_reached_end_test extends route_testcase {
     /** @var \stdClass the course, with completion on */
     private \stdClass $course;

@@ -20,17 +20,18 @@
 namespace mod_mudeck\phpunit\local\form;
 
 use mod_mudeck\local\form\theme_edit;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Theme form test.
  *
- * @group      MuTMS
  * @package    mod_mudeck
  * @copyright  2026 Petr Skoda
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- *
- * @covers \mod_mudeck\local\form\theme_edit
  */
+#[CoversClass(\mod_mudeck\local\form\theme_edit::class)]
+#[Group('MuTMS')]
 final class theme_edit_test extends \advanced_testcase {
     #[\Override]
     protected function tearDown(): void {

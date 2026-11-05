@@ -22,17 +22,19 @@
 namespace mod_mudeck\phpunit\local;
 
 use mod_mudeck\local\part;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Part model test.
  *
- * @group      MuTMS
  * @package    mod_mudeck
  * @copyright  2026 Petr Skoda
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- *
- * @covers \mod_mudeck\local\part
  */
+#[CoversClass(\mod_mudeck\local\part::class)]
+#[Group('MuTMS')]
 final class part_test extends \advanced_testcase {
     public function setUp(): void {
         parent::setUp();
@@ -86,10 +88,10 @@ final class part_test extends \advanced_testcase {
     /**
      * Slide counts, checked against what Marp actually draws.
      *
-     * @dataProvider slide_count_provider
      * @param string $content
      * @param int $expected
      */
+    #[DataProvider('slide_count_provider')]
     public function test_count_slides(string $content, int $expected): void {
         $this->assertSame($expected, part::count_slides((object)['content' => $content]));
     }
@@ -119,10 +121,10 @@ final class part_test extends \advanced_testcase {
     /**
      * The first slide of a part, cut by the same rules that count slides.
      *
-     * @dataProvider first_slide_provider
      * @param string $content
      * @param string $expected
      */
+    #[DataProvider('first_slide_provider')]
     public function test_first_slide(string $content, string $expected): void {
         $this->assertSame($expected, part::first_slide($content));
     }

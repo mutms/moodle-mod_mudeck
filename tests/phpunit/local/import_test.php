@@ -23,17 +23,18 @@ namespace mod_mudeck\phpunit\local;
 use mod_mudeck\local\import;
 use mod_mudeck\local\media;
 use mod_mudeck\local\part;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Import test - slides arriving as a Markdown file or as a zip.
  *
- * @group      MuTMS
  * @package    mod_mudeck
  * @copyright  2026 Petr Skoda
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- *
- * @covers \mod_mudeck\local\import
  */
+#[CoversClass(\mod_mudeck\local\import::class)]
+#[Group('MuTMS')]
 final class import_test extends \advanced_testcase {
     /** @var \stdClass the presentation under test */
     private \stdClass $mudeck;

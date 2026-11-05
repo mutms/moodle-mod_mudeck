@@ -19,18 +19,19 @@
 namespace mod_mudeck\local;
 
 use mod_mudeck\completion\custom_completion;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Completion by reaching the last slide.
  *
- * @group      MuTMS
  * @package    mod_mudeck
  * @copyright  2026 Petr Skoda
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- *
- * @covers \mod_mudeck\local\completed
- * @covers \mod_mudeck\completion\custom_completion
  */
+#[CoversClass(\mod_mudeck\local\completed::class)]
+#[CoversClass(\mod_mudeck\completion\custom_completion::class)]
+#[Group('MuTMS')]
 final class completed_test extends \advanced_testcase {
     /** @var \stdClass */
     private \stdClass $course;

@@ -22,19 +22,20 @@ namespace mod_mudeck\phpunit\event;
 
 use mod_mudeck\local\media;
 use mod_mudeck\local\part;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Event test - what shows up in the logs when parts are written, imported or exported.
  *
  * The events fire inside the API, so the pages cannot forget to report a change.
  *
- * @group      MuTMS
  * @package    mod_mudeck
  * @copyright  2026 Petr Skoda
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- *
- * @covers \mod_mudeck\event\part_base
  */
+#[CoversClass(\mod_mudeck\event\part_base::class)]
+#[Group('MuTMS')]
 final class events_test extends \advanced_testcase {
     /** @var \stdClass the presentation under test */
     private \stdClass $mudeck;

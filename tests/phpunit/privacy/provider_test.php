@@ -25,6 +25,8 @@ use core_privacy\local\request\approved_userlist;
 use core_privacy\local\request\userlist;
 use core_privacy\local\request\writer;
 use mod_mudeck\privacy\provider;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Privacy provider test.
@@ -32,13 +34,12 @@ use mod_mudeck\privacy\provider;
  * Sessions and completions are written straight into their tables here: what
  * matters is what happens to them when a user asks to be forgotten.
  *
- * @group      MuTMS
  * @package    mod_mudeck
  * @copyright  2026 Petr Skoda
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- *
- * @covers \mod_mudeck\privacy\provider
  */
+#[CoversClass(\mod_mudeck\privacy\provider::class)]
+#[Group('MuTMS')]
 final class provider_test extends \core_privacy\tests\provider_testcase {
     /** @var \stdClass course with two presentations */
     private \stdClass $course;

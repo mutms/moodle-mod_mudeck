@@ -22,17 +22,18 @@ namespace mod_mudeck\phpunit\local;
 
 use mod_mudeck\local\part;
 use mod_mudeck\local\session;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Device sync session test.
  *
- * @group      MuTMS
  * @package    mod_mudeck
  * @copyright  2026 Petr Skoda
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- *
- * @covers \mod_mudeck\local\session
  */
+#[CoversClass(\mod_mudeck\local\session::class)]
+#[Group('MuTMS')]
 final class session_test extends \advanced_testcase {
     /** @var \stdClass the presentation under test */
     private \stdClass $mudeck;

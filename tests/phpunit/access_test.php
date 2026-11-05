@@ -20,16 +20,18 @@
 
 namespace mod_mudeck\phpunit;
 
+use PHPUnit\Framework\Attributes\CoversNothing;
+use PHPUnit\Framework\Attributes\Group;
+
 /**
  * Default capabilities test - what a student may do without any override.
  *
- * @group      MuTMS
  * @package    mod_mudeck
  * @copyright  2026 Petr Skoda
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- *
- * @coversNothing
  */
+#[Group('MuTMS')]
+#[CoversNothing]
 final class access_test extends \advanced_testcase {
     public function setUp(): void {
         parent::setUp();
