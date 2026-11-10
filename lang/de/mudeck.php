@@ -18,14 +18,11 @@
 // phpcs:disable moodle.Strings.ForbiddenStrings.Found
 
 /**
- * Markdown slide deck language pack.
+ * Strings for component 'mod_mudeck', language 'de'.
  *
  * NOTE: This German translation was produced automatically by an AI language
  * model and has not yet been reviewed by a human translator. Corrections are
  * welcome.
- *
- * HINWEIS: Diese deutsche Übersetzung wurde automatisch von einem KI-Sprachmodell
- * erstellt und noch nicht von einem Menschen geprüft. Korrekturen sind willkommen.
  *
  * @package    mod_mudeck
  * @copyright  2026 Petr Skoda
