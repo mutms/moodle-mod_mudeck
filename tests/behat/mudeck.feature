@@ -204,7 +204,8 @@ Feature: Markdown slide deck
     Then I should see "First slide"
     And I should see "Slide 1 of 2" in the "[data-region=mudeck-chrome]" "css_element"
     And I should not see "Remember the coffee break."
-    When I click on "Speaker notes" "button"
+    When I press the escape key
+    And I click on "Speaker notes" "button"
     Then I should see "Remember the coffee break." in the "[data-region=mudeck-slide-notes]" "css_element"
 
   @javascript
@@ -285,6 +286,7 @@ Feature: Markdown slide deck
     Then the "Reach the last slide" completion condition of "Lecture" is displayed as "todo"
     When I am on the "Lecture" "mudeck activity" page
     And I follow "Start presentation"
+    And I press the escape key
     And I click on "Next slide" "button"
     And I should see "Slide 2 of 2" in the "[data-region=mudeck-chrome]" "css_element"
     And I wait until the page is ready
@@ -304,7 +306,8 @@ Feature: Markdown slide deck
     # The code block was coloured token by token.
     And ".mudeck-slides pre.shiki span[style]" "css_element" should exist
     And I should see "Slide 1 of 2" in the "[data-region=mudeck-chrome]" "css_element"
-    When I click on "Next slide" "button"
+    When I press the escape key
+    And I click on "Next slide" "button"
     Then I should see "Vzorec"
     # The formula was typeset into a picture, so its TeX is no longer on the page.
     # Inline SVG elements are invisible to XPath by name, so the container stands for the picture.
@@ -337,7 +340,8 @@ Feature: Markdown slide deck
     And I follow "Start presentation"
     Then ".mudeck-slides section[data-transition=slide]" "css_element" should exist
     And ".mudeck-slides section[data-transition=none]" "css_element" should exist
-    When I click on "Next slide" "button"
+    When I press the escape key
+    And I click on "Next slide" "button"
     Then I should see "Second"
     And I should see "Slide 2 of 2" in the "[data-region=mudeck-chrome]" "css_element"
     When I click on "Previous slide" "button"
