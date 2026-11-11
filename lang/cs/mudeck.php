@@ -35,11 +35,11 @@ $string['completionreachedend'] = 'Student musí dojít na poslední snímek';
 $string['editor_help'] = 'Nápověda';
 $string['editor_preview'] = 'Náhled';
 $string['editor_slide'] = 'Snímek {$a}';
-$string['event_part_created'] = 'Část vytvořena';
-$string['event_part_deleted'] = 'Část odstraněna';
-$string['event_part_exported'] = 'Část exportována';
-$string['event_part_imported'] = 'Část importována';
-$string['event_part_updated'] = 'Část upravena';
+$string['event_part_created'] = 'Sekce vytvořena';
+$string['event_part_deleted'] = 'Sekce odstraněna';
+$string['event_part_exported'] = 'Sekce exportována';
+$string['event_part_imported'] = 'Sekce importována';
+$string['event_part_updated'] = 'Sekce upravena';
 $string['event_presentation_started'] = 'Prezentace spuštěna';
 $string['export'] = 'Export';
 $string['help_markdown'] = 'Snímky se píší v Markdownu. Řádek, na kterém nejsou nic než tři pomlčky, začíná nový snímek; nad ním i pod ním musí být prázdný řádek.
@@ -109,7 +109,7 @@ Obrázek s `bg` vyplní snímek za textem; `left` nebo `right` ho nechá jen na 
 Soubory mohou být ve složkách, pak jméno obsahuje i složku: `![](obrazky/mesto.jpg)`. Animovaný GIF a WebP fungují jako každý jiný obrázek.';
 $string['import'] = 'Import';
 $string['import_file'] = 'Markdown nebo zip';
-$string['import_intro'] = 'Nahrajte snímky jako Markdown soubor, nebo jako jeden zip s Markdown souborem a médii, která používá. V obou případech vznikne nová část.';
+$string['import_intro'] = 'Nahrajte snímky jako Markdown soubor, nebo jako jeden zip s Markdown souborem a médii, která používá. V obou případech vznikne nová sekce.';
 $string['import_nothing'] = 'Nic se neimportovalo. Nahrajte Markdown soubor, nebo zip s právě jedním Markdown souborem a jeho médii.';
 $string['import_submit'] = 'Importovat snímky';
 $string['loading'] = 'Načítá se prezentace…';
@@ -137,22 +137,22 @@ $string['notes_waiting'] = 'Čeká se, až se prezentace spustí na druhém zař
 $string['overview'] = 'Přehled snímků';
 $string['paginate'] = 'Zobrazovat čísla snímků';
 $string['paginate_help'] = 'Na každý snímek přidá jeho číslo, pokud si snímek neurčí jinak.';
-$string['part_add'] = 'Přidat část';
+$string['part_add'] = 'Přidat sekci';
 $string['part_content'] = 'Markdown';
-$string['part_content_help'] = 'Snímky této části, psané v Markdownu. Jak na to, říká karta Nápověda vedle náhledu.';
-$string['part_delete'] = 'Odstranit část';
-$string['part_delete_confirm'] = 'Odstranit část "{$a}" včetně všech snímků a médií?';
-$string['part_deleted'] = 'Část byla odstraněna.';
+$string['part_content_help'] = 'Snímky této sekce, psané v Markdownu. Jak na to, říká karta Nápověda vedle náhledu.';
+$string['part_delete'] = 'Odstranit sekci';
+$string['part_delete_confirm'] = 'Odstranit sekci "{$a}" včetně všech snímků a médií?';
+$string['part_deleted'] = 'Sekce byla odstraněna.';
 $string['part_edit'] = 'Upravit snímky';
 $string['part_empty'] = 'prázdná';
-$string['part_imported'] = 'Snímky byly importovány jako nová část.';
+$string['part_imported'] = 'Snímky byly importovány jako nová sekce.';
 $string['part_media'] = 'Média';
 $string['part_media_missing'] = 'Tyto soubory jsou ve slidech použité, ale zatím nebyly nahrány: {$a}';
 $string['part_move'] = 'Přesunout';
 $string['part_moved'] = 'Přesunuto na pozici {$a}.';
 $string['part_moveto'] = 'Přesunout na pozici';
-$string['part_name'] = 'Název části';
-$string['part_new'] = 'Část {$a}';
+$string['part_name'] = 'Název sekce';
+$string['part_new'] = 'Sekce {$a}';
 $string['part_preview'] = 'Náhled';
 $string['part_save_close'] = 'Uložit a zavřít';
 $string['part_save_continue'] = 'Uložit a pokračovat';
@@ -192,7 +192,7 @@ $string['privacy:metadata:mudeck_part'] = 'Snímky prezentace, které si pamatuj
 $string['privacy:metadata:mudeck_part:timemodified'] = 'Kdy byly snímky naposledy uloženy.';
 $string['privacy:metadata:mudeck_part:usermodified'] = 'Kdo naposledy uložil snímky.';
 $string['privacy:metadata:mudeck_session'] = 'Kde právě je běžící prezentace, aby ji tentýž uživatel mohl sledovat na dalším zařízení. Nikdo jiný to nevidí.';
-$string['privacy:metadata:mudeck_session:partid'] = 'Která část byla na obrazovce.';
+$string['privacy:metadata:mudeck_session:partid'] = 'Která sekce byla na obrazovce.';
 $string['privacy:metadata:mudeck_session:sessionjson'] = 'Poznámky k sezení, například údaj o použitém zařízení.';
 $string['privacy:metadata:mudeck_session:slide'] = 'Který snímek byl na obrazovce.';
 $string['privacy:metadata:mudeck_session:slidetitle'] = 'Nadpis snímku, aby další zařízení ukázalo, kde prezentace je.';
@@ -240,6 +240,7 @@ Toto CSS se zobrazí každému, kdo uvidí prezentaci s tímto motivem, a nijak 
 $string['theme_css_starter'] = '/* Začněte od existujícího motivu a změňte, co potřebujete. */
 @import \'default\';
 
+/* V CSS pro Marp je section jeden snímek. */
 section {
     background: #ffffff;
 }

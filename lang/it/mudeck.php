@@ -39,11 +39,11 @@ $string['completionreachedend'] = 'Lo studente deve raggiungere l\'ultima diapos
 $string['editor_help'] = 'Aiuto';
 $string['editor_preview'] = 'Anteprima';
 $string['editor_slide'] = 'Diapositiva {$a}';
-$string['event_part_created'] = 'Parte creata';
-$string['event_part_deleted'] = 'Parte eliminata';
-$string['event_part_exported'] = 'Parte esportata';
-$string['event_part_imported'] = 'Parte importata';
-$string['event_part_updated'] = 'Parte aggiornata';
+$string['event_part_created'] = 'Sezione creata';
+$string['event_part_deleted'] = 'Sezione eliminata';
+$string['event_part_exported'] = 'Sezione esportata';
+$string['event_part_imported'] = 'Sezione importata';
+$string['event_part_updated'] = 'Sezione aggiornata';
 $string['event_presentation_started'] = 'Presentazione avviata';
 $string['export'] = 'Esporta';
 $string['help_markdown'] = 'Le diapositive sono scritte in Markdown. Una riga che contiene solo tre trattini inizia una nuova diapositiva, con una riga vuota sopra e una sotto.
@@ -113,7 +113,7 @@ Un\'immagine con `bg` riempie la diapositiva dietro il testo; aggiungere `left` 
 I file possono trovarsi in cartelle e in tal caso il nome comprende la cartella: `![](pictures/city.jpg)`. GIF e WebP animati funzionano come qualsiasi altra immagine.';
 $string['import'] = 'Importa';
 $string['import_file'] = 'Markdown o zip';
-$string['import_intro'] = 'Caricare le diapositive come file Markdown oppure come un unico zip contenente un file Markdown e i file multimediali che utilizza. In entrambi i casi le diapositive diventano una nuova parte.';
+$string['import_intro'] = 'Caricare le diapositive come file Markdown oppure come un unico zip contenente un file Markdown e i file multimediali che utilizza. In entrambi i casi le diapositive diventano una nuova sezione.';
 $string['import_nothing'] = 'Non è stato importato nulla. Caricare un file Markdown oppure uno zip contenente esattamente un file Markdown e i relativi file multimediali.';
 $string['import_submit'] = 'Importa diapositive';
 $string['loading'] = 'Caricamento della presentazione in corso…';
@@ -141,22 +141,22 @@ $string['notes_waiting'] = 'In attesa dell\'avvio della presentazione sull\'altr
 $string['overview'] = 'Panoramica delle diapositive';
 $string['paginate'] = 'Mostra i numeri delle diapositive';
 $string['paginate_help'] = 'Aggiunge il numero a ogni diapositiva, a meno che la diapositiva stessa non indichi diversamente.';
-$string['part_add'] = 'Aggiungi parte';
+$string['part_add'] = 'Aggiungi sezione';
 $string['part_content'] = 'Markdown';
-$string['part_content_help'] = 'Le diapositive di questa parte, scritte in Markdown. La scheda Aiuto accanto all\'anteprima spiega come fare.';
-$string['part_delete'] = 'Elimina parte';
-$string['part_delete_confirm'] = 'Eliminare la parte "{$a}" con tutte le sue diapositive e i suoi file multimediali?';
-$string['part_deleted'] = 'La parte è stata eliminata.';
+$string['part_content_help'] = 'Le diapositive di questa sezione, scritte in Markdown. La scheda Aiuto accanto all\'anteprima spiega come fare.';
+$string['part_delete'] = 'Elimina sezione';
+$string['part_delete_confirm'] = 'Eliminare la sezione "{$a}" con tutte le sue diapositive e i suoi file multimediali?';
+$string['part_deleted'] = 'La sezione è stata eliminata.';
 $string['part_edit'] = 'Modifica diapositive';
 $string['part_empty'] = 'vuota';
-$string['part_imported'] = 'Le diapositive sono state importate come nuova parte.';
+$string['part_imported'] = 'Le diapositive sono state importate come nuova sezione.';
 $string['part_media'] = 'Media';
 $string['part_media_missing'] = 'Questi file sono utilizzati nelle diapositive ma non sono ancora stati caricati: {$a}';
 $string['part_move'] = 'Sposta';
 $string['part_moved'] = 'Spostata nella posizione {$a}.';
 $string['part_moveto'] = 'Sposta nella posizione';
-$string['part_name'] = 'Nome della parte';
-$string['part_new'] = 'Parte {$a}';
+$string['part_name'] = 'Nome della sezione';
+$string['part_new'] = 'Sezione {$a}';
 $string['part_preview'] = 'Anteprima';
 $string['part_save_close'] = 'Salva e chiudi';
 $string['part_save_continue'] = 'Salva e continua';
@@ -196,7 +196,7 @@ $string['privacy:metadata:mudeck_part'] = 'Le diapositive di una presentazione, 
 $string['privacy:metadata:mudeck_part:timemodified'] = 'Quando le diapositive sono state salvate l\'ultima volta.';
 $string['privacy:metadata:mudeck_part:usermodified'] = 'Chi ha salvato le diapositive per ultimo.';
 $string['privacy:metadata:mudeck_session'] = 'Il punto in cui si trova una presentazione in corso, in modo che lo stesso utente possa seguirla su un altro dispositivo. Nessun altro lo vede mai.';
-$string['privacy:metadata:mudeck_session:partid'] = 'Quale parte era sullo schermo.';
+$string['privacy:metadata:mudeck_session:partid'] = 'Quale sezione era sullo schermo.';
 $string['privacy:metadata:mudeck_session:sessionjson'] = 'Annotazioni sulla sessione, ad esempio un\'indicazione sul dispositivo utilizzato.';
 $string['privacy:metadata:mudeck_session:slide'] = 'Quale diapositiva era sullo schermo.';
 $string['privacy:metadata:mudeck_session:slidetitle'] = 'Il titolo di quella diapositiva, in modo che un altro dispositivo possa mostrare a che punto è la presentazione.';
@@ -244,6 +244,7 @@ Questo CSS viene mostrato a chiunque veda una presentazione che utilizza il tema
 $string['theme_css_starter'] = '/* Parti da un tema esistente, quindi modifica ciò che serve. */
 @import \'default\';
 
+/* Nel CSS di Marp, section è una singola diapositiva. */
 section {
     background: #ffffff;
 }

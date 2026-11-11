@@ -25,10 +25,10 @@ Feature: Markdown slide deck
     Then I should see "This presentation has no slides yet."
     And I should not see "Start presentation"
     When I follow "Overview"
-    And I follow "Add part"
+    And I follow "Add section"
     And I set the following muform fields:
-      | Deck part | Opening       |
-      | Markdown  | # First slide |
+      | Section name | Opening       |
+      | Markdown     | # First slide |
     And I press "Save and close"
     Then I should see "Opening"
     When I am on the "Conference" "mudeck activity" page
@@ -36,15 +36,15 @@ Feature: Markdown slide deck
 
   Scenario: A teacher manages the parts of a presentation
     Given I am on the "Conference" "mod_mudeck > overview" page logged in as "teacher1"
-    When I follow "Add part"
+    When I follow "Add section"
     And I set the following muform fields:
-      | Deck part | One   |
-      | Markdown  | # One |
+      | Section name | One   |
+      | Markdown     | # One |
     And I press "Save and close"
-    And I follow "Add part"
+    And I follow "Add section"
     And I set the following muform fields:
-      | Deck part | Two   |
-      | Markdown  | # Two |
+      | Section name | Two   |
+      | Markdown     | # Two |
     And I press "Save and close"
     Then I should see "One"
     And I should see "Two"
@@ -54,14 +54,14 @@ Feature: Markdown slide deck
 
   Scenario: Saving without leaving keeps working on the same new part
     Given I am on the "Conference" "mod_mudeck > overview" page logged in as "teacher1"
-    When I follow "Add part"
+    When I follow "Add section"
     And I set the following muform fields:
-      | Deck part | Once   |
-      | Markdown  | # Once |
+      | Section name | Once   |
+      | Markdown     | # Once |
     And I press "Save and continue"
     Then I should see "Slides saved."
     When I set the following muform fields:
-      | Deck part | Renamed |
+      | Section name | Renamed |
     And I press "Save and close"
     Then I should see "Renamed"
     # The second save has to land in the part the first one made, not in a new one.
@@ -142,10 +142,10 @@ Feature: Markdown slide deck
     Then I should see "This presentation has no slides yet."
     And "Import" "link" should exist
     # Add part opens the editor straight away and comes back here.
-    When I follow "Add part"
+    When I follow "Add section"
     And I set the following muform fields:
-      | Deck part | Opening       |
-      | Markdown  | # First slide |
+      | Section name | Opening       |
+      | Markdown     | # First slide |
     And I press "Save and close"
     Then I should see "Slides saved."
     And I should see "Start presentation"
@@ -155,7 +155,7 @@ Feature: Markdown slide deck
     Then I should see "This presentation has no slides yet."
     # A student can do nothing about it, so they are not invited to try.
     When I am on the "Empty" "mudeck activity" page logged in as "student1"
-    Then "Add part" "link" should not exist
+    Then "Add section" "link" should not exist
     And "Import" "link" should not exist
 
   Scenario: A student sees the presentation but not the management
@@ -180,7 +180,7 @@ Feature: Markdown slide deck
     # The teacher may still edit, but view is the gate for everything.
     When I am on the "Conference" "mod_mudeck > overview" page logged in as "teacher1"
     Then I should see "Activity not available"
-    And I should not see "Add part"
+    And I should not see "Add section"
 
   Scenario: The present button is disabled without the capability to present
     Given the following "mod_mudeck > parts" exist:

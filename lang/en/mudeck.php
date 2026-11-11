@@ -35,11 +35,11 @@ $string['completionreachedend'] = 'Student must reach the last slide';
 $string['editor_help'] = 'Help';
 $string['editor_preview'] = 'Preview';
 $string['editor_slide'] = 'Slide {$a}';
-$string['event_part_created'] = 'Part created';
-$string['event_part_deleted'] = 'Part deleted';
-$string['event_part_exported'] = 'Part exported';
-$string['event_part_imported'] = 'Part imported';
-$string['event_part_updated'] = 'Part updated';
+$string['event_part_created'] = 'Section created';
+$string['event_part_deleted'] = 'Section deleted';
+$string['event_part_exported'] = 'Section exported';
+$string['event_part_imported'] = 'Section imported';
+$string['event_part_updated'] = 'Section updated';
 $string['event_presentation_started'] = 'Presentation started';
 $string['export'] = 'Export';
 $string['help_markdown'] = 'Slides are written in Markdown. A line holding nothing but three dashes starts a new slide, with an empty line above and below it.
@@ -109,7 +109,7 @@ A picture with `bg` fills the slide behind the text; add `left` or `right` to ke
 Files can sit in folders, and then the name includes the folder: `![](pictures/city.jpg)`. Animated GIF and WebP work like any other picture.';
 $string['import'] = 'Import';
 $string['import_file'] = 'Markdown or zip';
-$string['import_intro'] = 'Upload the slides as a Markdown file, or as one zip holding a Markdown file and the media it uses. Either way the slides become a new part.';
+$string['import_intro'] = 'Upload the slides as a Markdown file, or as one zip holding a Markdown file and the media it uses. Either way the slides become a new section.';
 $string['import_nothing'] = 'Nothing was imported. Upload a Markdown file, or a zip holding exactly one Markdown file and its media.';
 $string['import_submit'] = 'Import slides';
 $string['loading'] = 'Loading the presentation…';
@@ -137,22 +137,22 @@ $string['notes_waiting'] = 'Waiting for the presentation to start on the other d
 $string['overview'] = 'Slides overview';
 $string['paginate'] = 'Show slide numbers';
 $string['paginate_help'] = 'Adds a slide number to each slide, unless the slide itself says otherwise.';
-$string['part_add'] = 'Add part';
+$string['part_add'] = 'Add section';
 $string['part_content'] = 'Markdown';
-$string['part_content_help'] = 'The slides of this part, written in Markdown. The Help tab beside the preview says how.';
-$string['part_delete'] = 'Delete part';
-$string['part_delete_confirm'] = 'Delete the part "{$a}" with all its slides and media?';
-$string['part_deleted'] = 'The part was deleted.';
+$string['part_content_help'] = 'The slides of this section, written in Markdown. The Help tab beside the preview says how.';
+$string['part_delete'] = 'Delete section';
+$string['part_delete_confirm'] = 'Delete the section "{$a}" with all its slides and media?';
+$string['part_deleted'] = 'The section was deleted.';
 $string['part_edit'] = 'Edit slides';
 $string['part_empty'] = 'empty';
-$string['part_imported'] = 'The slides were imported as a new part.';
+$string['part_imported'] = 'The slides were imported as a new section.';
 $string['part_media'] = 'Media';
 $string['part_media_missing'] = 'These files are used in the slides but have not been uploaded yet: {$a}';
 $string['part_move'] = 'Move';
 $string['part_moved'] = 'Moved to position {$a}.';
 $string['part_moveto'] = 'Move to position';
-$string['part_name'] = 'Deck part';
-$string['part_new'] = 'Part {$a}';
+$string['part_name'] = 'Section name';
+$string['part_new'] = 'Section {$a}';
 $string['part_preview'] = 'Preview';
 $string['part_save_close'] = 'Save and close';
 $string['part_save_continue'] = 'Save and continue';
@@ -192,7 +192,7 @@ $string['privacy:metadata:mudeck_part'] = 'The slides of a presentation, which r
 $string['privacy:metadata:mudeck_part:timemodified'] = 'When the slides were last saved.';
 $string['privacy:metadata:mudeck_part:usermodified'] = 'Who saved the slides last.';
 $string['privacy:metadata:mudeck_session'] = 'Where a running presentation is, so the same user can follow it on another device. Nobody else ever sees it.';
-$string['privacy:metadata:mudeck_session:partid'] = 'Which part was on screen.';
+$string['privacy:metadata:mudeck_session:partid'] = 'Which section was on screen.';
 $string['privacy:metadata:mudeck_session:sessionjson'] = 'Notes about the session, such as a hint about the device used.';
 $string['privacy:metadata:mudeck_session:slide'] = 'Which slide was on screen.';
 $string['privacy:metadata:mudeck_session:slidetitle'] = 'The heading of that slide, so another device can show where the presentation is.';
@@ -240,6 +240,7 @@ This CSS is shown to everybody who sees a presentation using the theme, and it i
 $string['theme_css_starter'] = '/* Start from a theme that exists, then change what you need. */
 @import \'default\';
 
+/* In Marp CSS, section is one slide. */
 section {
     background: #ffffff;
 }

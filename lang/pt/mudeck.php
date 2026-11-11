@@ -39,11 +39,11 @@ $string['completionreachedend'] = 'O aluno tem de chegar ao último diapositivo'
 $string['editor_help'] = 'Ajuda';
 $string['editor_preview'] = 'Pré-visualização';
 $string['editor_slide'] = 'Diapositivo {$a}';
-$string['event_part_created'] = 'Parte criada';
-$string['event_part_deleted'] = 'Parte apagada';
-$string['event_part_exported'] = 'Parte exportada';
-$string['event_part_imported'] = 'Parte importada';
-$string['event_part_updated'] = 'Parte atualizada';
+$string['event_part_created'] = 'Secção criada';
+$string['event_part_deleted'] = 'Secção apagada';
+$string['event_part_exported'] = 'Secção exportada';
+$string['event_part_imported'] = 'Secção importada';
+$string['event_part_updated'] = 'Secção atualizada';
 $string['event_presentation_started'] = 'Apresentação iniciada';
 $string['export'] = 'Exportar';
 $string['help_markdown'] = 'Os diapositivos são escritos em Markdown. Uma linha que contenha apenas três hífenes inicia um novo diapositivo, com uma linha em branco acima e outra abaixo.
@@ -113,7 +113,7 @@ Uma imagem com `bg` preenche o diapositivo por trás do texto; adicione `left` o
 Os ficheiros podem estar em pastas e, nesse caso, o nome inclui a pasta: `![](imagens/cidade.jpg)`. Os ficheiros GIF e WebP animados funcionam como qualquer outra imagem.';
 $string['import'] = 'Importar';
 $string['import_file'] = 'Markdown ou zip';
-$string['import_intro'] = 'Carregue os diapositivos como um ficheiro Markdown, ou como um zip que contenha um ficheiro Markdown e os ficheiros multimédia que este utiliza. Em ambos os casos, os diapositivos passam a ser uma nova parte.';
+$string['import_intro'] = 'Carregue os diapositivos como um ficheiro Markdown, ou como um zip que contenha um ficheiro Markdown e os ficheiros multimédia que este utiliza. Em ambos os casos, os diapositivos passam a ser uma nova secção.';
 $string['import_nothing'] = 'Nada foi importado. Carregue um ficheiro Markdown, ou um zip que contenha exatamente um ficheiro Markdown e os respetivos ficheiros multimédia.';
 $string['import_submit'] = 'Importar diapositivos';
 $string['loading'] = 'A carregar a apresentação…';
@@ -141,22 +141,22 @@ $string['notes_waiting'] = 'A aguardar o início da apresentação no outro disp
 $string['overview'] = 'Visão geral dos diapositivos';
 $string['paginate'] = 'Mostrar números dos diapositivos';
 $string['paginate_help'] = 'Adiciona o número do diapositivo a cada diapositivo, exceto se o próprio diapositivo indicar o contrário.';
-$string['part_add'] = 'Adicionar parte';
+$string['part_add'] = 'Adicionar secção';
 $string['part_content'] = 'Markdown';
-$string['part_content_help'] = 'Os diapositivos desta parte, escritos em Markdown. O separador Ajuda, ao lado da pré-visualização, explica como.';
-$string['part_delete'] = 'Apagar parte';
-$string['part_delete_confirm'] = 'Apagar a parte "{$a}" com todos os seus diapositivos e ficheiros multimédia?';
-$string['part_deleted'] = 'A parte foi apagada.';
+$string['part_content_help'] = 'Os diapositivos desta secção, escritos em Markdown. O separador Ajuda, ao lado da pré-visualização, explica como.';
+$string['part_delete'] = 'Apagar secção';
+$string['part_delete_confirm'] = 'Apagar a secção "{$a}" com todos os seus diapositivos e ficheiros multimédia?';
+$string['part_deleted'] = 'A secção foi apagada.';
 $string['part_edit'] = 'Editar diapositivos';
 $string['part_empty'] = 'vazia';
-$string['part_imported'] = 'Os diapositivos foram importados como uma nova parte.';
+$string['part_imported'] = 'Os diapositivos foram importados como uma nova secção.';
 $string['part_media'] = 'Multimédia';
 $string['part_media_missing'] = 'Estes ficheiros são utilizados nos diapositivos, mas ainda não foram carregados: {$a}';
 $string['part_move'] = 'Mover';
 $string['part_moved'] = 'Movida para a posição {$a}.';
 $string['part_moveto'] = 'Mover para a posição';
-$string['part_name'] = 'Nome da parte';
-$string['part_new'] = 'Parte {$a}';
+$string['part_name'] = 'Nome da secção';
+$string['part_new'] = 'Secção {$a}';
 $string['part_preview'] = 'Pré-visualização';
 $string['part_save_close'] = 'Guardar e fechar';
 $string['part_save_continue'] = 'Guardar e continuar';
@@ -196,7 +196,7 @@ $string['privacy:metadata:mudeck_part'] = 'Os diapositivos de uma apresentação
 $string['privacy:metadata:mudeck_part:timemodified'] = 'Quando os diapositivos foram guardados pela última vez.';
 $string['privacy:metadata:mudeck_part:usermodified'] = 'Quem guardou os diapositivos pela última vez.';
 $string['privacy:metadata:mudeck_session'] = 'O ponto em que se encontra uma apresentação em curso, para que o mesmo utilizador a possa acompanhar noutro dispositivo. Mais ninguém o vê.';
-$string['privacy:metadata:mudeck_session:partid'] = 'Que parte estava no ecrã.';
+$string['privacy:metadata:mudeck_session:partid'] = 'Que secção estava no ecrã.';
 $string['privacy:metadata:mudeck_session:sessionjson'] = 'Notas sobre a sessão, como uma indicação do dispositivo utilizado.';
 $string['privacy:metadata:mudeck_session:slide'] = 'Que diapositivo estava no ecrã.';
 $string['privacy:metadata:mudeck_session:slidetitle'] = 'O título desse diapositivo, para que outro dispositivo possa mostrar em que ponto está a apresentação.';
@@ -244,6 +244,7 @@ Este CSS é apresentado a todos os que veem uma apresentação que utilize o tem
 $string['theme_css_starter'] = '/* Parta de um tema existente e altere depois o que for necessário. */
 @import \'default\';
 
+/* No CSS do Marp, section é um diapositivo. */
 section {
     background: #ffffff;
 }

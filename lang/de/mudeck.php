@@ -39,11 +39,11 @@ $string['completionreachedend'] = 'Teilnehmer/in muss die letzte Folie erreichen
 $string['editor_help'] = 'Hilfe';
 $string['editor_preview'] = 'Vorschau';
 $string['editor_slide'] = 'Folie {$a}';
-$string['event_part_created'] = 'Teil erstellt';
-$string['event_part_deleted'] = 'Teil gelöscht';
-$string['event_part_exported'] = 'Teil exportiert';
-$string['event_part_imported'] = 'Teil importiert';
-$string['event_part_updated'] = 'Teil aktualisiert';
+$string['event_part_created'] = 'Abschnitt erstellt';
+$string['event_part_deleted'] = 'Abschnitt gelöscht';
+$string['event_part_exported'] = 'Abschnitt exportiert';
+$string['event_part_imported'] = 'Abschnitt importiert';
+$string['event_part_updated'] = 'Abschnitt aktualisiert';
 $string['event_presentation_started'] = 'Präsentation gestartet';
 $string['export'] = 'Exportieren';
 $string['help_markdown'] = 'Folien werden in Markdown geschrieben. Eine Zeile, die nur aus drei Bindestrichen besteht, beginnt eine neue Folie; darüber und darunter muss eine Leerzeile stehen.
@@ -113,7 +113,7 @@ Ein Bild mit `bg` füllt die Folie hinter dem Text; mit `left` oder `right` blei
 Dateien können in Ordnern liegen; dann gehört der Ordner zum Namen: `![](bilder/stadt.jpg)`. Animierte GIF- und WebP-Dateien funktionieren wie jedes andere Bild.';
 $string['import'] = 'Importieren';
 $string['import_file'] = 'Markdown oder ZIP';
-$string['import_intro'] = 'Laden Sie die Folien als Markdown-Datei hoch oder als eine ZIP-Datei, die eine Markdown-Datei und die verwendeten Medien enthält. In beiden Fällen werden die Folien zu einem neuen Teil.';
+$string['import_intro'] = 'Laden Sie die Folien als Markdown-Datei hoch oder als eine ZIP-Datei, die eine Markdown-Datei und die verwendeten Medien enthält. In beiden Fällen werden die Folien zu einem neuen Abschnitt.';
 $string['import_nothing'] = 'Es wurde nichts importiert. Laden Sie eine Markdown-Datei hoch oder eine ZIP-Datei mit genau einer Markdown-Datei und ihren Medien.';
 $string['import_submit'] = 'Folien importieren';
 $string['loading'] = 'Präsentation wird geladen…';
@@ -141,22 +141,22 @@ $string['notes_waiting'] = 'Warten auf den Start der Präsentation auf dem ander
 $string['overview'] = 'Folienübersicht';
 $string['paginate'] = 'Foliennummern anzeigen';
 $string['paginate_help'] = 'Fügt jeder Folie eine Foliennummer hinzu, sofern die Folie selbst nichts anderes festlegt.';
-$string['part_add'] = 'Teil hinzufügen';
+$string['part_add'] = 'Abschnitt hinzufügen';
 $string['part_content'] = 'Markdown';
-$string['part_content_help'] = 'Die Folien dieses Teils, geschrieben in Markdown. Der Tab Hilfe neben der Vorschau erklärt, wie.';
-$string['part_delete'] = 'Teil löschen';
-$string['part_delete_confirm'] = 'Den Teil „{$a}“ mit allen seinen Folien und Medien löschen?';
-$string['part_deleted'] = 'Der Teil wurde gelöscht.';
+$string['part_content_help'] = 'Die Folien dieses Abschnitts, geschrieben in Markdown. Der Tab Hilfe neben der Vorschau erklärt, wie.';
+$string['part_delete'] = 'Abschnitt löschen';
+$string['part_delete_confirm'] = 'Den Abschnitt „{$a}“ mit allen seinen Folien und Medien löschen?';
+$string['part_deleted'] = 'Der Abschnitt wurde gelöscht.';
 $string['part_edit'] = 'Folien bearbeiten';
 $string['part_empty'] = 'leer';
-$string['part_imported'] = 'Die Folien wurden als neuer Teil importiert.';
+$string['part_imported'] = 'Die Folien wurden als neuer Abschnitt importiert.';
 $string['part_media'] = 'Medien';
 $string['part_media_missing'] = 'Diese Dateien werden in den Folien verwendet, wurden aber noch nicht hochgeladen: {$a}';
 $string['part_move'] = 'Verschieben';
 $string['part_moved'] = 'An Position {$a} verschoben.';
 $string['part_moveto'] = 'Verschieben an Position';
-$string['part_name'] = 'Teil der Präsentation';
-$string['part_new'] = 'Teil {$a}';
+$string['part_name'] = 'Name des Abschnitts';
+$string['part_new'] = 'Abschnitt {$a}';
 $string['part_preview'] = 'Vorschau';
 $string['part_save_close'] = 'Speichern und schließen';
 $string['part_save_continue'] = 'Speichern und weiter';
@@ -196,7 +196,7 @@ $string['privacy:metadata:mudeck_part'] = 'Die Folien einer Präsentation, die s
 $string['privacy:metadata:mudeck_part:timemodified'] = 'Wann die Folien zuletzt gespeichert wurden.';
 $string['privacy:metadata:mudeck_part:usermodified'] = 'Wer die Folien zuletzt gespeichert hat.';
 $string['privacy:metadata:mudeck_session'] = 'Wo sich eine laufende Präsentation befindet, damit dieselbe Person sie auf einem anderen Gerät verfolgen kann. Niemand sonst sieht das jemals.';
-$string['privacy:metadata:mudeck_session:partid'] = 'Welcher Teil auf dem Bildschirm war.';
+$string['privacy:metadata:mudeck_session:partid'] = 'Welcher Abschnitt auf dem Bildschirm war.';
 $string['privacy:metadata:mudeck_session:sessionjson'] = 'Angaben zur Sitzung, etwa ein Hinweis auf das verwendete Gerät.';
 $string['privacy:metadata:mudeck_session:slide'] = 'Welche Folie auf dem Bildschirm war.';
 $string['privacy:metadata:mudeck_session:slidetitle'] = 'Die Überschrift dieser Folie, damit ein anderes Gerät anzeigen kann, wo die Präsentation gerade ist.';
@@ -244,6 +244,7 @@ Dieses CSS wird allen angezeigt, die eine Präsentation mit diesem Theme sehen, 
 $string['theme_css_starter'] = '/* Beginnen Sie mit einem bestehenden Theme und ändern Sie dann, was Sie brauchen. */
 @import \'default\';
 
+/* In Marp-CSS ist section eine einzelne Folie. */
 section {
     background: #ffffff;
 }
