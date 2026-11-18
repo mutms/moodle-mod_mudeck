@@ -20,10 +20,6 @@
 /**
  * Strings for component 'mod_mudeck', language 'it'.
  *
- * NOTE: This Italian translation was produced automatically by an AI language
- * model and has not yet been reviewed by a human translator. Corrections are
- * welcome.
- *
  * @package    mod_mudeck
  * @copyright  2026 Petr Skoda
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
