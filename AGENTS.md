@@ -24,8 +24,7 @@ MuTMS suite. Every change lands complete: code, tests, strings, docs.
 | `tests/phpunit/route/api/`  | one test file per route class              |                                                                                                                                                                      |
 | `tests/behat/`              | one feature                                | every user-facing flow has a scenario                                                                                                                                |
 
-A page is React or plain, never both. htmx is planned for plain pages but not here
-yet; it arrives through tool_mulib after it is proven elsewhere. Do not start it here.
+A page is React or plain, never both.
 
 ## Code rules that are not visible from the structure
 
