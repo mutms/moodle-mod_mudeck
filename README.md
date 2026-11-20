@@ -6,12 +6,8 @@ Make slide presentations right inside your Moodle course. No PowerPoint, no uplo
 no special software. You type your slides as plain text, pick a theme, and press
 **Start presentation**.
 
-Part of the [MuTMS suite](https://github.com/mutms), but it works on its own.
-
-> **Status: unstable preview.** The plugin works and is tested, but it is young.
-> Expect rough edges and changes between versions, and do not rely on it for a
-> course you cannot afford to rebuild. Bug reports and ideas are welcome in the
-> [issue tracker](https://github.com/mutms/moodle-mod_mudeck/issues).
+Part of the [MuTMS suite](https://github.com/mutms), but it works on its own. Bug reports
+and ideas are welcome in the [issue tracker](https://github.com/mutms/moodle-mod_mudeck/issues).
 
 ## You don't need to know Markdown
 

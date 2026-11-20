@@ -6,9 +6,7 @@ rules, this file carries the ones the structure cannot show.
 ## What this is
 
 A Moodle activity that renders Marp Markdown slide decks in the browser. Part of the
-MuTMS suite. This branch, `MOODLE_503_DEV`, is the experimental line (alpha maturity,
-`-dev` release); `MOODLE_503_STABLE` is what non-developers install. Experiments are
-welcome here, but every change lands complete: code, tests, strings, docs.
+MuTMS suite. Every change lands complete: code, tests, strings, docs.
 
 ## Layout
 
